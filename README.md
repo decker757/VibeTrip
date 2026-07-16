@@ -21,12 +21,29 @@ npm run dev
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
+# Add GOOGLE_MAPS_API_KEY to .env for live Routes + Places results
 uvicorn backend.main:app --reload --port 8000
 ```
 
 The API exposes `GET /health` and `POST /trips/plan`. The frontend calls the
 planner from `src/App.jsx` and falls back to a local preview when FastAPI is
 not running, so the UI remains usable without API keys.
+
+With `GOOGLE_MAPS_API_KEY`, the backend calls the current Google Routes API to
+get a driving route and samples its polyline to search nearby tourist
+attractions, cafes, restaurants, and fuel stops with the Places API. Candidates
+are scored inside the LangGraph detour reviewer using rating, review count,
+price level, opening status, estimated crowd risk, enjoyment, and detour time.
+The map UI shows the top candidates as route markers and the planner exposes
+`POST /trips/simulate` to test a closure, crowd spike, or late-running event.
+
+Google's public Places fields provide ratings, review counts, price levels, and
+opening hours; they do not provide a guaranteed live crowd count. The MVP
+therefore labels crowding as an estimate and lets the simulator explicitly
+invalidate a stop. If you choose a free OSM stack later, use a hosted provider
+or self-host Nominatim/Overpass rather than sending production traffic to the
+public endpoints without following their usage and attribution policies.
 
 ## Product / agent direction
 

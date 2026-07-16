@@ -19,6 +19,8 @@ class PlannerState(TypedDict, total=False):
     preferences: list[str]
     route: dict[str, Any]
     vibe_profile: dict[str, Any]
+    candidate_places: list[dict[str, Any]]
+    selected_places: list[dict[str, Any]]
     detours: list[dict[str, Any]]
     itinerary: list[dict[str, Any]]
     confidence: int
@@ -54,27 +56,32 @@ def vibe_matcher(state: PlannerState) -> PlannerState:
 
 def detour_reviewer(state: PlannerState) -> PlannerState:
     """Score candidate stops against time, budget, and the inferred profile."""
-    budget = state.get("budget_per_person", 400)
-    candidate = {
+    candidates = state.get("candidate_places") or [{
+        "id": "fallback-lunch",
         "name": "The Lobster Shack",
-        "city": "Mystic, CT",
+        "address": "Mystic, CT",
+        "category": "Restaurant",
         "detour_minutes": 12,
-        "value_score": 0.91 if budget >= 300 else 0.74,
+        "enjoyment_score": 88,
         "reason": "A high-value meal stop with a short route deviation.",
-        "accepted": True,
-    }
-    return {**state, "detours": [candidate]}
+        "open_now": True,
+    }]
+    ranked = sorted(candidates, key=lambda item: item.get("enjoyment_score", 0), reverse=True)
+    selected = [item for item in ranked if item.get("open_now", True)][:2]
+    return {**state, "candidate_places": ranked, "selected_places": selected, "detours": selected}
 
 
 def day_builder(state: PlannerState) -> PlannerState:
     """Turn the route and accepted detours into a buffer-aware day plan."""
+    meal_stop = next((item for item in state.get("selected_places", []) if "restaurant" in item.get("category", "").lower()), None)
+    meal_name = meal_stop.get("name", "Lunch with a view") if meal_stop else "Lunch with a view"
     return {
         **state,
         "confidence": 94,
         "itinerary": [
             {"time": "08:10", "title": "Coffee + stretch", "kind": "coffee", "duration_min": 25},
             {"time": "10:55", "title": "Fuel up", "kind": "fuel", "duration_min": 15},
-            {"time": "12:30", "title": "Lunch with a view", "kind": "meal", "duration_min": 55},
+            {"time": "12:30", "title": meal_name, "kind": "meal", "duration_min": 55, "place_id": meal_stop.get("id") if meal_stop else None},
             {"time": "15:40", "title": "Check-in", "kind": "stay", "duration_min": 0},
         ],
     }

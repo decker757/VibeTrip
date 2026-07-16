@@ -15,6 +15,13 @@ const initialStops = [
   { time: '15:40', title: 'Check-in', place: 'The Hoxton, Williamsburg', detail: 'Brooklyn, NY', type: 'stay', duration: 'overnight' },
 ];
 
+const initialCandidates = [
+  { id: 'demo-coffee', name: 'The Coffee Exchange', category: 'Cafe', address: 'Providence, RI', rating: 4.6, review_count: 825, price_label: '$', detour_minutes: 3, enjoyment_score: 86, crowd_risk: 'low', open_now: true, reason: 'A calm reset with strong reviews and almost no route drift.' },
+  { id: 'demo-lunch', name: 'The Lobster Shack', category: 'Restaurant', address: 'Mystic, CT', rating: 4.5, review_count: 1100, price_label: '$$', detour_minutes: 12, enjoyment_score: 88, crowd_risk: 'medium', open_now: true, reason: 'Best balance of a memorable meal, student budget, and route fit.' },
+  { id: 'demo-attraction', name: 'Mystic Seaport Museum', category: 'Tourist attraction', address: 'Mystic, CT', rating: 4.7, review_count: 3200, price_label: '$$', detour_minutes: 14, enjoyment_score: 81, crowd_risk: 'high', open_now: true, reason: 'High delight potential, but arrive before the afternoon crowd.' },
+  { id: 'demo-fuel', name: 'Shell · Exit 8', category: 'Gas station', address: 'New Haven, CT', rating: 4.1, review_count: 410, price_label: '$', detour_minutes: 2, enjoyment_score: 72, crowd_risk: 'low', open_now: true, reason: 'Low-friction fuel and bathroom stop before the final leg.' },
+];
+
 function Icon({ name, size = 18 }) {
   const paths = {
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
@@ -45,7 +52,8 @@ function Icon({ name, size = 18 }) {
   return <svg aria-hidden="true" className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-function RouteMap() {
+function RouteMap({ candidates = [] }) {
+  const markerPositions = [[30, 22], [43, 37], [55, 53], [67, 68]];
   return (
     <div className="map-canvas" aria-label="Map preview of the route from Boston to New York">
       <div className="map-controls">
@@ -57,6 +65,10 @@ function RouteMap() {
       <div className="map-label label-providence">PROVIDENCE</div>
       <div className="map-label label-newhaven">NEW HAVEN</div>
       <div className="map-label label-nyc">NEW YORK</div>
+      {candidates.slice(0, 4).map((candidate, index) => {
+        const [left, top] = markerPositions[index];
+        return <button className="map-place" key={candidate.id} style={{ left: `${left}%`, top: `${top}%` }} aria-label={`${candidate.name}, ${candidate.enjoyment_score} enjoyment score`} title={`${candidate.name} · ${candidate.detour_minutes} min detour`}><Icon name="sparkles" size={12} /></button>;
+      })}
       <svg className="route-art" viewBox="0 0 800 500" preserveAspectRatio="none" role="presentation">
         <path className="water-shape" d="M555 0c-11 47-7 82 12 113 17 28 20 56 10 83-11 29-5 63 18 95 26 36 44 66 45 111l160 98V0H555Z" />
         <path className="state-line" d="M286 54c-40 44-59 102-63 157-3 52 26 64 50 94 22 28 22 73 58 91 28 14 80-2 111-27 32-25 54-39 71-80 12-29 13-69-5-107-20-42-20-80-8-128" />
@@ -106,9 +118,22 @@ function itineraryToStops(itinerary, detours, destination) {
   return itinerary.map((item) => ({
     time: item.time,
     title: item.title,
+    place_id: item.place_id,
     duration: item.duration_min ? `${item.duration_min} min` : 'overnight',
     ...(details[item.kind] || details.coffee),
   }));
+}
+
+function candidateToStop(candidate) {
+  return {
+    time: '12:30',
+    title: candidate.name,
+    place: candidate.name,
+    detail: candidate.address || 'Along the route',
+    type: candidate.category?.toLowerCase().includes('cafe') ? 'coffee' : 'lunch',
+    duration: '45 min',
+    place_id: candidate.id,
+  };
 }
 
 function App() {
@@ -122,6 +147,10 @@ function App() {
   const [message, setMessage] = useState('');
   const [plannerSource, setPlannerSource] = useState('demo');
   const [routeStats, setRouteStats] = useState({ driveMinutes: 229, distanceKm: 348, confidence: 94 });
+  const [candidatePlaces, setCandidatePlaces] = useState(initialCandidates);
+  const [selectedPlaceId, setSelectedPlaceId] = useState('demo-lunch');
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResult, setSimulationResult] = useState(null);
 
   const routeTitle = useMemo(() => `${from.split(',')[0]} → ${to.split(',')[0]}`, [from, to]);
 
@@ -149,6 +178,9 @@ function App() {
       if (!response.ok) throw new Error(`Planner returned ${response.status}`);
 
       const result = await response.json();
+      const candidates = result.candidate_places?.length ? result.candidate_places : initialCandidates;
+      setCandidatePlaces(candidates);
+      setSelectedPlaceId(result.selected_places?.[0]?.id || candidates[0]?.id || 'demo-lunch');
       setStops(itineraryToStops(result.itinerary || [], result.detours, result.destination));
       setRouteStats({
         driveMinutes: result.route?.drive_minutes || 229,
@@ -157,10 +189,12 @@ function App() {
       });
       setPlannerSource('api');
       setIsGenerated(true);
-      setMessage('Route ready — your LangGraph plan has breathing room built in.');
+      setMessage(result.warning || 'Route ready — places scored by route fit, budget, ratings, and opening hours.');
     } catch {
       // The local preview keeps the MVP usable when FastAPI is not running yet.
       setPlannerSource('demo');
+      setCandidatePlaces(initialCandidates);
+      setSelectedPlaceId('demo-lunch');
       window.setTimeout(() => {
         setIsGenerated(true);
         setMessage('API unavailable — loaded a local preview so you can keep exploring.');
@@ -173,6 +207,58 @@ function App() {
   function addStop() {
     setStops((current) => [...current, { time: '17:15', title: 'Sunset option', place: 'DUMBO waterfront', detail: 'Brooklyn, NY', type: 'lunch', duration: '40 min' }]);
     setMessage('Optional sunset stop added to your route.');
+  }
+
+  function selectCandidate(candidate) {
+    setSelectedPlaceId(candidate.id);
+    setStops((current) => current.map((stop) => stop.type === 'lunch' ? candidateToStop(candidate) : stop));
+    setMessage(`${candidate.name} is now your preferred detour.`);
+  }
+
+  async function simulateTrip(event) {
+    if (isSimulating) return;
+    setIsSimulating(true);
+    setSimulationResult(null);
+    const currentStop = stops.find((stop) => stop.type === 'lunch') || stops[2];
+    const itinerary = stops.map((stop) => ({
+      time: stop.time,
+      title: stop.title,
+      kind: stop.type === 'lunch' ? 'meal' : stop.type,
+      duration_min: Number.parseInt(stop.duration, 10) || 0,
+      place_id: stop.place_id,
+    }));
+    try {
+      const response = await fetch(`${PLANNER_API_URL}/trips/simulate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destination: to, current_stop_id: selectedPlaceId, current_stop_title: currentStop?.title || 'Lunch with a view', event, candidates: candidatePlaces, itinerary }),
+      });
+      if (!response.ok) throw new Error(`Simulation returned ${response.status}`);
+      const result = await response.json();
+      setSimulationResult(result);
+      setMessage(result.message);
+      if (result.replacement) {
+        setStops((current) => current.map((stop) => stop.type === 'lunch' ? candidateToStop(result.replacement) : stop));
+        setSelectedPlaceId(result.replacement.id);
+      } else if (result.action === 'go_to_destination') {
+        setStops((current) => current.filter((stop) => stop.type !== 'lunch'));
+      }
+    } catch {
+      const backup = candidatePlaces.find((candidate) => candidate.id !== selectedPlaceId && candidate.open_now && (event !== 'crowded' || candidate.crowd_risk !== 'high'));
+      const result = backup
+        ? { action: 'replace_stop', replacement: backup, message: `Local simulation: swapped in ${backup.name} as the next best fit.` }
+        : { action: 'go_to_destination', message: `Local simulation: continue to ${to}.` };
+      setSimulationResult(result);
+      setMessage(result.message);
+      if (backup) {
+        setStops((current) => current.map((stop) => stop.type === 'lunch' ? candidateToStop(backup) : stop));
+        setSelectedPlaceId(backup.id);
+      } else {
+        setStops((current) => current.filter((stop) => stop.type !== 'lunch'));
+      }
+    } finally {
+      setIsSimulating(false);
+    }
   }
 
   function swapLocations() {
@@ -237,13 +323,22 @@ function App() {
           <section className="route-section">
             <div className="section-heading"><div><p className="eyebrow">YOUR FIRST DRAFT <span>·</span> {plannerSource === 'api' ? 'LANGGRAPH' : 'LOCAL PREVIEW'}</p><h2>{routeTitle}</h2></div><div className="route-meta"><span><Icon name="clock" size={15} />{formatDuration(routeStats.driveMinutes)} drive</span><span><Icon name="map" size={15} />{routeStats.distanceKm} km</span><button className="text-button" onClick={() => setMessage('Route details are ready to connect to your map provider.')}>View details <Icon name="arrow" size={14} /></button></div></div>
             <div className="route-grid">
-              <div className="map-card"><RouteMap /><div className="map-footer"><div><span className="map-footer-label">ROUTE CONFIDENCE</span><strong>{routeStats.confidence}% <span>·</span> clear and comfortable</strong></div><span className="route-badge"><Icon name="check" size={13} /> Efficient detour</span></div></div>
+              <div className="map-card"><RouteMap candidates={candidatePlaces} /><div className="map-footer"><div><span className="map-footer-label">ROUTE CONFIDENCE</span><strong>{routeStats.confidence}% <span>·</span> clear and comfortable</strong></div><span className="route-badge"><Icon name="check" size={13} /> Efficient detour</span></div></div>
               <div className="timeline-card">
                 <div className="timeline-top"><div><p className="eyebrow">DAY 01 <span>·</span> SAT 14 SEP</p><h3>Easy pace to {to.split(',')[0]}</h3></div><button className="edit-button" onClick={() => setMessage('Timeline editing is ready for agent handoff.')}><Icon name="edit" size={15} />Edit</button></div>
                 <div className="timeline-list">{stops.map((stop, index) => <div className="timeline-item" key={`${stop.title}-${index}`}><div className="timeline-time">{stop.time}</div><div className="timeline-rail"><StopIcon type={stop.type} />{index < stops.length - 1 && <span className="rail-line" />}</div><div className="timeline-copy"><strong>{stop.title}</strong><span>{stop.place} <i>·</i> {stop.detail}</span></div><span className="duration">{stop.duration}</span></div>)}</div>
                 <button className="add-stop" onClick={addStop}><Icon name="plus" size={15} />Add a stop</button>
               </div>
             </div>
+          </section>
+
+          <section className="intelligence-grid">
+            <div className="suggestions-card">
+              <div className="card-heading"><div><p className="eyebrow">ALONG YOUR ROUTE</p><h3>Places worth the turn.</h3></div><span className="source-badge"><Icon name="sparkles" size={12} />{plannerSource === 'api' ? 'LIVE PLACES' : 'DEMO DATA'}</span></div>
+              <p className="intelligence-copy">The detour reviewer weighs reviews, price, opening hours, estimated crowd risk, and time lost.</p>
+              <div className="candidate-list">{candidatePlaces.slice(0, 4).map((candidate) => <div className={`candidate-row ${selectedPlaceId === candidate.id ? 'selected' : ''}`} key={candidate.id}><div className="candidate-icon"><Icon name={candidate.category?.toLowerCase().includes('restaurant') ? 'sun' : candidate.category?.toLowerCase().includes('gas') ? 'fuel' : 'sparkles'} size={15} /></div><div className="candidate-copy"><strong>{candidate.name}</strong><span>{candidate.category} <i>·</i> {candidate.address}</span><small><span className="rating-star">★</span> {Number(candidate.rating || 0).toFixed(1)} ({Number(candidate.review_count || 0).toLocaleString()}) <i>·</i> {candidate.detour_minutes} min detour</small></div><div className="candidate-score"><strong>{candidate.enjoyment_score}</strong><small>enjoyment</small></div><button className="candidate-use" onClick={() => selectCandidate(candidate)}>{selectedPlaceId === candidate.id ? 'Selected' : 'Use'}</button></div>)}</div>
+            </div>
+            <div className="simulation-card"><div className="card-heading"><div><p className="eyebrow">TRIP SIMULATOR</p><h3>What if today changes?</h3></div><span className="sim-badge"><span />READY</span></div><p className="intelligence-copy">Throw a small problem at the plan. The recalibrator will protect the best parts of your day.</p><div className="simulation-current"><span className="simulation-pin"><Icon name="sun" size={15} /></span><span><small>UP NEXT</small><strong>{stops.find((stop) => stop.type === 'lunch')?.place || 'Destination'}</strong></span></div><div className="simulation-actions"><button onClick={() => simulateTrip('closed')} disabled={isSimulating}><Icon name="clock" size={14} />Closed</button><button onClick={() => simulateTrip('crowded')} disabled={isSimulating}><Icon name="users" size={14} />Too crowded</button><button onClick={() => simulateTrip('running_late')} disabled={isSimulating}><Icon name="arrowUp" size={14} />Running late</button></div>{simulationResult && <div className={`simulation-result ${simulationResult.action === 'go_to_destination' ? 'direct' : ''}`} role="status"><Icon name={simulationResult.action === 'go_to_destination' ? 'arrow' : 'check'} size={14} /><span>{simulationResult.action === 'go_to_destination' ? 'Going direct' : 'Plan recalibrated'}<small>{simulationResult.message}</small></span></div>}</div>
           </section>
 
           <section className="bottom-grid">
