@@ -198,7 +198,7 @@ class GoogleMapsProvider:
                 "stops_needed": ["fuel", "bathroom", "meal"],
                 "polyline": route.get("polyline", {}).get("encodedPolyline"),
             }
-            route_points = _sample_polyline(route_result.get("polyline") or "", count=4)
+            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=4)
             candidates: dict[str, dict[str, Any]] = {}
             places_headers = {
                 "Content-Type": "application/json",
