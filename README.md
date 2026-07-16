@@ -23,7 +23,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 # Add GOOGLE_MAPS_API_KEY to .env for live Routes + Places results
-uvicorn backend.main:app --reload --port 8000
+uvicorn backend.main:app --reload --port 8000 --env-file .env
 ```
 
 The API exposes `GET /health` and `POST /trips/plan`. The frontend calls the
