@@ -82,13 +82,68 @@ public endpoints without following their usage and attribution policies.
 
 ## Product / agent direction
 
-The UI is intentionally structured around five LangGraph nodes:
+The planner is a small, typed LangGraph workflow supported by route, Places,
+simulation, and persistence services. The current graph has four nodes; the
+route-request assistant is a separate route-aware search capability rather than
+a fifth graph node.
 
-- `route_scout`: calculate the fastest feasible route and surface candidate detours.
-- `vibe_matcher`: infer or load an archetype from preferences, budget, group size, and energy level.
-- `detour_reviewer`: score candidate places against time cost, value, weather, opening hours, and route deviation.
-- `day_builder`: turn accepted places into an itinerary with real fuel or convenience stops, meals, scenic detours, and contingency buffers.
-- `route_requester`: translate natural-language feedback into a route-aware Places search and return replacement candidates.
+### What each planner agent does
+
+1. **Route scout (`route_scout`)**
+   - Establishes the baseline driving route between the origin and destination.
+   - Supplies distance, drive time, traffic-aware estimates, route geometry, and
+     the corridor used to discover nearby places.
+   - Keeps destination-area recommendations separate from places that are
+     genuinely along the route.
+
+2. **Vibe matcher (`vibe_matcher`)**
+   - Converts the travel profile into a lightweight archetype such as
+     “Curious, not rushed” or “Easygoing explorer.”
+   - Combines explicit preferences, adventure-slider level, group size, and
+     student-budget context.
+   - Sets planning defaults such as the buffer allowance and recommendation
+     balance; it does not change the road geometry.
+
+3. **Detour reviewer (`detour_reviewer`)**
+   - Scores candidate attractions, eateries, cafes, fuel stations, and
+     convenience stores.
+   - Weighs rating quality, review volume, price, estimated crowd risk,
+     enjoyment, opening hours, detour time, route style, and adventure level.
+   - Selects the best along-route candidates for the current route mode:
+     `fastest` keeps only essentials, `balanced` allows worthwhile detours,
+     and `scenic` allows more intermediate experiences.
+
+4. **Day builder (`day_builder`)**
+   - Converts selected places into an ordered, time-aware itinerary.
+   - Adds practical fuel, bathroom, snack, and convenience stops where the
+     drive length warrants them; it does not invent “stop anywhere” breaks.
+   - Uses route progress as the ordering key, checks regular opening hours at
+     the estimated arrival time, and reserves driving, stop, and contingency
+     buffers before check-in.
+
+### Supporting route agents and services
+
+- **Route-request assistant (`POST /trips/search`)** translates a natural-
+  language request such as “quiet Chinese food under my budget” into a focused
+  Places search along the current route. It returns replacement candidates for
+  the selected timeline stop; it does not replace every stop at once.
+- **Reroute service (`POST /trips/reroute`)** turns a user’s add, change, or
+  remove action into ordered waypoint coordinates and asks the route provider
+  to recompute the geometry through those actual places.
+- **Trip simulator (`POST /trips/simulate`)** applies a closure, crowd spike,
+  or late-running event to one current stop, then chooses a feasible backup or
+  sends the group directly onward.
+- **Destination explorer** keeps post-arrival ideas optional until the user
+  selects “Add to route.” That action promotes the place into the active
+  itinerary before check-in and triggers the same reroute service.
+
+The end-to-end graph is:
+
+```text
+route_scout → vibe_matcher → detour_reviewer → day_builder
+                                      ↓
+                         ordered itinerary + route constraints
+```
 
 Route style and travel profile are intentionally separate inputs. `fastest`,
 `balanced`, and `scenic` control route geometry and how many detours the day

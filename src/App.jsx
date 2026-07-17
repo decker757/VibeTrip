@@ -11,8 +11,8 @@ const navItems = [
 
 const initialStops = [
   { time: '08:10', title: 'Coffee stop', place: 'The Coffee Exchange', detail: 'Providence, RI', type: 'coffee', duration: '25 min' },
-  { time: '10:55', title: 'Fuel up', place: 'Shell · Exit 8', detail: 'New Haven, CT', type: 'fuel', duration: '15 min' },
-  { time: '12:30', title: 'Lunch with a view', place: 'The Lobster Shack', detail: 'Mystic, CT', type: 'lunch', duration: '55 min' },
+  { time: '11:30', title: 'Lunch with a view', place: 'The Lobster Shack', detail: 'Mystic, CT', type: 'lunch', duration: '55 min' },
+  { time: '13:35', title: 'Fuel up', place: 'Shell · Exit 8', detail: 'New Haven, CT', type: 'fuel', duration: '15 min' },
   { time: '15:40', title: 'Check-in', place: 'The Hoxton, Williamsburg', detail: 'Brooklyn, NY', type: 'stay', duration: 'overnight' },
 ];
 
@@ -38,7 +38,7 @@ const routeModeOptions = [
 ];
 
 const exploreFallbackTrips = [
-  { id: 'fallback-boston-new-york', author_name: 'Maya · NUS exchange', title: 'Coastline, coffee, and a little history', start: 'Boston, MA', destination: 'New York, NY', route_mode: 'scenic', adventure_level: 78, budget_per_person: 180, travellers: 3, preferences: ['local-gems', 'adventurous'], route: { distance_km: 365, drive_minutes: 244 }, itinerary: [{ title: 'Cedar Street Café', kind: 'coffee' }, { title: 'Mystic Seaport', kind: 'attraction' }, { title: 'Dinner in Brooklyn', kind: 'meal' }], is_public: true },
+  { id: 'fallback-boston-new-york', author_name: 'Maya · SMU exchange', title: 'Coastline, coffee, and a little history', start: 'Boston, MA', destination: 'New York, NY', route_mode: 'scenic', adventure_level: 78, budget_per_person: 180, travellers: 3, preferences: ['local-gems', 'adventurous'], route: { distance_km: 365, drive_minutes: 244 }, itinerary: [{ title: 'Cedar Street Café', kind: 'coffee' }, { title: 'Mystic Seaport', kind: 'attraction' }, { title: 'Dinner in Brooklyn', kind: 'meal' }], is_public: true },
   { id: 'fallback-portland-seattle', author_name: 'Daniel · NTU exchange', title: 'Rainy-day stops up the Pacific Northwest', start: 'Portland, OR', destination: 'Seattle, WA', route_mode: 'balanced', adventure_level: 56, budget_per_person: 145, travellers: 4, preferences: ['slow-mornings', 'student-budget'], route: { distance_km: 280, drive_minutes: 175 }, itinerary: [{ title: 'Farmers market coffee', kind: 'coffee' }, { title: 'Centralia lunch', kind: 'meal' }, { title: 'Fuel + convenience', kind: 'fuel' }], is_public: true },
   { id: 'fallback-munich-prague', author_name: 'Isha · SMU exchange', title: 'Munich to Prague with only the good breaks', start: 'Munich, Germany', destination: 'Prague, Czechia', route_mode: 'fastest', adventure_level: 34, budget_per_person: 120, travellers: 2, preferences: ['student-budget'], route: { distance_km: 382, drive_minutes: 260 }, itinerary: [{ title: 'Autohof fuel + snack', kind: 'fuel' }, { title: 'Quick lunch', kind: 'meal' }], is_public: true },
 ];
@@ -348,8 +348,29 @@ function TimelineRow({ stop, index, isLast, isFocused, isEditing, isManaging, on
       <span className="stop-duration">{stop.duration === 'overnight' ? 'overnight' : `${stop.duration} stop`}</span>
       <div className="timeline-actions">
         {isManaging && stop.type !== 'stay' && <button className="timeline-remove" title={`Remove ${stop.title}`} onClick={(event) => { event.stopPropagation(); onRemove(index); }}><Icon name="close" size={12} />Remove</button>}
+        {(!isManaging || stop.type === 'stay') && <span className="timeline-action-placeholder" aria-hidden="true" />}
         <button className="timeline-change" title={`Choose a replacement for ${stop.title}`} onClick={(event) => { event.stopPropagation(); onChange(index); }}>{isEditing ? 'Choosing' : 'Change'}</button>
       </div>
+    </div>
+  );
+}
+
+function CandidateRow({ candidate, selected, actionLabel, onSelect }) {
+  const category = candidate.category?.toLowerCase() || '';
+  const icon = category.includes('restaurant') ? 'sun' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : 'sparkles';
+  return (
+    <div className={`candidate-row ${selected ? 'selected' : ''}`} title={candidate.review_quote || candidate.reason}>
+      <div className="candidate-icon"><Icon name={icon} size={15} /></div>
+      <div className="candidate-copy">
+        <strong>{candidate.name}</strong>
+        <span>{candidate.category} <i>·</i> {candidate.address}</span>
+        <small className="candidate-scope">{candidate.recommendation_scope === 'destination' ? 'At destination' : candidate.recommendation_kind === 'scenic' ? 'Scenic along route' : 'Practical along route'}</small>
+        <small><span className="rating-star">★</span> {Number(candidate.rating || 0).toFixed(1)} ({Number(candidate.review_count || 0).toLocaleString()}) <i>·</i> {candidate.detour_minutes} min detour</small>
+        <small className="candidate-cost">{candidate.cost_label || candidate.price_label || 'Cost to verify'} {candidate.website_uri && <a href={candidate.website_uri} target="_blank" rel="noreferrer">Official site ↗</a>}</small>
+        {candidate.review_quote && <small className="review-preview">“{candidate.review_quote}”</small>}
+      </div>
+      <div className="candidate-score"><strong>{candidate.enjoyment_score}</strong><small>enjoyment</small></div>
+      <button className="candidate-use" type="button" onClick={() => onSelect(candidate)}>{selected ? 'Added' : actionLabel}</button>
     </div>
   );
 }
@@ -403,6 +424,8 @@ function App() {
   const defaultReplacementIndex = Math.max(0, stops.findIndex((stop) => stop.type === 'lunch'));
   const replacementStopIndex = editingStopIndex ?? focusedStopIndex ?? defaultReplacementIndex;
   const displayedCandidates = useMemo(() => candidatePlaces.slice(0, routeMode === 'fastest' ? 4 : 6), [candidatePlaces, routeMode]);
+  const alongRouteCandidates = useMemo(() => displayedCandidates.filter((candidate) => candidate.recommendation_scope !== 'destination'), [displayedCandidates]);
+  const destinationCandidates = useMemo(() => candidatePlaces.filter((candidate) => candidate.recommendation_scope === 'destination').slice(0, 4), [candidatePlaces]);
   const mapCandidates = useMemo(() => {
     const visibleIds = new Set(displayedCandidates.map((candidate) => candidate.id));
     const waypointIds = new Set([
@@ -563,6 +586,27 @@ function App() {
     setIsManagingStops(true);
     setCostBreakdown(buildClientCostBreakdown(route, candidate, travellers));
     void rerouteDraft(nextStops, `${candidate.name} selected and the route was recalculated through it.`);
+  }
+
+  function addDestinationCandidate(candidate) {
+    const existingIndex = stops.findIndex((stop) => stop.place_id === candidate.id);
+    if (existingIndex >= 0) {
+      setFocusedStopIndex(existingIndex);
+      setMessage(`${candidate.name} is already in your trip.`);
+      return;
+    }
+    const destinationIndex = stops.findIndex((stop) => stop.type === 'stay');
+    const insertionIndex = destinationIndex >= 0 ? destinationIndex : stops.length;
+    const previousStop = stops[insertionIndex - 1] || stops[stops.length - 1];
+    const time = previousStop?.time ? addMinutesToTime(previousStop.time, (previousStop.duration_minutes || 45) + 30) : startTime;
+    const nextStop = candidateToStop(candidate, time);
+    const nextStops = [...stops.slice(0, insertionIndex), nextStop, ...stops.slice(insertionIndex)];
+    setCandidatePlaces((current) => current.map((item) => item.id === candidate.id ? { ...item, recommendation_scope: 'along_route' } : item));
+    setSelectedPlaceId(candidate.id);
+    setStops(nextStops);
+    setFocusedStopIndex(insertionIndex);
+    setCostBreakdown(buildClientCostBreakdown(route, candidate, travellers));
+    void rerouteDraft(nextStops, `${candidate.name} added before check-in and the route was recalculated through it.`);
   }
 
   function beginStopChange(index) {
@@ -852,7 +896,7 @@ function App() {
         </nav>
         <div className="sidebar-footer">
           <div className="tip-card"><div className="tip-icon"><Icon name="sparkles" size={15} /></div><p><strong>Trip tip</strong><br />Leave 20% of the day unplanned. That’s where the good stuff happens.</p></div>
-          <button className="profile-button"><span className="avatar">ET</span><span className="profile-copy"><strong>Ernest Tan</strong><small>Singapore · NUS</small></span><Icon name="chevron" size={15} /></button>
+          <button className="profile-button"><span className="avatar">ET</span><span className="profile-copy"><strong>Ernest Tan</strong><small>Singapore · SMU</small></span><Icon name="chevron" size={15} /></button>
         </div>
       </aside>
 
@@ -873,7 +917,7 @@ function App() {
           <section className="profile-card top-profile-card">
             <div className="card-heading"><div><p className="eyebrow">TRAVEL PROFILE</p><h3>{profileSummary}</h3></div><span className="profile-helper">Used by the route and detour agents</span></div>
             <div className="profile-tags">{profileOptions.map((option) => <button type="button" className={`profile-tag-button ${preferences.includes(option.id) ? 'active' : ''}`} key={option.id} onClick={() => togglePreference(option.id)}><Icon name={option.icon} size={14} />{option.label}</button>)}</div>
-            <div className="profile-meter"><div className="meter-labels"><span>ADVENTUROUS</span><span>LAID BACK</span></div><input id="travel-profile-adventure" className="meter-input" type="range" min="0" max="100" step="1" value={adventureLevel} onInput={updateAdventureLevel} onChange={commitAdventureLevel} style={{ '--meter-level': `${adventureLevel}%` }} aria-label="Travel profile balance between adventurous and laid back" /><div className="meter-track" aria-hidden="true" /><div className="meter-caption" aria-live="polite"><span>{profileBalance}</span><strong>{adventureLevel}%</strong></div></div>
+            <div className="profile-meter"><div className="meter-labels"><span>LAID BACK</span><span>ADVENTUROUS</span></div><input id="travel-profile-adventure" className="meter-input" type="range" min="0" max="100" step="1" value={adventureLevel} onInput={updateAdventureLevel} onChange={commitAdventureLevel} style={{ '--meter-level': `${adventureLevel}%` }} aria-label="Travel profile balance between laid back and adventurous" /><div className="meter-track" aria-hidden="true" /><div className="meter-caption" aria-live="polite"><span>{profileBalance}</span><strong>{adventureLevel}%</strong></div></div>
           </section>
 
           <section className="planner-card">
@@ -903,7 +947,15 @@ function App() {
           <section className="route-section">
             <div className="section-heading"><div><p className="eyebrow">YOUR FIRST DRAFT <span>·</span> {isGenerating ? 'BUILDING LIVE ROUTE' : plannerSource === 'api' ? 'LANGGRAPH' : 'LOCAL PREVIEW'}</p><h2>{routeTitle}</h2></div><div className="route-meta"><span className="route-mode-meta"><Icon name="compass" size={15} />{route.route_mode_label || routeModeOptions.find((option) => option.id === routeMode)?.label} route</span><span><Icon name="clock" size={15} />{isGenerating ? 'checking time' : `${formatDuration(routeStats.driveMinutes)} drive`}</span><span><Icon name="map" size={15} />{isGenerating ? 'checking distance' : `${routeStats.distanceKm} km`}</span>{route.estimated_arrival_time && <span><Icon name="check" size={15} />arrive around {route.estimated_arrival_time}</span>}{route.traffic_status && <span className={`traffic-indicator ${route.traffic_status}`}><span />{route.traffic_status} traffic {route.traffic_delay_minutes ? `+${route.traffic_delay_minutes}m` : ''}</span>}<span className="route-export-actions" aria-label="Export route"><a className="route-export-link" href={googleMapsUrl} target="_blank" rel="noreferrer" title="Open this route with stops in Google Maps"><Icon name="map" size={13} />Google Maps</a><a className="route-export-link" href={wazeUrl} target="_blank" rel="noreferrer" title="Open the destination in Waze"><Icon name="arrow" size={13} />Waze</a><button className="route-save-button" type="button" onClick={saveCurrentTrip} disabled={isSavingTrip || !isGenerated}><Icon name="bookmark" size={13} />{isSavingTrip ? 'Saving…' : 'Save trip'}</button></span></div></div>
             <div className="route-grid">
-              <div className={`map-card ${isRerouting ? 'rerouting' : ''}`}>{isGenerating ? <LiveRouteLoading from={from} to={to} /> : <GoogleRouteMap ref={mapControllerRef} route={route} candidates={mapCandidates} onSelectCandidate={selectCandidate} fallback={<RouteMap candidates={mapCandidates} from={from} to={to} routeStats={routeStats} />} />}<div className="map-footer"><div><span className="map-footer-label">ROUTE CONFIDENCE</span><strong>{isGenerating || isRerouting ? '—' : `${routeStats.confidence}% · clear and comfortable`}</strong>{route.traffic_status && <small className="traffic-footnote">{route.traffic_note} · Construction alerts not connected</small>}{route.waypoint_note && <small className="route-waypoint-note">{route.waypoint_note}</small>}</div><span className="route-badge"><Icon name={isGenerating || isRerouting ? 'clock' : 'check'} size={13} /> {isGenerating ? 'Finding route' : isRerouting ? 'Recalculating route' : 'Efficient detour'}</span></div></div>
+              <div className={`map-card ${isRerouting ? 'rerouting' : ''}`}>
+                {isGenerating ? <LiveRouteLoading from={from} to={to} /> : <GoogleRouteMap ref={mapControllerRef} route={route} candidates={mapCandidates} onSelectCandidate={selectCandidate} fallback={<RouteMap candidates={mapCandidates} from={from} to={to} routeStats={routeStats} />} />}
+                <div className="map-footer"><div><span className="map-footer-label">ROUTE CONFIDENCE</span><strong>{isGenerating || isRerouting ? '—' : `${routeStats.confidence}% · clear and comfortable`}</strong>{route.traffic_status && <small className="traffic-footnote">{route.traffic_note} · Construction alerts not connected</small>}{route.waypoint_note && <small className="route-waypoint-note">{route.waypoint_note}</small>}</div><span className="route-badge"><Icon name={isGenerating || isRerouting ? 'clock' : 'check'} size={13} /> {isGenerating ? 'Finding route' : isRerouting ? 'Recalculating route' : 'Efficient detour'}</span></div>
+                {destinationCandidates.length > 0 && <div className="map-destination-panel">
+                  <div className="candidate-separator"><span>OPTIONAL AFTER ARRIVAL</span></div>
+                  <div className="candidate-group-heading"><strong>Explore {to.split(',')[0]}</strong><span>Add one before starting to route through it</span></div>
+                  <div className="candidate-list">{destinationCandidates.map((candidate) => <CandidateRow key={candidate.id} candidate={candidate} selected={stops.some((stop) => stop.place_id === candidate.id)} actionLabel="Add to route" onSelect={addDestinationCandidate} />)}</div>
+                </div>}
+              </div>
               <div className="timeline-card">
                 <div className="timeline-top"><div><p className="eyebrow">DAY 01 <span>·</span> {formatDateLabel(startDate)}</p><h3>Easy pace to {to.split(',')[0]}</h3></div><button className={`edit-button ${isManagingStops ? 'active' : ''}`} onClick={toggleStopManager}>{isManagingStops ? 'Done' : 'Manage stops'} <Icon name={isManagingStops ? 'check' : 'edit'} size={15} /></button></div>
                 {isManagingStops && <p className="timeline-helper"><Icon name="sparkles" size={13} />Choose a stop to replace or remove it. Route options below update the selected stop.</p>}
@@ -919,7 +971,12 @@ function App() {
             <div className="suggestions-card">
               <div className="card-heading"><div><p className="eyebrow">ROUTE OPTIONS</p><h3>Choose your stops.</h3></div><span className="source-badge"><Icon name="sparkles" size={12} />{plannerSource === 'api' ? 'LIVE PLACES' : 'DEMO DATA'}</span></div>
               <p className="intelligence-copy">{isManagingStops ? 'Choose a place below to replace the selected timeline stop. It will be added to the draft route.' : routeMode === 'fastest' ? 'A short list of practical stops and a few destination ideas, kept close to the fastest route.' : routeMode === 'scenic' ? 'The planner looks across intermediate cities and the destination for places worth shaping the journey around.' : 'The planner balances practical breaks with a small number of worthwhile intermediate and destination recommendations.'}</p>
-              <div className="candidate-list">{displayedCandidates.map((candidate) => { const category = candidate.category?.toLowerCase() || ''; const icon = category.includes('restaurant') ? 'sun' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : 'sparkles'; return <div className={`candidate-row ${selectedPlaceId === candidate.id ? 'selected' : ''}`} key={candidate.id} title={candidate.review_quote || candidate.reason}><div className="candidate-icon"><Icon name={icon} size={15} /></div><div className="candidate-copy"><strong>{candidate.name}</strong><span>{candidate.category} <i>·</i> {candidate.address}</span><small className="candidate-scope">{candidate.recommendation_scope === 'destination' ? 'At destination' : candidate.recommendation_kind === 'scenic' ? 'Scenic along route' : 'Practical along route'}</small><small><span className="rating-star">★</span> {Number(candidate.rating || 0).toFixed(1)} ({Number(candidate.review_count || 0).toLocaleString()}) <i>·</i> {candidate.detour_minutes} min detour</small><small className="candidate-cost">{candidate.cost_label || candidate.price_label || 'Cost to verify'} {candidate.website_uri && <a href={candidate.website_uri} target="_blank" rel="noreferrer">Official site ↗</a>}</small>{candidate.review_quote && <small className="review-preview">“{candidate.review_quote}”</small>}</div><div className="candidate-score"><strong>{candidate.enjoyment_score}</strong><small>enjoyment</small></div><button className="candidate-use" onClick={() => selectCandidate(candidate)}>{selectedPlaceId === candidate.id ? 'Selected' : isManagingStops ? 'Use here' : 'Use'}</button></div>; })}</div>
+              <div className="candidate-group">
+                <div className="candidate-group-heading"><strong>Along your route</strong><span>Stops that shape the drive</span></div>
+                <div className="candidate-list">
+                  {alongRouteCandidates.length > 0 ? alongRouteCandidates.map((candidate) => <CandidateRow key={candidate.id} candidate={candidate} selected={selectedPlaceId === candidate.id} actionLabel={isManagingStops ? 'Use here' : 'Use'} onSelect={selectCandidate} />) : <div className="candidate-empty">No route stops are available yet.</div>}
+                </div>
+              </div>
             </div>
             <div className="budget-card">
               <div className="card-heading"><div><p className="eyebrow">TRIP BUDGET</p><h3>{formatMoney(costBreakdown.estimated_total_sgd)} total</h3></div><span className="cost-per-person">{formatMoney(costBreakdown.estimated_per_person_sgd)} / person</span></div>

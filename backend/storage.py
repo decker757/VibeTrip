@@ -24,7 +24,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
     {
         "id": "seed-boston-new-york-scenic",
         "owner_id": "seed-maya",
-        "author_name": "Maya · NUS exchange",
+        "author_name": "Maya · SMU exchange",
         "title": "Coastline, coffee, and a little history",
         "start": "Boston, MA",
         "destination": "New York, NY",

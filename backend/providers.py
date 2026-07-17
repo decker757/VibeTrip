@@ -63,7 +63,7 @@ ROUTE_MODE_CONFIG = {
 }
 
 GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals"
-GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types,places.reviews"
+GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types,places.reviews"
 
 SEARCH_STOP_WORDS = {
     "a", "an", "and", "another", "are", "at", "be", "by", "can", "for", "from", "has", "have",
@@ -165,6 +165,23 @@ def _sample_polyline(points: list[tuple[float, float]], count: int = 4) -> list[
     return [points[index] for index in indices]
 
 
+def _route_progress_km(location: tuple[float, float], route_points: list[tuple[float, float]]) -> float | None:
+    """Approximate a place's distance from the route origin in route order."""
+    if not route_points:
+        return None
+    progress = 0.0
+    closest_progress = 0.0
+    closest_distance = float("inf")
+    for index, point in enumerate(route_points):
+        distance = _distance_km(point, location)
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_progress = progress
+        if index < len(route_points) - 1:
+            progress += _distance_km(point, route_points[index + 1])
+    return round(closest_progress, 1)
+
+
 def _distance_km(first: tuple[float, float], second: tuple[float, float]) -> float:
     radius = 6371
     lat_one, lon_one = map(math.radians, first)
@@ -235,6 +252,7 @@ def _score_place(
     crowd_tolerance: str,
     route_mode: str = "balanced",
     recommendation_scope: str = "along_route",
+    route_progress_km: float | None = None,
 ) -> dict[str, Any] | None:
     location = _place_location(place)
     if not location:
@@ -286,6 +304,8 @@ def _score_place(
         "review_quote": review_quote,
         "review_author": review_author,
         "location": {"latitude": location[0], "longitude": location[1]},
+        "route_progress_km": route_progress_km,
+        "opening_hours": place.get("regularOpeningHours") or {},
         **_cost_metadata(primary_type, price_level),
     }
 
@@ -293,11 +313,11 @@ def _score_place(
 class DemoMapsProvider:
     async def plan_trip(self, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, start_time: str = "08:10", route_mode: str = "balanced") -> ProviderResult:
         candidates = [
-            {"id": "demo-coffee", "name": "The Coffee Exchange", "category": "Cafe", "address": "Providence, RI", "rating": 4.6, "review_count": 825, "price_level": 1, "price_label": "$", "detour_minutes": 3, "enjoyment_score": 86, "crowd_risk": "low", "open_now": True, "review_quote": "A calm reset with strong coffee and friendly service.", "review_author": "Demo review", "reason": "A calm reset with strong reviews and almost no route drift."},
-            {"id": "demo-attraction", "name": "Mystic Seaport Museum", "category": "Tourist attraction", "address": "Mystic, CT", "rating": 4.7, "review_count": 3200, "price_level": 2, "price_label": "$$", "detour_minutes": 14, "enjoyment_score": 81, "crowd_risk": "high", "open_now": True, "review_quote": "Worth arriving early before the afternoon crowd builds.", "review_author": "Demo review", "reason": "High delight potential, but arrive before the afternoon crowd."},
-            {"id": "demo-lunch", "name": "The Lobster Shack", "category": "Restaurant", "address": "Mystic, CT", "rating": 4.5, "review_count": 1100, "price_level": 2, "price_label": "$$", "detour_minutes": 12, "enjoyment_score": 88, "crowd_risk": "medium", "open_now": True, "review_quote": "The route-friendly lunch stop the group keeps talking about.", "review_author": "Demo review", "reason": "Best balance of a memorable meal, student budget, and route fit."},
-            {"id": "demo-fuel", "name": "Shell · Exit 8", "category": "Gas station", "address": "New Haven, CT", "rating": 4.1, "review_count": 410, "price_level": 1, "price_label": "$", "detour_minutes": 2, "enjoyment_score": 72, "crowd_risk": "low", "open_now": True, "review_quote": "Low-friction fuel and a clean bathroom stop.", "review_author": "Demo review", "reason": "Low-friction fuel and bathroom stop before the final leg."},
-            {"id": "demo-destination", "name": "Brooklyn Bridge Park", "category": "Tourist attraction", "address": "Brooklyn, NY", "rating": 4.8, "review_count": 8400, "price_level": 0, "price_label": "Free", "detour_minutes": 6, "enjoyment_score": 84, "crowd_risk": "high", "open_now": True, "review_quote": "A strong first look at the city after the drive.", "review_author": "Demo review", "reason": "A free destination highlight with skyline views."},
+            {"id": "demo-coffee", "name": "The Coffee Exchange", "category": "Cafe", "address": "Providence, RI", "rating": 4.6, "review_count": 825, "price_level": 1, "price_label": "$", "detour_minutes": 3, "enjoyment_score": 86, "crowd_risk": "low", "open_now": True, "route_progress_km": 65, "review_quote": "A calm reset with strong coffee and friendly service.", "review_author": "Demo review", "reason": "A calm reset with strong reviews and almost no route drift."},
+            {"id": "demo-attraction", "name": "Mystic Seaport Museum", "category": "Tourist attraction", "address": "Mystic, CT", "rating": 4.7, "review_count": 3200, "price_level": 2, "price_label": "$$", "detour_minutes": 14, "enjoyment_score": 81, "crowd_risk": "high", "open_now": True, "route_progress_km": 180, "review_quote": "Worth arriving early before the afternoon crowd builds.", "review_author": "Demo review", "reason": "High delight potential, but arrive before the afternoon crowd."},
+            {"id": "demo-lunch", "name": "The Lobster Shack", "category": "Restaurant", "address": "Mystic, CT", "rating": 4.5, "review_count": 1100, "price_level": 2, "price_label": "$$", "detour_minutes": 12, "enjoyment_score": 88, "crowd_risk": "medium", "open_now": True, "route_progress_km": 205, "review_quote": "The route-friendly lunch stop the group keeps talking about.", "review_author": "Demo review", "reason": "Best balance of a memorable meal, student budget, and route fit."},
+            {"id": "demo-fuel", "name": "Shell · Exit 8", "category": "Gas station", "address": "New Haven, CT", "rating": 4.1, "review_count": 410, "price_level": 1, "price_label": "$", "detour_minutes": 2, "enjoyment_score": 72, "crowd_risk": "low", "open_now": True, "route_progress_km": 125, "review_quote": "Low-friction fuel and a clean bathroom stop.", "review_author": "Demo review", "reason": "Low-friction fuel and bathroom stop before the final leg."},
+            {"id": "demo-destination", "name": "Brooklyn Bridge Park", "category": "Tourist attraction", "address": "Brooklyn, NY", "rating": 4.8, "review_count": 8400, "price_level": 0, "price_label": "Free", "detour_minutes": 6, "enjoyment_score": 84, "crowd_risk": "high", "open_now": True, "route_progress_km": 340, "review_quote": "A strong first look at the city after the drive.", "review_author": "Demo review", "reason": "A free destination highlight with skyline views."},
         ]
         for candidate in candidates:
             category = candidate["category"].lower().replace(" ", "_")
@@ -400,7 +420,8 @@ class GoogleMapsProvider:
             if not route:
                 raise RuntimeError("Google Routes returned no route")
             route_result = self._parse_route(route, start, destination, route_mode)
-            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=mode_config["corridor_sample_count"])
+            route_geometry = _decode_polyline(route_result.get("polyline") or "")
+            route_points = _sample_polyline(route_geometry, count=mode_config["corridor_sample_count"])
             candidates: dict[str, dict[str, Any]] = {}
             places_headers = {
                 "Content-Type": "application/json",
@@ -422,7 +443,16 @@ class GoogleMapsProvider:
                     response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=payload)
                     response.raise_for_status()
                     for place in response.json().get("places", []):
-                        normalized = _score_place(place, route_point, budget_per_person, crowd_tolerance, route_mode, recommendation_scope)
+                        location = _place_location(place)
+                        normalized = _score_place(
+                            place,
+                            route_point,
+                            budget_per_person,
+                            crowd_tolerance,
+                            route_mode,
+                            recommendation_scope,
+                            _route_progress_km(location, route_geometry) if location else None,
+                        )
                         if normalized and normalized["id"] not in candidates:
                             candidates[normalized["id"]] = normalized
         return ProviderResult(route=route_result, candidates=sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True), provider="google")
@@ -449,7 +479,8 @@ class GoogleMapsProvider:
             if not raw_route:
                 raise RuntimeError("Google Routes returned no route for place search")
             route_result = self._parse_route(raw_route, start, destination, route_mode)
-            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=min(5, mode_config["corridor_sample_count"]))
+            route_geometry = _decode_polyline(route_result.get("polyline") or "")
+            route_points = _sample_polyline(route_geometry, count=min(5, mode_config["corridor_sample_count"]))
             candidates: dict[str, dict[str, Any]] = {}
             for route_point in (route_points[1:-1] or route_points):
                 payload = {
@@ -461,7 +492,16 @@ class GoogleMapsProvider:
                 response = await client.post(GOOGLE_TEXT_SEARCH_URL, headers=places_headers, json=payload)
                 response.raise_for_status()
                 for place in response.json().get("places", []):
-                    normalized = _score_place(place, route_point, budget_per_person, crowd_tolerance, route_mode, "along_route")
+                    location = _place_location(place)
+                    normalized = _score_place(
+                        place,
+                        route_point,
+                        budget_per_person,
+                        crowd_tolerance,
+                        route_mode,
+                        "along_route",
+                        _route_progress_km(location, route_geometry) if location else None,
+                    )
                     if normalized:
                         normalized["types"] = place.get("types") or []
                     if normalized and _place_matches_search_intent(normalized, normalized_query) and normalized["id"] not in candidates:
