@@ -21,6 +21,7 @@ def recalibrate_trip(
     candidates: list[dict[str, Any]],
     current_stop_id: str | None,
     current_stop_title: str,
+    current_stop_index: int | None,
     event: SimulationEvent,
     destination: str,
 ) -> dict[str, Any]:
@@ -31,12 +32,26 @@ def recalibrate_trip(
     ]
     options.sort(key=lambda candidate: candidate.get("enjoyment_score", 0), reverse=True)
     replacement = options[0] if options else None
-    updated_itinerary = [item for item in itinerary if item.get("title") != current_stop_title]
+    if current_stop_index is not None and 0 <= current_stop_index < len(itinerary):
+        current_item = itinerary[current_stop_index]
+        updated_itinerary = [item for index, item in enumerate(itinerary) if index != current_stop_index]
+    elif current_stop_id:
+        current_item = next((item for item in itinerary if item.get("place_id") == current_stop_id), None)
+        updated_itinerary = [item for item in itinerary if item.get("place_id") != current_stop_id]
+    else:
+        current_item = next((item for item in itinerary if item.get("title") == current_stop_title), None)
+        updated_itinerary = [item for item in itinerary if item.get("title") != current_stop_title]
     if replacement:
+        replacement_category = replacement.get("category", "").lower()
+        replacement_kind = (
+            "meal" if "restaurant" in replacement_category
+            else "fuel" if any(term in replacement_category for term in ("gas", "fuel", "convenience", "store"))
+            else "coffee"
+        )
         updated_itinerary.append({
-            "time": "13:05",
+            "time": current_item.get("time", "13:05") if current_item else "13:05",
             "title": f"{replacement['name']} (backup)",
-            "kind": "meal" if "restaurant" in replacement.get("category", "").lower() else "coffee",
+            "kind": replacement_kind,
             "duration_min": 45,
             "place_id": replacement.get("id"),
         })

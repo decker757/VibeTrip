@@ -17,6 +17,8 @@ import httpx
 
 GOOGLE_ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
 GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchNearby"
+GOOGLE_TEXT_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
+GOOGLE_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete"
 PRICE_LEVELS = {
     "PRICE_LEVEL_FREE": 0,
     "PRICE_LEVEL_INEXPENSIVE": 1,
@@ -24,7 +26,94 @@ PRICE_LEVELS = {
     "PRICE_LEVEL_EXPENSIVE": 3,
     "PRICE_LEVEL_VERY_EXPENSIVE": 4,
 }
-SEARCH_TYPES = ("tourist_attraction", "restaurant", "cafe", "gas_station")
+FOOD_TYPES = {"restaurant", "cafe", "coffee_shop", "fast_food_restaurant", "meal_takeaway", "bakery"}
+ATTRACTION_TYPES = {"tourist_attraction", "museum", "park", "amusement_park", "national_park", "historical_landmark"}
+FOOD_COST_BY_LEVEL_SGD = {0: 0, 1: 12, 2: 22, 3: 38, 4: 60}
+ROUTE_MODE_CONFIG = {
+    "fastest": {
+        "label": "Fastest",
+        "description": "Bare essentials with minimal route drift.",
+        "corridor_types": ("restaurant", "cafe", "gas_station", "convenience_store"),
+        "destination_types": ("restaurant", "cafe", "tourist_attraction"),
+        "corridor_sample_count": 4,
+        "corridor_radius": 2200,
+        "destination_radius": 5000,
+        "max_results": 4,
+    },
+    "balanced": {
+        "label": "Balanced",
+        "description": "A few worthwhile stops without losing the day.",
+        "corridor_types": ("tourist_attraction", "restaurant", "cafe", "gas_station", "convenience_store", "park", "museum"),
+        "destination_types": ("tourist_attraction", "restaurant", "cafe", "park", "museum"),
+        "corridor_sample_count": 5,
+        "corridor_radius": 3200,
+        "destination_radius": 6500,
+        "max_results": 5,
+    },
+    "scenic": {
+        "label": "Scenic",
+        "description": "Intermediate cities, viewpoints, and memorable detours.",
+        "corridor_types": ("tourist_attraction", "restaurant", "cafe", "gas_station", "convenience_store", "park", "museum", "national_park", "historical_landmark"),
+        "destination_types": ("tourist_attraction", "restaurant", "cafe", "park", "museum", "national_park", "historical_landmark"),
+        "corridor_sample_count": 7,
+        "corridor_radius": 5000,
+        "destination_radius": 8500,
+        "max_results": 5,
+    },
+}
+
+GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals"
+GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types,places.reviews"
+
+SEARCH_STOP_WORDS = {
+    "a", "an", "and", "another", "are", "at", "be", "by", "can", "for", "from", "has", "have",
+    "i", "in", "is", "it", "like", "maybe", "me", "my", "of", "on", "place", "please", "really",
+    "that", "the", "there", "this", "to", "under", "want", "with", "would", "you",
+}
+SEARCH_FEEDBACK_WORDS = {"dont", "doesnt", "hate", "not", "rather", "instead", "prefer", "looking", "find", "show"}
+CUISINE_TERMS = {"chinese", "japanese", "korean", "thai", "indian", "malay", "vietnamese", "mexican", "italian", "mediterranean"}
+
+
+def _normalize_place_search_query(query: str) -> str:
+    """Reduce conversational feedback to a focused Places search phrase."""
+    words = [word for word in re.findall(r"[a-z0-9]+", query.lower()) if word not in SEARCH_STOP_WORDS | SEARCH_FEEDBACK_WORDS]
+    cuisine = next((word for word in words if word in CUISINE_TERMS), None)
+    if cuisine:
+        return f"{cuisine} restaurant"
+    if any(word in words for word in ("cafe", "coffee", "bakery")):
+        return "cafe coffee"
+    if any(word in words for word in ("food", "meal", "restaurant", "eatery")):
+        return "restaurant"
+    if any(word in words for word in ("fuel", "gas", "petrol", "snack", "convenience")):
+        return "gas station convenience store"
+    if any(word in words for word in ("scenic", "view", "attraction", "museum", "park")):
+        return "scenic attraction"
+    return " ".join(words[:8]) or query.strip()
+
+
+def _place_matches_search_intent(candidate: dict[str, Any], query: str) -> bool:
+    """Reject obvious category mismatches while keeping descriptive searches flexible."""
+    normalized_query = _normalize_place_search_query(query)
+    haystack = " ".join(
+        (
+            candidate.get("name", ""),
+            candidate.get("category", ""),
+            candidate.get("reason", ""),
+            " ".join(candidate.get("types", [])),
+        )
+    ).lower()
+    cuisine = next((term for term in CUISINE_TERMS if term in normalized_query), None)
+    if cuisine:
+        return cuisine in haystack
+    if normalized_query in {"cafe coffee", "restaurant", "gas station convenience store", "scenic attraction"}:
+        category_terms = {
+            "cafe coffee": ("cafe", "coffee", "bakery"),
+            "restaurant": ("restaurant", "food", "meal", "eatery"),
+            "gas station convenience store": ("gas", "fuel", "petrol", "convenience", "store"),
+            "scenic attraction": ("attraction", "museum", "park", "scenic", "landmark"),
+        }[normalized_query]
+        return any(term in haystack for term in category_terms)
+    return True
 
 
 @dataclass
@@ -97,6 +186,13 @@ def _place_location(place: dict[str, Any]) -> tuple[float, float] | None:
     return float(location["latitude"]), float(location["longitude"])
 
 
+def _review_summary(place: dict[str, Any]) -> tuple[str | None, str | None]:
+    review = (place.get("reviews") or [{}])[0]
+    text = (review.get("text") or {}).get("text")
+    author = (review.get("authorAttribution") or {}).get("displayName")
+    return (text[:180] if text else None, author)
+
+
 def _crowd_risk(place: dict[str, Any]) -> str:
     types = set(place.get("types") or [])
     reviews = int(place.get("userRatingCount") or 0)
@@ -107,11 +203,38 @@ def _crowd_risk(place: dict[str, Any]) -> str:
     return "low"
 
 
+def _cost_metadata(category: str, price_level: int) -> dict[str, Any]:
+    normalized_category = category.lower()
+    if normalized_category in FOOD_TYPES or "restaurant" in normalized_category or "cafe" in normalized_category:
+        amount = FOOD_COST_BY_LEVEL_SGD.get(price_level, 22)
+        return {
+            "cost_type": "food",
+            "estimated_cost_sgd": amount,
+            "cost_label": f"~SGD {amount}/person",
+            "cost_note": "Estimated from Google price level; check the menu before committing.",
+        }
+    if normalized_category in ATTRACTION_TYPES or "attraction" in normalized_category or "museum" in normalized_category:
+        return {
+            "cost_type": "admission",
+            "estimated_cost_sgd": None,
+            "cost_label": "Ticket price to verify",
+            "cost_note": "Google Places does not provide admission pricing for this stop.",
+        }
+    return {
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately.",
+    }
+
+
 def _score_place(
     place: dict[str, Any],
     route_point: tuple[float, float],
     budget_per_person: int,
     crowd_tolerance: str,
+    route_mode: str = "balanced",
+    recommendation_scope: str = "along_route",
 ) -> dict[str, Any] | None:
     location = _place_location(place)
     if not location:
@@ -125,13 +248,22 @@ def _score_place(
     rating_score = (rating / 5) * 35
     review_score = min(math.log10(max(review_count, 1)) / 4, 1) * 15
     budget_score = max(0, 18 - abs(price_level - budget_tier) * 7)
-    detour_score = max(0, 20 - min(detour_minutes, 35) * 0.55)
+    mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
+    detour_score = max(0, 20 - min(detour_minutes, 40) * 0.5)
+    if route_mode == "fastest" and detour_minutes > 8:
+        detour_score *= 0.35
+    elif route_mode == "balanced" and detour_minutes > 18:
+        detour_score *= 0.6
     open_score = 7 if open_now is not False else -18
     crowd = _crowd_risk(place)
     crowd_score = -10 if crowd == "high" and crowd_tolerance == "low" else -4 if crowd == "high" else 3
-    enjoyment_score = round(max(0, min(100, rating_score + review_score + budget_score + detour_score + open_score + crowd_score)))
+    scenic = bool(set(place.get("types") or []) & ATTRACTION_TYPES)
+    mode_bonus = 8 if route_mode == "scenic" and scenic else 4 if route_mode == "balanced" and scenic else -8 if route_mode == "fastest" and scenic else 0
+    destination_bonus = 5 if recommendation_scope == "destination" and route_mode != "fastest" else 0
+    enjoyment_score = round(max(0, min(100, rating_score + review_score + budget_score + detour_score + open_score + crowd_score + mode_bonus + destination_bonus)))
     primary_type = place.get("primaryType") or (place.get("types") or ["place"])[0]
-    price_label = "$" * max(1, price_level)
+    price_label = "Free" if price_level == 0 else "$" * max(1, price_level)
+    review_quote, review_author = _review_summary(place)
     return {
         "id": place.get("id") or _display_name(place),
         "name": _display_name(place),
@@ -146,44 +278,120 @@ def _score_place(
         "crowd_risk": crowd,
         "open_now": open_now is not False,
         "reason": f"{rating:.1f} rating, {price_label} pricing, and an estimated {detour_minutes}-minute detour.",
+        "recommendation_scope": recommendation_scope,
+        "recommendation_kind": "scenic" if scenic else "practical",
+        "route_mode": route_mode,
         "google_maps_uri": place.get("googleMapsUri"),
+        "website_uri": place.get("websiteUri"),
+        "review_quote": review_quote,
+        "review_author": review_author,
         "location": {"latitude": location[0], "longitude": location[1]},
+        **_cost_metadata(primary_type, price_level),
     }
 
 
 class DemoMapsProvider:
-    async def plan_trip(self, start: str, destination: str, budget_per_person: int, crowd_tolerance: str) -> ProviderResult:
+    async def plan_trip(self, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, start_time: str = "08:10", route_mode: str = "balanced") -> ProviderResult:
         candidates = [
-            {"id": "demo-coffee", "name": "The Coffee Exchange", "category": "Cafe", "address": "Providence, RI", "rating": 4.6, "review_count": 825, "price_level": 1, "price_label": "$", "detour_minutes": 3, "enjoyment_score": 86, "crowd_risk": "low", "open_now": True, "reason": "A calm reset with strong reviews and almost no route drift."},
-            {"id": "demo-attraction", "name": "Mystic Seaport Museum", "category": "Tourist attraction", "address": "Mystic, CT", "rating": 4.7, "review_count": 3200, "price_level": 2, "price_label": "$$", "detour_minutes": 14, "enjoyment_score": 81, "crowd_risk": "high", "open_now": True, "reason": "High delight potential, but arrive before the afternoon crowd."},
-            {"id": "demo-lunch", "name": "The Lobster Shack", "category": "Restaurant", "address": "Mystic, CT", "rating": 4.5, "review_count": 1100, "price_level": 2, "price_label": "$$", "detour_minutes": 12, "enjoyment_score": 88, "crowd_risk": "medium", "open_now": True, "reason": "Best balance of a memorable meal, student budget, and route fit."},
-            {"id": "demo-fuel", "name": "Shell · Exit 8", "category": "Gas station", "address": "New Haven, CT", "rating": 4.1, "review_count": 410, "price_level": 1, "price_label": "$", "detour_minutes": 2, "enjoyment_score": 72, "crowd_risk": "low", "open_now": True, "reason": "Low-friction fuel and bathroom stop before the final leg."},
+            {"id": "demo-coffee", "name": "The Coffee Exchange", "category": "Cafe", "address": "Providence, RI", "rating": 4.6, "review_count": 825, "price_level": 1, "price_label": "$", "detour_minutes": 3, "enjoyment_score": 86, "crowd_risk": "low", "open_now": True, "review_quote": "A calm reset with strong coffee and friendly service.", "review_author": "Demo review", "reason": "A calm reset with strong reviews and almost no route drift."},
+            {"id": "demo-attraction", "name": "Mystic Seaport Museum", "category": "Tourist attraction", "address": "Mystic, CT", "rating": 4.7, "review_count": 3200, "price_level": 2, "price_label": "$$", "detour_minutes": 14, "enjoyment_score": 81, "crowd_risk": "high", "open_now": True, "review_quote": "Worth arriving early before the afternoon crowd builds.", "review_author": "Demo review", "reason": "High delight potential, but arrive before the afternoon crowd."},
+            {"id": "demo-lunch", "name": "The Lobster Shack", "category": "Restaurant", "address": "Mystic, CT", "rating": 4.5, "review_count": 1100, "price_level": 2, "price_label": "$$", "detour_minutes": 12, "enjoyment_score": 88, "crowd_risk": "medium", "open_now": True, "review_quote": "The route-friendly lunch stop the group keeps talking about.", "review_author": "Demo review", "reason": "Best balance of a memorable meal, student budget, and route fit."},
+            {"id": "demo-fuel", "name": "Shell · Exit 8", "category": "Gas station", "address": "New Haven, CT", "rating": 4.1, "review_count": 410, "price_level": 1, "price_label": "$", "detour_minutes": 2, "enjoyment_score": 72, "crowd_risk": "low", "open_now": True, "review_quote": "Low-friction fuel and a clean bathroom stop.", "review_author": "Demo review", "reason": "Low-friction fuel and bathroom stop before the final leg."},
+            {"id": "demo-destination", "name": "Brooklyn Bridge Park", "category": "Tourist attraction", "address": "Brooklyn, NY", "rating": 4.8, "review_count": 8400, "price_level": 0, "price_label": "Free", "detour_minutes": 6, "enjoyment_score": 84, "crowd_risk": "high", "open_now": True, "review_quote": "A strong first look at the city after the drive.", "review_author": "Demo review", "reason": "A free destination highlight with skyline views."},
         ]
+        for candidate in candidates:
+            category = candidate["category"].lower().replace(" ", "_")
+            candidate.update(_cost_metadata(category, candidate["price_level"]))
+            candidate.update({"route_mode": route_mode, "recommendation_kind": "scenic" if "attraction" in category else "practical", "recommendation_scope": "destination" if candidate["id"] == "demo-destination" else "along_route"})
         return ProviderResult(
-            route={"distance_km": 348, "drive_minutes": 229, "summary": f"{start} to {destination}", "stops_needed": ["fuel", "bathroom", "meal"]},
+            route={"distance_km": 348, "drive_minutes": 229, "static_drive_minutes": 218, "traffic_delay_minutes": 11, "traffic_status": "slow", "traffic_note": "Live traffic estimate from the route provider.", "construction_status": "not_available", "summary": f"{start} to {destination}", "stops_needed": ["fuel", "bathroom", "meal"], "route_mode": route_mode, "route_mode_label": ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])["label"]},
             candidates=candidates,
             provider="demo",
             warning="GOOGLE_MAPS_API_KEY is not configured; showing demo candidates.",
         )
+
+    async def reroute_with_stops(self, start: str, destination: str, route: dict[str, Any], stops: list[dict[str, Any]], start_time: str = "08:10") -> dict[str, Any]:
+        """Keep the demo route usable while making its waypoint intent explicit."""
+        waypoint_ids = [stop.get("id") for stop in stops if stop.get("id")]
+        return {
+            **route,
+            "routed_waypoint_ids": waypoint_ids,
+            "waypoint_note": f"Demo route reserves {len(waypoint_ids)} planned stop(s); connect Google Maps for live waypoint geometry.",
+        }
+
+    async def search_route_places(self, query: str, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, route_mode: str = "balanced") -> ProviderResult:
+        result = await self.plan_trip(start, destination, budget_per_person, crowd_tolerance, route_mode=route_mode)
+        normalized_query = _normalize_place_search_query(query)
+        query_terms = [term for term in re.findall(r"[a-z0-9]+", normalized_query.lower()) if len(term) > 2]
+        matches = [candidate for candidate in result.candidates if _place_matches_search_intent(candidate, normalized_query) and (not query_terms or any(term in " ".join((candidate.get("name", ""), candidate.get("category", ""), candidate.get("reason", ""))).lower() for term in query_terms))]
+        warning = result.warning
+        if not matches:
+            warning = f"{warning + ' ' if warning else ''}No route places matched “{query}”. Try a broader request."
+        return ProviderResult(route=result.route, candidates=matches, provider="demo", warning=warning)
 
 
 class GoogleMapsProvider:
     def __init__(self, api_key: str):
         self.api_key = api_key
 
-    async def plan_trip(self, start: str, destination: str, budget_per_person: int, crowd_tolerance: str) -> ProviderResult:
-        headers = {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": self.api_key,
-            "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
-        }
-        route_payload = {
+    @staticmethod
+    def _route_payload(start: str, destination: str, stops: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        payload = {
             "origin": {"address": start},
             "destination": {"address": destination},
             "travelMode": "DRIVE",
             "routingPreference": "TRAFFIC_AWARE",
             "computeAlternativeRoutes": False,
+            "extraComputations": ["TRAFFIC_ON_POLYLINE"],
         }
+        intermediates = [
+            {
+                "location": {
+                    "latLng": {
+                        "latitude": stop["location"]["latitude"],
+                        "longitude": stop["location"]["longitude"],
+                    }
+                }
+            }
+            for stop in (stops or [])
+            if stop.get("location", {}).get("latitude") is not None and stop.get("location", {}).get("longitude") is not None
+        ]
+        if intermediates:
+            payload["intermediates"] = intermediates
+        return payload
+
+    @staticmethod
+    def _parse_route(route: dict[str, Any], start: str, destination: str, route_mode: str, base_route: dict[str, Any] | None = None) -> dict[str, Any]:
+        mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
+        result = {
+            **(base_route or {}),
+            "distance_km": round((route.get("distanceMeters") or 0) / 1000),
+            "drive_minutes": round(_duration_seconds(route.get("duration")) / 60),
+            "static_drive_minutes": round(_duration_seconds(route.get("staticDuration")) / 60),
+            "summary": f"{start} to {destination}",
+            "stops_needed": ["fuel", "bathroom", "meal"],
+            "route_mode": route_mode,
+            "route_mode_label": mode_config["label"],
+            "route_mode_description": mode_config["description"],
+            "polyline": route.get("polyline", {}).get("encodedPolyline"),
+        }
+        traffic_intervals = (route.get("travelAdvisory") or {}).get("speedReadingIntervals") or []
+        traffic_speeds = {interval.get("speed") for interval in traffic_intervals}
+        result["traffic_status"] = "heavy" if "TRAFFIC_JAM" in traffic_speeds else "slow" if "SLOW" in traffic_speeds else "light"
+        result["traffic_delay_minutes"] = max(0, result["drive_minutes"] - result["static_drive_minutes"])
+        result["traffic_intervals"] = traffic_intervals
+        result["traffic_note"] = "Live traffic estimate from Google speed intervals."
+        result["construction_status"] = "not_available"
+        return result
+
+    async def plan_trip(self, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, start_time: str = "08:10", route_mode: str = "balanced") -> ProviderResult:
+        mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": GOOGLE_ROUTE_FIELD_MASK,
+        }
+        route_payload = self._route_payload(start, destination)
         async with httpx.AsyncClient(timeout=18) as client:
             route_response = await client.post(GOOGLE_ROUTES_URL, headers=headers, json=route_payload)
             route_response.raise_for_status()
@@ -191,35 +399,148 @@ class GoogleMapsProvider:
             route = (route_data.get("routes") or [{}])[0]
             if not route:
                 raise RuntimeError("Google Routes returned no route")
-            route_result = {
-                "distance_km": round((route.get("distanceMeters") or 0) / 1000),
-                "drive_minutes": round(_duration_seconds(route.get("duration")) / 60),
-                "summary": f"{start} to {destination}",
-                "stops_needed": ["fuel", "bathroom", "meal"],
-                "polyline": route.get("polyline", {}).get("encodedPolyline"),
-            }
-            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=4)
+            route_result = self._parse_route(route, start, destination, route_mode)
+            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=mode_config["corridor_sample_count"])
             candidates: dict[str, dict[str, Any]] = {}
             places_headers = {
                 "Content-Type": "application/json",
                 "X-Goog-Api-Key": self.api_key,
-                "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.googleMapsUri,places.primaryType,places.types",
+                "X-Goog-FieldMask": GOOGLE_PLACE_FIELD_MASK,
             }
-            for route_point in route_points[1:-1] or route_points:
-                for place_type in SEARCH_TYPES:
+            search_specs = [(point, "along_route", mode_config["corridor_radius"]) for point in (route_points[1:-1] or route_points)]
+            if route_points:
+                search_specs.append((route_points[-1], "destination", mode_config["destination_radius"]))
+            for route_point, recommendation_scope, radius in search_specs:
+                search_types = mode_config["destination_types"] if recommendation_scope == "destination" else mode_config["corridor_types"]
+                for place_type in search_types:
                     payload = {
                         "includedTypes": [place_type],
-                        "maxResultCount": 5,
+                        "maxResultCount": mode_config["max_results"],
                         "rankPreference": "POPULARITY",
-                        "locationRestriction": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": 3000}},
+                        "locationRestriction": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": radius}},
                     }
                     response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=payload)
                     response.raise_for_status()
                     for place in response.json().get("places", []):
-                        normalized = _score_place(place, route_point, budget_per_person, crowd_tolerance)
+                        normalized = _score_place(place, route_point, budget_per_person, crowd_tolerance, route_mode, recommendation_scope)
                         if normalized and normalized["id"] not in candidates:
                             candidates[normalized["id"]] = normalized
         return ProviderResult(route=route_result, candidates=sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True), provider="google")
+
+    async def search_route_places(self, query: str, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, route_mode: str = "balanced") -> ProviderResult:
+        """Search a free-form request at several points along the live route."""
+        normalized_query = _normalize_place_search_query(query)
+        mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
+        route_headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": GOOGLE_ROUTE_FIELD_MASK,
+        }
+        places_headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": GOOGLE_PLACE_FIELD_MASK,
+        }
+        async with httpx.AsyncClient(timeout=18) as client:
+            route_response = await client.post(GOOGLE_ROUTES_URL, headers=route_headers, json=self._route_payload(start, destination))
+            route_response.raise_for_status()
+            route_data = route_response.json()
+            raw_route = (route_data.get("routes") or [{}])[0]
+            if not raw_route:
+                raise RuntimeError("Google Routes returned no route for place search")
+            route_result = self._parse_route(raw_route, start, destination, route_mode)
+            route_points = _sample_polyline(_decode_polyline(route_result.get("polyline") or ""), count=min(5, mode_config["corridor_sample_count"]))
+            candidates: dict[str, dict[str, Any]] = {}
+            for route_point in (route_points[1:-1] or route_points):
+                payload = {
+                    "textQuery": normalized_query,
+                    "maxResultCount": 5,
+                    "rankPreference": "RELEVANCE",
+                    "locationBias": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": mode_config["corridor_radius"]}},
+                }
+                response = await client.post(GOOGLE_TEXT_SEARCH_URL, headers=places_headers, json=payload)
+                response.raise_for_status()
+                for place in response.json().get("places", []):
+                    normalized = _score_place(place, route_point, budget_per_person, crowd_tolerance, route_mode, "along_route")
+                    if normalized:
+                        normalized["types"] = place.get("types") or []
+                    if normalized and _place_matches_search_intent(normalized, normalized_query) and normalized["id"] not in candidates:
+                        candidates[normalized["id"]] = normalized
+        results = sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True)
+        warning = None if results else f"No route places matched “{query}”. Try a broader request."
+        return ProviderResult(route=route_result, candidates=results, provider="google", warning=warning)
+
+    async def reroute_with_stops(self, start: str, destination: str, route: dict[str, Any], stops: list[dict[str, Any]], start_time: str = "08:10") -> dict[str, Any]:
+        """Recompute the route so selected places are actual navigation waypoints."""
+        waypoint_stops = [
+            stop for stop in stops
+            if stop.get("location", {}).get("latitude") is not None and stop.get("location", {}).get("longitude") is not None
+        ]
+        if not waypoint_stops:
+            return route
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": GOOGLE_ROUTE_FIELD_MASK,
+        }
+        async with httpx.AsyncClient(timeout=18) as client:
+            response = await client.post(
+                GOOGLE_ROUTES_URL,
+                headers=headers,
+                json=self._route_payload(start, destination, waypoint_stops),
+            )
+            response.raise_for_status()
+            route_data = response.json()
+        routed = (route_data.get("routes") or [{}])[0]
+        if not routed:
+            raise RuntimeError("Google Routes returned no waypoint route")
+        route_result = self._parse_route(routed, start, destination, route.get("route_mode", "balanced"), route)
+        waypoint_ids = [stop.get("id") for stop in waypoint_stops if stop.get("id")]
+        route_result["routed_waypoint_ids"] = waypoint_ids
+        route_result["waypoint_note"] = f"Route plotted through {len(waypoint_ids)} planned stop(s)."
+        return route_result
+
+    async def suggest_cities(self, query: str) -> list[dict[str, str]]:
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat",
+        }
+        payload = {"input": query, "includedPrimaryTypes": ["(cities)"], "languageCode": "en"}
+        async with httpx.AsyncClient(timeout=8) as client:
+            response = await client.post(GOOGLE_AUTOCOMPLETE_URL, headers=headers, json=payload)
+            response.raise_for_status()
+            suggestions = response.json().get("suggestions", [])
+        normalized = []
+        for suggestion in suggestions:
+            prediction = suggestion.get("placePrediction") or {}
+            text = prediction.get("text", {}).get("text")
+            if not text:
+                continue
+            structured = prediction.get("structuredFormat") or {}
+            normalized.append({
+                "id": prediction.get("placeId") or prediction.get("place", text),
+                "text": text,
+                "main_text": (structured.get("mainText") or {}).get("text") or text,
+                "secondary_text": (structured.get("secondaryText") or {}).get("text") or "",
+            })
+        return normalized
+
+
+async def suggest_cities(query: str) -> list[dict[str, str]]:
+    """Return city disambiguation suggestions with a deterministic local fallback."""
+    provider = get_maps_provider()
+    if isinstance(provider, GoogleMapsProvider):
+        return await provider.suggest_cities(query)
+    hints = [
+        {"id": "demo-boston-ma", "text": "Boston, Massachusetts, USA", "main_text": "Boston", "secondary_text": "Massachusetts, USA"},
+        {"id": "demo-boston-uk", "text": "Boston, Lincolnshire, UK", "main_text": "Boston", "secondary_text": "Lincolnshire, UK"},
+        {"id": "demo-new-york", "text": "New York, New York, USA", "main_text": "New York", "secondary_text": "New York, USA"},
+        {"id": "demo-singapore", "text": "Singapore", "main_text": "Singapore", "secondary_text": "Singapore"},
+        {"id": "demo-kuala-lumpur", "text": "Kuala Lumpur, Malaysia", "main_text": "Kuala Lumpur", "secondary_text": "Malaysia"},
+    ]
+    normalized_query = query.lower().strip()
+    return [hint for hint in hints if normalized_query in hint["text"].lower() or normalized_query in hint["main_text"].lower()][:5]
 
 
 def get_maps_provider() -> GoogleMapsProvider | DemoMapsProvider:
