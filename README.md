@@ -151,3 +151,56 @@ builder may add. The adventure slider only changes recommendation scoring and
 the inferred archetype within that route strategy.
 
 The eventual FastAPI boundary should expose a streaming `POST /trips/plan` endpoint so the frontend can render agent progress rather than waiting on one opaque response. Keep the planner state typed and serializable so it can be persisted as a draft and resumed if a plan changes mid-trip.
+
+## Remaining roadmap
+
+The next implementation step is to add an LLM decision layer without giving the
+model control of routing or safety-critical constraints.
+
+### Phase 1 — LLM-assisted recommendations (next)
+
+- Add a structured LLM node after deterministic Places filtering.
+- Give it a small shortlist of feasible candidates plus the user's profile,
+  route mode, budget, arrival window, and selected timeline slot.
+- Let it interpret natural-language requests, rank subjective fit, explain the
+  trade-offs, and choose a replacement candidate.
+- Validate its structured response against hard constraints, then pass the
+  accepted choice to the existing deterministic reroute and day-builder flow.
+- Keep a deterministic fallback for missing API keys, timeouts, invalid output,
+  and rate limits. The model must not invent places, prices, reviews, hours,
+  coordinates, or route geometry.
+
+### Phase 2 — Planner reliability and live-trip readiness
+
+- Add end-to-end tests for waypoint ordering, opening hours, budget limits,
+  realistic first-stop timing, rerouting, and simulator recalibration.
+- Add streaming planner progress so the UI can show the agents working.
+- Improve live traffic, construction, crowd-estimate, and provider-error
+  handling while clearly labelling estimates.
+- Finish accessibility and mobile checks, including readable type, keyboard
+  controls, focus states, and large touch targets.
+
+### Phase 3 — Saved trips and social foundation
+
+- Move from demo ownership to users, authentication, privacy controls, and
+  durable Postgres-backed trip records.
+- Add trip completion so users can mark stops visited and attach notes, photos,
+  and videos.
+- Add sharable object storage using signed upload URLs, media validation, size
+  limits, thumbnails, and deletion support.
+- Build the Explore feed around public completed trips, with media-first cards,
+  preference-aware ranking, and reporting/moderation controls.
+
+### Phase 4 — Product expansion and deployment
+
+- Add route sharing and richer Google Maps/Waze handoff for the final ordered
+  stop list.
+- Add saved places, trip-history retrieval, and only then evaluate a vector
+  store for persistent taste and semantic discovery.
+- Add authentication, secret management, logging, usage limits, cost tracking,
+  and a deployed Postgres/object-storage environment.
+
+The recommended order is: LLM shortlist decision → reliability tests and
+streaming → authenticated saved trips and media → Explore social feed. This
+keeps the core route experience trustworthy before adding the larger social
+surface.
