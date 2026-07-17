@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from .graph import day_builder, planner_graph
 from .providers import DemoMapsProvider, get_maps_provider, suggest_cities
 from .simulation import SimulationEvent, recalibrate_trip
+from .storage import OWNER_ID, trip_repository
 
 
 class TripRequest(BaseModel):
@@ -55,6 +56,27 @@ class RerouteRequest(BaseModel):
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
     route: dict = Field(default_factory=dict)
     stops: list[dict] = Field(default_factory=list)
+
+
+class SaveTripRequest(BaseModel):
+    owner_id: str = OWNER_ID
+    title: str = Field(min_length=2, max_length=140)
+    start: str = Field(min_length=2)
+    destination: str = Field(min_length=2)
+    route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
+    adventure_level: int = Field(default=70, ge=0, le=100)
+    budget_per_person: int = Field(default=400, ge=0)
+    travellers: int = Field(default=4, ge=1, le=12)
+    start_date: str = ""
+    end_date: str = ""
+    start_time: str = "08:10"
+    end_time: str = "18:00"
+    preferences: list[str] = Field(default_factory=list)
+    route: dict = Field(default_factory=dict)
+    itinerary: list[dict] = Field(default_factory=list)
+    candidate_places: list[dict] = Field(default_factory=list)
+    cost_breakdown: dict = Field(default_factory=dict)
+    is_public: bool = False
 
 
 app = FastAPI(title="VibeTrip Planner API", version="0.1.0")
@@ -242,6 +264,34 @@ async def reroute_trip(request: RerouteRequest) -> dict:
             "provider": "demo",
             "warning": f"Live route recalculation unavailable ({type(error).__name__}); showing the draft route geometry.",
         }
+
+
+@app.post("/trips/save")
+def save_trip(request: SaveTripRequest) -> dict:
+    """Persist a complete planner draft so it can be reopened later."""
+    trip = trip_repository.save(request.model_dump())
+    return {"trip": trip}
+
+
+@app.get("/trips/saved")
+def saved_trips(owner_id: str = Query(default=OWNER_ID, min_length=2, max_length=80)) -> dict:
+    return {"trips": trip_repository.list_saved(owner_id)}
+
+
+@app.delete("/trips/saved/{trip_id}")
+def delete_saved_trip(trip_id: str, owner_id: str = Query(default=OWNER_ID, min_length=2, max_length=80)) -> dict:
+    deleted = trip_repository.delete(trip_id, owner_id)
+    return {"deleted": deleted}
+
+
+@app.get("/trips/explore")
+def explore_trips(
+    preferences: str = Query(default=""),
+    adventure_level: int = Query(default=70, ge=0, le=100),
+    limit: int = Query(default=20, ge=1, le=50),
+) -> dict:
+    preference_list = [item.strip() for item in preferences.split(",") if item.strip()]
+    return {"trips": trip_repository.list_explore(preference_list, adventure_level, limit)}
 
 
 @app.get("/places/autocomplete")

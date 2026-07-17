@@ -32,9 +32,15 @@ const profileOptions = [
 ];
 
 const routeModeOptions = [
-  { id: 'fastest', label: 'Fastest', description: 'Bare essentials' },
-  { id: 'balanced', label: 'Balanced', description: 'Worthwhile detours' },
-  { id: 'scenic', label: 'Scenic', description: 'Intermediate gems' },
+  { id: 'fastest', label: 'Fastest', description: 'Bare essentials', detail: 'Keeps the route tight and limits recommendations.' },
+  { id: 'balanced', label: 'Balanced', description: 'Worthwhile detours', detail: 'Adds one or two stops that earn the time.' },
+  { id: 'scenic', label: 'Scenic', description: 'Intermediate gems', detail: 'Lets memorable places shape the way there.' },
+];
+
+const exploreFallbackTrips = [
+  { id: 'fallback-boston-new-york', author_name: 'Maya · NUS exchange', title: 'Coastline, coffee, and a little history', start: 'Boston, MA', destination: 'New York, NY', route_mode: 'scenic', adventure_level: 78, budget_per_person: 180, travellers: 3, preferences: ['local-gems', 'adventurous'], route: { distance_km: 365, drive_minutes: 244 }, itinerary: [{ title: 'Cedar Street Café', kind: 'coffee' }, { title: 'Mystic Seaport', kind: 'attraction' }, { title: 'Dinner in Brooklyn', kind: 'meal' }], is_public: true },
+  { id: 'fallback-portland-seattle', author_name: 'Daniel · NTU exchange', title: 'Rainy-day stops up the Pacific Northwest', start: 'Portland, OR', destination: 'Seattle, WA', route_mode: 'balanced', adventure_level: 56, budget_per_person: 145, travellers: 4, preferences: ['slow-mornings', 'student-budget'], route: { distance_km: 280, drive_minutes: 175 }, itinerary: [{ title: 'Farmers market coffee', kind: 'coffee' }, { title: 'Centralia lunch', kind: 'meal' }, { title: 'Fuel + convenience', kind: 'fuel' }], is_public: true },
+  { id: 'fallback-munich-prague', author_name: 'Isha · SMU exchange', title: 'Munich to Prague with only the good breaks', start: 'Munich, Germany', destination: 'Prague, Czechia', route_mode: 'fastest', adventure_level: 34, budget_per_person: 120, travellers: 2, preferences: ['student-budget'], route: { distance_km: 382, drive_minutes: 260 }, itinerary: [{ title: 'Autohof fuel + snack', kind: 'fuel' }, { title: 'Quick lunch', kind: 'meal' }], is_public: true },
 ];
 
 const defaultCostBreakdown = {
@@ -190,6 +196,45 @@ function formatMoney(amount) {
   return `SGD ${Number(amount || 0).toFixed(0)}`;
 }
 
+function formatTripDistance(route) {
+  return route?.distance_km ? `${Math.round(route.distance_km)} km` : 'Distance to calculate';
+}
+
+function formatTripDriveTime(route) {
+  return route?.drive_minutes ? formatDuration(Number(route.drive_minutes)) : 'Drive time to calculate';
+}
+
+function TripCard({ trip, actionLabel, onAction, onDelete, showPrivacy = false }) {
+  return (
+    <article className="trip-card">
+      <div className="trip-card-topline"><span className={`trip-mode-badge ${trip.route_mode || 'balanced'}`}>{trip.route_mode || 'balanced'} route</span>{showPrivacy && <span className="trip-privacy"><Icon name={trip.is_public ? 'grid' : 'bookmark'} size={12} />{trip.is_public ? 'Public' : 'Private'}</span>}</div>
+      <h3>{trip.title}</h3>
+      <p className="trip-route"><span>{trip.start}</span><Icon name="arrow" size={14} /><span>{trip.destination}</span></p>
+      <div className="trip-card-stats"><span><Icon name="clock" size={13} />{formatTripDriveTime(trip.route)}</span><span><Icon name="map" size={13} />{formatTripDistance(trip.route)}</span><span><Icon name="wallet" size={13} />{formatMoney(trip.budget_per_person)} / person</span></div>
+      <div className="trip-card-footer"><span className="trip-author">{trip.author_name || 'You · Singapore'} · {trip.itinerary?.length || 0} planned stops</span><div className="trip-card-actions"><button className="secondary-action" type="button" onClick={() => onAction(trip)}>{actionLabel}</button>{onDelete && <button className="text-danger" type="button" onClick={() => onDelete(trip)}>Delete</button>}</div></div>
+    </article>
+  );
+}
+
+function SavedTripsView({ trips, isLoading, onOpen, onDelete, onRefresh }) {
+  return (
+    <div className="collection-page">
+      <div className="collection-heading"><div><p className="eyebrow">YOUR LIBRARY</p><h1>Saved trips</h1><p>Keep a draft for later, then reopen it when the group is ready to decide.</p></div><button className="secondary-action" type="button" onClick={onRefresh}><Icon name="arrow" size={14} />Refresh</button></div>
+      {isLoading ? <div className="collection-loading" aria-live="polite">Loading your saved trips…</div> : trips.length === 0 ? <div className="empty-collection"><span className="empty-icon"><Icon name="bookmark" size={18} /></span><h2>Your next road trip starts here.</h2><p>Save a generated route from Plan a trip and it will appear in this library.</p><button className="primary-inline-action" type="button" onClick={onRefresh}>Refresh saved trips</button></div> : <div className="trip-card-grid">{trips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel="Open draft" onAction={onOpen} onDelete={onDelete} showPrivacy />)}</div>}
+    </div>
+  );
+}
+
+function ExploreView({ trips, isLoading, onUseTrip, onRefresh }) {
+  return (
+    <div className="collection-page">
+      <div className="collection-heading"><div><p className="eyebrow">FROM THE VIBETRIP COMMUNITY</p><h1>Explore routes</h1><p>Borrow a good idea, then tune it to your own pace, budget, and travel profile.</p></div><button className="secondary-action" type="button" onClick={onRefresh}><Icon name="arrow" size={14} />Refresh feed</button></div>
+      <div className="explore-context"><Icon name="sparkles" size={15} /><span>Ranked for your current profile</span><strong>Local gems · {trips.length} public drafts</strong></div>
+      {isLoading ? <div className="collection-loading" aria-live="polite">Finding trips that fit your profile…</div> : <div className="trip-card-grid">{trips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel="Use this route" onAction={onUseTrip} />)}</div>}
+    </div>
+  );
+}
+
 function buildGoogleMapsUrl(from, destination, stops) {
   const waypoints = stops
     .filter((stop) => stop.place_id && ['lunch', 'attraction'].includes(stop.type))
@@ -342,6 +387,15 @@ function App() {
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState(null);
+  const [savedTrips, setSavedTrips] = useState(() => {
+    try {
+      return JSON.parse(window.localStorage.getItem('vibetrip.savedTrips') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [isLoadingCollection, setIsLoadingCollection] = useState(false);
+  const [isSavingTrip, setIsSavingTrip] = useState(false);
   const hasAutoGeneratedRef = useRef(false);
   const mapControllerRef = useRef(null);
 
@@ -660,6 +714,125 @@ function App() {
     setMessage(focused ? `${stop.title} focused on the map.` : `${stop.title} selected. Generate a live route to focus it on the map.`);
   }
 
+  async function loadSavedTrips() {
+    setIsLoadingCollection(true);
+    try {
+      const response = await fetch(`${PLANNER_API_URL}/trips/saved?owner_id=demo-user`);
+      if (!response.ok) throw new Error(`Saved trips returned ${response.status}`);
+      const result = await response.json();
+      setSavedTrips(result.trips || []);
+    } catch {
+      // Keep saved drafts usable in the local preview when FastAPI is offline.
+      try {
+        setSavedTrips(JSON.parse(window.localStorage.getItem('vibetrip.savedTrips') || '[]'));
+      } catch {
+        setSavedTrips([]);
+      }
+    } finally {
+      setIsLoadingCollection(false);
+    }
+  }
+
+  async function loadExploreTrips() {
+    setIsLoadingCollection(true);
+    try {
+      const preferencesQuery = encodeURIComponent(preferences.join(','));
+      const response = await fetch(`${PLANNER_API_URL}/trips/explore?preferences=${preferencesQuery}&adventure_level=${adventureLevel}`);
+      if (!response.ok) throw new Error(`Explore returned ${response.status}`);
+      const result = await response.json();
+      setExploreTrips(result.trips?.length ? result.trips : exploreFallbackTrips);
+    } catch {
+      setExploreTrips(exploreFallbackTrips);
+    } finally {
+      setIsLoadingCollection(false);
+    }
+  }
+
+  async function saveCurrentTrip() {
+    if (isSavingTrip || !isGenerated) return;
+    setIsSavingTrip(true);
+    const payload = {
+      owner_id: 'demo-user',
+      title: `${from.split(',')[0]} to ${to.split(',')[0]} · ${routeModeOptions.find((option) => option.id === routeMode)?.label || 'Balanced'}`,
+      start: from,
+      destination: to,
+      route_mode: routeMode,
+      adventure_level: adventureLevel,
+      budget_per_person: budgetPerPerson,
+      travellers,
+      start_date: startDate,
+      end_date: endDate,
+      start_time: startTime,
+      end_time: endTime,
+      preferences,
+      route,
+      itinerary: stops,
+      candidate_places: candidatePlaces,
+      cost_breakdown: costBreakdown,
+      is_public: false,
+    };
+    try {
+      const response = await fetch(`${PLANNER_API_URL}/trips/save`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!response.ok) throw new Error(`Save returned ${response.status}`);
+      const result = await response.json();
+      setSavedTrips((current) => [result.trip, ...current.filter((trip) => trip.id !== result.trip.id)]);
+      setMessage('Trip saved to your library.');
+    } catch {
+      const localTrip = { ...payload, id: `local-${Date.now()}`, author_name: 'You · Singapore', created_at: new Date().toISOString() };
+      const nextTrips = [localTrip, ...savedTrips].slice(0, 20);
+      setSavedTrips(nextTrips);
+      window.localStorage.setItem('vibetrip.savedTrips', JSON.stringify(nextTrips));
+      setMessage('Trip saved locally. Start FastAPI to sync it to Postgres.');
+    } finally {
+      setIsSavingTrip(false);
+    }
+  }
+
+  function openSavedTrip(trip) {
+    const candidates = trip.candidate_places?.length ? trip.candidate_places : initialCandidates;
+    setFrom(trip.start);
+    setTo(trip.destination);
+    setRouteMode(trip.route_mode || 'balanced');
+    setAdventureLevel(Number(trip.adventure_level ?? 70));
+    setBudgetPerPerson(Number(trip.budget_per_person ?? 400));
+    setTravellers(Number(trip.travellers ?? 4));
+    setStartDate(trip.start_date || startDate);
+    setEndDate(trip.end_date || endDate);
+    setStartTime(trip.start_time || startTime);
+    setEndTime(trip.end_time || endTime);
+    setPreferences(trip.preferences || []);
+    setCandidatePlaces(candidates);
+    setSelectedPlaceId(candidates[0]?.id || null);
+    setRoute(trip.route || {});
+    setStops(itineraryToStops(trip.itinerary || [], candidates, trip.destination));
+    setRouteStats({ driveMinutes: trip.route?.drive_minutes || 229, distanceKm: trip.route?.distance_km || 348, confidence: 94 });
+    setCostBreakdown(trip.cost_breakdown || defaultCostBreakdown);
+    setIsGenerated(true);
+    setActiveNav('Plan a trip');
+    setMessage(`Opened ${trip.title}. Generate again if you want to refresh live traffic and Places data.`);
+  }
+
+  async function deleteTrip(trip) {
+    if (!window.confirm(`Delete “${trip.title}” from your saved trips?`)) return;
+    try {
+      const response = await fetch(`${PLANNER_API_URL}/trips/saved/${encodeURIComponent(trip.id)}?owner_id=demo-user`, { method: 'DELETE' });
+      if (!response.ok) throw new Error(`Delete returned ${response.status}`);
+    } catch {
+      // The local copy is still removed when the API is offline.
+    }
+    const nextTrips = savedTrips.filter((item) => item.id !== trip.id);
+    setSavedTrips(nextTrips);
+    window.localStorage.setItem('vibetrip.savedTrips', JSON.stringify(nextTrips));
+    setMessage('Saved trip deleted.');
+  }
+
+  const [exploreTrips, setExploreTrips] = useState(exploreFallbackTrips);
+
+  useEffect(() => {
+    if (activeNav === 'Saved trips') loadSavedTrips();
+    if (activeNav === 'Explore') loadExploreTrips();
+  }, [activeNav]);
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -668,7 +841,7 @@ function App() {
         <nav className="main-nav" aria-label="Main navigation">
           {navItems.map((item) => (
             <button key={item.label} className={`nav-item ${activeNav === item.label ? 'active' : ''}`} onClick={() => setActiveNav(item.label)}>
-              <Icon name={item.icon} size={17} /><span>{item.label}</span>{item.count && <span className="nav-count">{item.count}</span>}
+              <Icon name={item.icon} size={17} /><span>{item.label}</span>{item.label === 'Saved trips' && savedTrips.length > 0 && <span className="nav-count">{savedTrips.length}</span>}
             </button>
           ))}
         </nav>
@@ -686,11 +859,12 @@ function App() {
       <main className="main-content">
         <header className="topbar">
           <button className="mobile-menu" aria-label="Open navigation"><Icon name="menu" size={20} /></button>
-          <div className="breadcrumbs"><span>My trips</span><Icon name="chevron" size={13} /><strong>New trip</strong></div>
+          <div className="breadcrumbs"><span>My trips</span><Icon name="chevron" size={13} /><strong>{activeNav}</strong></div>
           <div className="topbar-actions"><span className="save-status"><span className="status-dot" />All changes saved</span><button className="icon-button" aria-label="Help"><Icon name="help" size={18} /></button><button className="icon-button" aria-label="Settings"><Icon name="settings" size={18} /></button></div>
         </header>
 
         <div className="content-wrap">
+          {activeNav === 'Plan a trip' ? <div className="planner-workspace">
           <section className="page-intro">
             <div><p className="eyebrow">NEW TRIP <span>·</span> 01</p><h1>Make the way there<br /><em>part of the story.</em></h1><p className="intro-copy">Tell us where you’re going. We’ll find the route that gets you there with enough room to actually enjoy it.</p></div>
             <div className="intro-side"><div className="agent-orbit"><span className="orbit-dot one" /><span className="orbit-dot two" /><span className="orbit-dot three" /><Icon name="sparkles" size={19} /></div><span>4 agents ready<br /><small>for your first draft</small></span></div>
@@ -711,7 +885,8 @@ function App() {
             <div className="planner-divider" />
             <div className="route-mode-selector" aria-label="Route style">
               <div className="route-mode-heading"><span><small>ROUTE STYLE</small><strong>How much should the way there matter?</strong></span><span className="route-mode-helper">Changes the stops and recommendations</span></div>
-              <div className="route-mode-options">{routeModeOptions.map((option) => <button type="button" key={option.id} className={`route-mode-option ${routeMode === option.id ? 'active' : ''}`} aria-pressed={routeMode === option.id} onClick={() => { setRouteMode(option.id); setMessage(`${option.label} route selected. Generate the route to update recommendations.`); }}><span>{option.label}</span><small>{option.description}</small></button>)}</div>
+              <div className="route-mode-options">{routeModeOptions.map((option) => <button type="button" key={option.id} title={option.detail} className={`route-mode-option ${routeMode === option.id ? 'active' : ''}`} aria-pressed={routeMode === option.id} onClick={() => { setRouteMode(option.id); setMessage(`${option.label} route selected. Generate the route to update recommendations.`); }}><span>{option.label}</span><small>{option.description}</small></button>)}</div>
+              <p className="route-mode-profile-note"><Icon name="compass" size={13} /><span><strong>Separate from your profile:</strong> route style controls the road and stop allowance; the adventure slider ranks choices within that route.</span></p>
             </div>
             <div className="planner-options">
               <label className="option-chip date-chip"><Icon name="calendar" size={15} /><span><small>DATES</small><span className="date-inputs"><input aria-label="Departure date" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /><span>—</span><input aria-label="Return date" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></span></span></label>
@@ -726,7 +901,7 @@ function App() {
           {message && <div className="live-message" role="status"><Icon name="check" size={15} />{message}</div>}
 
           <section className="route-section">
-            <div className="section-heading"><div><p className="eyebrow">YOUR FIRST DRAFT <span>·</span> {isGenerating ? 'BUILDING LIVE ROUTE' : plannerSource === 'api' ? 'LANGGRAPH' : 'LOCAL PREVIEW'}</p><h2>{routeTitle}</h2></div><div className="route-meta"><span className="route-mode-meta"><Icon name="compass" size={15} />{route.route_mode_label || routeModeOptions.find((option) => option.id === routeMode)?.label} route</span><span><Icon name="clock" size={15} />{isGenerating ? 'checking time' : `${formatDuration(routeStats.driveMinutes)} drive`}</span><span><Icon name="map" size={15} />{isGenerating ? 'checking distance' : `${routeStats.distanceKm} km`}</span>{route.estimated_arrival_time && <span><Icon name="check" size={15} />arrive around {route.estimated_arrival_time}</span>}{route.traffic_status && <span className={`traffic-indicator ${route.traffic_status}`}><span />{route.traffic_status} traffic {route.traffic_delay_minutes ? `+${route.traffic_delay_minutes}m` : ''}</span>}<span className="route-export-actions" aria-label="Export route"><a className="route-export-link" href={googleMapsUrl} target="_blank" rel="noreferrer" title="Open this route with stops in Google Maps"><Icon name="map" size={13} />Google Maps</a><a className="route-export-link" href={wazeUrl} target="_blank" rel="noreferrer" title="Open the destination in Waze"><Icon name="arrow" size={13} />Waze</a></span></div></div>
+            <div className="section-heading"><div><p className="eyebrow">YOUR FIRST DRAFT <span>·</span> {isGenerating ? 'BUILDING LIVE ROUTE' : plannerSource === 'api' ? 'LANGGRAPH' : 'LOCAL PREVIEW'}</p><h2>{routeTitle}</h2></div><div className="route-meta"><span className="route-mode-meta"><Icon name="compass" size={15} />{route.route_mode_label || routeModeOptions.find((option) => option.id === routeMode)?.label} route</span><span><Icon name="clock" size={15} />{isGenerating ? 'checking time' : `${formatDuration(routeStats.driveMinutes)} drive`}</span><span><Icon name="map" size={15} />{isGenerating ? 'checking distance' : `${routeStats.distanceKm} km`}</span>{route.estimated_arrival_time && <span><Icon name="check" size={15} />arrive around {route.estimated_arrival_time}</span>}{route.traffic_status && <span className={`traffic-indicator ${route.traffic_status}`}><span />{route.traffic_status} traffic {route.traffic_delay_minutes ? `+${route.traffic_delay_minutes}m` : ''}</span>}<span className="route-export-actions" aria-label="Export route"><a className="route-export-link" href={googleMapsUrl} target="_blank" rel="noreferrer" title="Open this route with stops in Google Maps"><Icon name="map" size={13} />Google Maps</a><a className="route-export-link" href={wazeUrl} target="_blank" rel="noreferrer" title="Open the destination in Waze"><Icon name="arrow" size={13} />Waze</a><button className="route-save-button" type="button" onClick={saveCurrentTrip} disabled={isSavingTrip || !isGenerated}><Icon name="bookmark" size={13} />{isSavingTrip ? 'Saving…' : 'Save trip'}</button></span></div></div>
             <div className="route-grid">
               <div className={`map-card ${isRerouting ? 'rerouting' : ''}`}>{isGenerating ? <LiveRouteLoading from={from} to={to} /> : <GoogleRouteMap ref={mapControllerRef} route={route} candidates={mapCandidates} onSelectCandidate={selectCandidate} fallback={<RouteMap candidates={mapCandidates} from={from} to={to} routeStats={routeStats} />} />}<div className="map-footer"><div><span className="map-footer-label">ROUTE CONFIDENCE</span><strong>{isGenerating || isRerouting ? '—' : `${routeStats.confidence}% · clear and comfortable`}</strong>{route.traffic_status && <small className="traffic-footnote">{route.traffic_note} · Construction alerts not connected</small>}{route.waypoint_note && <small className="route-waypoint-note">{route.waypoint_note}</small>}</div><span className="route-badge"><Icon name={isGenerating || isRerouting ? 'clock' : 'check'} size={13} /> {isGenerating ? 'Finding route' : isRerouting ? 'Recalculating route' : 'Efficient detour'}</span></div></div>
               <div className="timeline-card">
@@ -757,6 +932,7 @@ function App() {
           </section>
 
           <footer className="page-footer"><span>Built for exchange students who want a little more from the way there.</span><span><Icon name="sun" size={14} />Good routes, better stories.</span></footer>
+          </div> : activeNav === 'Saved trips' ? <SavedTripsView trips={savedTrips} isLoading={isLoadingCollection} onOpen={openSavedTrip} onDelete={deleteTrip} onRefresh={loadSavedTrips} /> : <ExploreView trips={exploreTrips} isLoading={isLoadingCollection} onUseTrip={openSavedTrip} onRefresh={loadExploreTrips} />}
         </div>
       </main>
     </div>

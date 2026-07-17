@@ -24,13 +24,33 @@ pip install -r requirements.txt
 cp .env.example .env
 # Add GOOGLE_MAPS_API_KEY for live Routes + Places results.
 # Add VITE_GOOGLE_MAPS_BROWSER_KEY for the interactive browser map.
+# Optional: start Postgres with `docker compose up -d postgres`.
+# DATABASE_URL is already provided in `.env.example` for that container.
 uvicorn backend.main:app --reload --port 8000 --env-file .env
 ```
 
 The API exposes `GET /health`, `POST /trips/plan`, `POST /trips/reroute`, and
-`POST /trips/search`.
+`POST /trips/search`, `POST /trips/save`, `GET /trips/saved`,
+`DELETE /trips/saved/{id}`, and `GET /trips/explore`.
 The frontend calls the planner from `src/App.jsx` and falls back to a local
 preview when FastAPI is not running, so the UI remains usable without API keys.
+
+## Saved trips and Explore
+
+Saved drafts use a small repository boundary in `backend/storage.py`. When
+`DATABASE_URL` points to the local Compose service and `psycopg` is installed,
+the repository stores complete trip drafts in Postgres JSONB columns. If the
+database is not running, the API falls back to process memory and the browser
+also keeps local-preview saves in `localStorage`. Start the database with:
+
+```bash
+docker compose up -d postgres
+```
+
+The MVP uses `demo-user` as the owner until authentication is added. Saved
+trips are private by default. Explore is seeded with public exchange-student
+routes and ranks them using preference overlap and adventure-level distance;
+only trips marked `is_public` are eligible for that feed.
 
 With `GOOGLE_MAPS_API_KEY`, the backend calls the current Google Routes API to
 get a driving route and samples its polyline to search nearby tourist
@@ -69,5 +89,10 @@ The UI is intentionally structured around five LangGraph nodes:
 - `detour_reviewer`: score candidate places against time cost, value, weather, opening hours, and route deviation.
 - `day_builder`: turn accepted places into an itinerary with real fuel or convenience stops, meals, scenic detours, and contingency buffers.
 - `route_requester`: translate natural-language feedback into a route-aware Places search and return replacement candidates.
+
+Route style and travel profile are intentionally separate inputs. `fastest`,
+`balanced`, and `scenic` control route geometry and how many detours the day
+builder may add. The adventure slider only changes recommendation scoring and
+the inferred archetype within that route strategy.
 
 The eventual FastAPI boundary should expose a streaming `POST /trips/plan` endpoint so the frontend can render agent progress rather than waiting on one opaque response. Keep the planner state typed and serializable so it can be persisted as a draft and resumed if a plan changes mid-trip.

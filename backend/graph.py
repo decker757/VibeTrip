@@ -92,8 +92,23 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
         "reason": "A high-value meal stop with a short route deviation.",
         "open_now": True,
     }]
-    ranked = sorted(candidates, key=lambda item: item.get("enjoyment_score", 0), reverse=True)
     route_mode = state.get("route_mode", "balanced")
+    adventure_level = int(state.get("adventure_level") or 50)
+
+    def recommendation_score(item: dict[str, Any]) -> float:
+        """Use the profile to rank choices without changing route geometry."""
+        enjoyment = float(item.get("enjoyment_score", 0))
+        detour = float(item.get("detour_minutes", 0))
+        scenic_bonus = 8 if item.get("recommendation_kind") == "scenic" else 0
+        adventure_weight = adventure_level / 100
+        detour_cost = detour * (1.3 - adventure_weight * 0.8)
+        if route_mode == "fastest":
+            detour_cost *= 1.5
+        elif route_mode == "scenic":
+            scenic_bonus *= 2
+        return enjoyment + scenic_bonus * adventure_weight - detour_cost
+
+    ranked = sorted(candidates, key=recommendation_score, reverse=True)
     available = [item for item in ranked if item.get("open_now", True)]
     along_route = [item for item in available if item.get("recommendation_scope", "along_route") == "along_route"]
     meal = next((item for item in along_route if "restaurant" in item.get("category", "").lower()), None)
@@ -119,7 +134,17 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
         if len(selected) >= {"fastest": 1, "balanced": 2, "scenic": 3}.get(route_mode, 2):
             break
         add_unique(place)
-    return {**state, "candidate_places": ranked, "selected_places": selected, "detours": selected}
+    return {
+        **state,
+        "candidate_places": ranked,
+        "selected_places": selected,
+        "detours": selected,
+        "vibe_profile": {
+            **state.get("vibe_profile", {}),
+            "route_mode": route_mode,
+            "recommendation_note": f"{route_mode.title()} controls the route shape; a {adventure_level}% adventure profile controls which stops win the tie-break.",
+        },
+    }
 
 
 def day_builder(state: PlannerState) -> PlannerState:
@@ -198,6 +223,7 @@ def day_builder(state: PlannerState) -> PlannerState:
             "balanced": "One worthwhile intermediate stop can break up the drive.",
             "scenic": "Scenic places and intermediate-city detours are allowed to shape the day.",
         }.get(route_mode, "Balanced route recommendations."),
+        "profile_influence_note": f"Route shape: {route_mode.title()}. Stop ranking: {int(state.get('adventure_level') or 50)}% adventurous.",
     })
     try:
         end_time = datetime.strptime(state.get("end_time", "18:00"), "%H:%M")
