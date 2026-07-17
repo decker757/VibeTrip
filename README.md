@@ -1,4 +1,9 @@
 # VibeTrip
+
+<p align="center">
+  <img src="./public/vibetrip-logo.png" alt="VibeTrip" width="233" />
+</p>
+
 Codex Hackathon Project
 
 An early MVP for an agentic road-trip planner designed around Singaporean exchange students. The current web app is a frontend prototype of the core planning loop:
