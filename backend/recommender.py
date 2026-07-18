@@ -78,6 +78,7 @@ def refine_recommendations(state: dict[str, Any]) -> dict[str, Any]:
             "preferences": state.get("preferences", []),
             "adventure_level": state.get("adventure_level", 50),
         },
+        "profile_okf": state.get("profile_okf", ""),
         "candidate_places": [
             {
                 "id": item.get("id"),

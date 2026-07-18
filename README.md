@@ -36,9 +36,19 @@ uvicorn backend.main:app --reload --port 8000 --env-file .env
 
 The API exposes `GET /health`, `POST /trips/plan`, `POST /trips/reroute`, and
 `POST /trips/search`, `POST /trips/save`, `GET /trips/saved`,
-`DELETE /trips/saved/{id}`, and `GET /trips/explore`.
+`DELETE /trips/saved/{id}`, `POST /trips/saved/{id}/complete`,
+`PATCH /trips/saved/{id}/visibility`, `POST /trips/saved/{id}/media`, and
+`GET /trips/explore`, plus `POST /profiles/okf` for a private agent context
+artifact. Authentication is provided by `POST /auth/signup`, `POST /auth/login`,
+`POST /auth/logout`, `GET /auth/me`, and `PATCH /auth/me`.
 The frontend calls the planner from `src/App.jsx` and falls back to a local
 preview when FastAPI is not running, so the UI remains usable without API keys.
+The browser routes are `/login`, `/onboarding`, `/plan`, `/explore`,
+`/saved-trips`, and `/profile`. Unauthenticated visitors are sent to `/login`;
+the first successful sign-in for an account opens `/onboarding` so they can set
+their travel preferences before entering the planner. Completing onboarding is
+stored per account in the browser, and the preferences can be changed later
+from the account menu’s Travel profile page.
 
 ## Saved trips and Explore
 
@@ -52,10 +62,55 @@ also keeps local-preview saves in `localStorage`. Start the database with:
 docker compose up -d postgres
 ```
 
-The MVP uses `demo-user` as the owner until authentication is added. Saved
-trips are private by default. Explore is seeded with public exchange-student
-routes and ranks them using preference overlap and adventure-level distance;
-only trips marked `is_public` are eligible for that feed.
+The MVP uses the authenticated user ID as the owner. The user profile is
+intentionally lightweight: display name and home base are stored with the local
+account, while “exchange student” is the only planning context needed.
+Saved trips are private drafts by default. A user can mark a draft completed,
+attach memories, and publish it; Explore only includes trips that are both
+`is_public` and `is_completed`. The feed ranks public routes using preference
+overlap and adventure-level distance. Explore also has a local search bar for
+published trip ideas and route-style filters; this does not call Google Places.
+Live place discovery stays inside the planner’s route assistant, where a search
+can be constrained to the selected route segment before making a provider call.
+
+### Memories and media
+
+Completed trips can accept JPG, PNG, WebP, GIF, MP4, WebM, and MOV uploads up to
+20 MB through `POST /trips/saved/{id}/media`. The local MVP stores files under
+`backend/media/` and returns stable `/media/...` URLs. Set `VIBETRIP_MEDIA_DIR`
+to use another local directory. This adapter is deliberately isolated so it
+can be replaced with S3, Cloudflare R2, or another sharable object store later
+without changing the trip or Explore response shape. Media is never required:
+routes without memories use a generated route cover in the UI.
+
+### Local authentication
+
+The judging build uses a self-contained local auth adapter, so no Supabase or
+other hosted identity project is required. User records are stored in the
+private, Git-ignored `backend/auth_users.json`; passwords are scrypt-hashed and
+the API sets a signed HttpOnly session cookie. The first API startup seeds the
+demo account:
+
+```text
+Email: demo@vibetrip.local
+Password: vibetrip-demo
+```
+
+New accounts receive unique IDs, and those IDs namespace saved trips and OKF
+profile documents. Set `VIBETRIP_AUTH_SECRET` in `.env` outside demo mode. This
+adapter is intentionally replaceable with managed authentication before
+production deployment.
+
+### OKF agent context
+
+`POST /profiles/okf` exports the current structured travel profile as a private
+OKF v0.1-style Markdown document. The planner also refreshes this artifact
+automatically before each route generation and passes it to the optional LLM
+reviewer. The OKF document is context, not authority: route geometry, opening
+hours, waypoint ordering, and budget checks remain deterministic. Local files
+are written to `backend/okf_profiles/` and ignored by Git; set
+`VIBETRIP_OKF_DIR` to use another private directory or replace the adapter with
+an object-store/knowledge-catalog writer later.
 
 With `GOOGLE_MAPS_API_KEY`, the backend calls the current Google Routes API to
 get a driving route and samples its polyline to search nearby tourist
@@ -171,8 +226,8 @@ The eventual FastAPI boundary should expose a streaming `POST /trips/plan` endpo
 
 ## Remaining roadmap
 
-The next implementation step is to harden the new modular boundary and LLM
-fallback behavior without giving the model control of routing or safety-critical
+The next implementation step is to validate the end-to-end MVP and harden the
+planner without giving the model control of routing or safety-critical
 constraints.
 
 ### Phase 0 — Frontend modularization (implemented)
@@ -212,16 +267,17 @@ constraints.
 - Finish accessibility and mobile checks, including readable type, keyboard
   controls, focus states, and large touch targets.
 
-### Phase 3 — Saved trips and social foundation
+### Phase 3 — Saved trips and social foundation (implemented for MVP)
 
-- Move from demo ownership to users, authentication, privacy controls, and
-  durable Postgres-backed trip records.
-- Add trip completion so users can mark stops visited and attach notes, photos,
-  and videos.
-- Add sharable object storage using signed upload URLs, media validation, size
-  limits, thumbnails, and deletion support.
-- Build the Explore feed around public completed trips, with media-first cards,
-  preference-aware ranking, and reporting/moderation controls.
+- Saved drafts are stored through the repository boundary, using Postgres JSONB
+  when available and local browser/API fallbacks when it is not.
+- Users can mark a trip completed, attach photos or videos, keep it private, or
+  publish it to the Explore feed.
+- The local media adapter validates MIME type and a 20 MB size limit. Replace it
+  with signed uploads and thumbnails when deploying object storage.
+- Explore is a preference-ranked, media-first community feed seeded with public
+  exchange-student routes. Reporting, moderation, comments, follows, and real
+  authentication remain post-MVP work.
 
 ### Phase 4 — Product expansion and deployment
 
@@ -229,10 +285,14 @@ constraints.
   list.
 - Add saved places, trip-history retrieval, and only then evaluate a vector
   store for persistent taste and semantic discovery.
-- Add authentication, secret management, logging, usage limits, cost tracking,
-  and a deployed Postgres/object-storage environment.
+- Move local authentication to a managed identity provider, add secret
+  management, logging, usage limits, cost tracking, and a deployed
+  Postgres/object-storage environment.
 
-The recommended order is: frontend modularization → LLM shortlist decision →
-reliability tests and streaming → authenticated saved trips and media → Explore
-social feed. This keeps the core route experience maintainable and trustworthy
-before adding the larger social surface.
+The implemented MVP order is: frontend modularization → optional LLM shortlist
+decision → route-aware saved drafts → local authentication and per-user OKF
+context → completion and media memories → preference-ranked Explore feed. The
+next production order is: managed authentication and hosted ownership → signed
+object storage/thumbnails → moderation and reporting → streaming planner
+progress → richer social interactions. This keeps the route experience
+maintainable and trustworthy before adding engagement mechanics.

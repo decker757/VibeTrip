@@ -36,6 +36,7 @@ class PlannerState(TypedDict, total=False):
     recommendation_source: str
     recommendation_confidence: int
     recommendation_explanation: str
+    profile_okf: str
 
 
 def _is_refuel_or_convenience(place: dict[str, Any]) -> bool:

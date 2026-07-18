@@ -2,14 +2,24 @@
 
 from typing import Literal
 
-from fastapi import FastAPI, Query
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .graph import day_builder, planner_graph
+from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
+from .media import MEDIA_ROOT, save_upload
+from .okf import okf_profile_exporter
 from .providers import DemoMapsProvider, get_maps_provider, suggest_cities
 from .simulation import SimulationEvent, recalibrate_trip
 from .storage import OWNER_ID, trip_repository
+
+
+class ProfileContext(BaseModel):
+    name: str = Field(default="VibeTrip traveller", min_length=1, max_length=120)
+    home_base: str = Field(default="Singapore", min_length=2, max_length=120)
+    exchange_student: bool = True
 
 
 class TripRequest(BaseModel):
@@ -26,6 +36,7 @@ class TripRequest(BaseModel):
     adventure_level: int = Field(default=70, ge=0, le=100)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
+    profile: ProfileContext = Field(default_factory=ProfileContext)
 
 
 class SimulationRequest(BaseModel):
@@ -79,10 +90,38 @@ class SaveTripRequest(BaseModel):
     itinerary: list[dict] = Field(default_factory=list)
     candidate_places: list[dict] = Field(default_factory=list)
     cost_breakdown: dict = Field(default_factory=dict)
+    media: list[dict] = Field(default_factory=list)
     is_public: bool = False
+    is_completed: bool = False
+
+
+class VisibilityRequest(BaseModel):
+    is_public: bool
+
+
+class UserProfileRequest(ProfileContext):
+    owner_id: str = OWNER_ID
+    preferences: list[str] = Field(default_factory=list)
+    adventure_level: int = Field(default=70, ge=0, le=100)
+    budget_per_person_sgd: int = Field(default=400, ge=0)
+    crowd_tolerance: Literal["low", "medium", "high"] = "medium"
+    pace: str = Field(default="balanced", max_length=40)
+
+
+class AuthRequest(BaseModel):
+    email: str = Field(min_length=5, max_length=160)
+    password: str = Field(min_length=8, max_length=200)
+    display_name: str = Field(default="VibeTrip traveller", min_length=1, max_length=120)
+    home_base: str = Field(default="Singapore", min_length=2, max_length=120)
+
+
+class ProfileUpdateRequest(BaseModel):
+    display_name: str = Field(min_length=1, max_length=120)
+    home_base: str = Field(min_length=2, max_length=120)
 
 
 app = FastAPI(title="VibeTrip Planner API", version="0.1.0")
+app.mount("/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
 app.add_middleware(
     CORSMiddleware,
     # Vite normally runs on :5173, while the in-app preview may proxy the
@@ -92,6 +131,50 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _set_session(response: Response, user: dict) -> None:
+    response.set_cookie(
+        SESSION_COOKIE,
+        issue_session(user),
+        max_age=60 * 60 * 24 * 7,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+    )
+
+
+@app.post("/auth/signup")
+def signup(request: AuthRequest, response: Response) -> dict:
+    user = auth_repository.create(request.email, request.password, request.display_name, request.home_base)
+    _set_session(response, user)
+    return {"user": public_user(user)}
+
+
+@app.post("/auth/login")
+def login(request: AuthRequest, response: Response) -> dict:
+    user = auth_repository.authenticate(request.email, request.password)
+    _set_session(response, user)
+    return {"user": public_user(user)}
+
+
+@app.post("/auth/logout")
+def logout(response: Response) -> dict[str, bool]:
+    response.delete_cookie(SESSION_COOKIE)
+    return {"ok": True}
+
+
+@app.get("/auth/me")
+def authenticated_user(user: dict = Depends(get_current_user)) -> dict:
+    return {"user": public_user(user)}
+
+
+@app.patch("/auth/me")
+def update_authenticated_user(request: ProfileUpdateRequest, user: dict = Depends(get_current_user)) -> dict:
+    updated = auth_repository.update_profile(user["id"], request.display_name, request.home_base)
+    if not updated:
+        raise HTTPException(status_code=404, detail="User account not found.")
+    return {"user": public_user(updated)}
 
 
 @app.get("/health")
@@ -180,7 +263,7 @@ def _waypoint_places(result: dict) -> list[dict]:
 
 
 @app.post("/trips/plan")
-async def plan_trip(request: TripRequest) -> dict:
+async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)) -> dict:
     """Run the planner and return a resumable draft plan."""
     provider = get_maps_provider()
     try:
@@ -190,7 +273,17 @@ async def plan_trip(request: TripRequest) -> dict:
         provider = fallback
         provider_result = await fallback.plan_trip(request.start, request.destination, request.budget_per_person, request.crowd_tolerance, request.start_time, request.route_mode)
         provider_result.warning = f"Maps provider unavailable ({type(error).__name__}); showing demo candidates."
-    state = request.model_dump() | {"route": provider_result.route, "candidate_places": provider_result.candidates}
+    profile_context = okf_profile_exporter.export(
+        request.profile.model_dump() | {
+            "preferences": request.preferences,
+            "adventure_level": request.adventure_level,
+            "budget_per_person_sgd": request.budget_per_person,
+            "crowd_tolerance": request.crowd_tolerance,
+            "pace": "adventurous" if request.adventure_level >= 70 else "laid-back" if request.adventure_level <= 35 else "balanced",
+        },
+        owner_id=user["id"],
+    )
+    state = request.model_dump() | {"route": provider_result.route, "candidate_places": provider_result.candidates, "profile_okf": profile_context["document"]}
     result = planner_graph.invoke(state)
     reroute_warning = None
     for _ in range(3):
@@ -235,6 +328,7 @@ async def plan_trip(request: TripRequest) -> dict:
         "recommendation_source": result.get("recommendation_source", "deterministic"),
         "recommendation_confidence": result.get("recommendation_confidence", 0),
         "recommendation_explanation": result.get("recommendation_explanation", ""),
+        "profile_context": {"format": "okf", "resource": profile_context["resource"]},
         "cost_breakdown": _build_cost_breakdown(result["route"], result.get("selected_places", []), request.travellers),
         "provider": provider_result.provider,
         "warning": " ".join(warnings) or None,
@@ -279,21 +373,68 @@ async def reroute_trip(request: RerouteRequest) -> dict:
 
 
 @app.post("/trips/save")
-def save_trip(request: SaveTripRequest) -> dict:
+def save_trip(request: SaveTripRequest, user: dict = Depends(get_current_user)) -> dict:
     """Persist a complete planner draft so it can be reopened later."""
-    trip = trip_repository.save(request.model_dump())
+    payload = request.model_dump()
+    payload["owner_id"] = user["id"]
+    payload["author_name"] = f"{user['display_name']} · Exchange student"
+    trip = trip_repository.save(payload)
     return {"trip": trip}
 
 
+@app.post("/profiles/okf")
+def export_okf_profile(request: UserProfileRequest, user: dict = Depends(get_current_user)) -> dict:
+    """Create a private OKF context artifact for the profile/recommendation agents."""
+    payload = request.model_dump()
+    payload["name"] = user["display_name"]
+    payload["home_base"] = user["home_base"]
+    artifact = okf_profile_exporter.export(payload, owner_id=user["id"])
+    return {"format": artifact["format"], "resource": artifact["resource"], "document": artifact["document"]}
+
+
 @app.get("/trips/saved")
-def saved_trips(owner_id: str = Query(default=OWNER_ID, min_length=2, max_length=80)) -> dict:
-    return {"trips": trip_repository.list_saved(owner_id)}
+def saved_trips(user: dict = Depends(get_current_user)) -> dict:
+    return {"trips": trip_repository.list_saved(user["id"])}
 
 
 @app.delete("/trips/saved/{trip_id}")
-def delete_saved_trip(trip_id: str, owner_id: str = Query(default=OWNER_ID, min_length=2, max_length=80)) -> dict:
-    deleted = trip_repository.delete(trip_id, owner_id)
+def delete_saved_trip(trip_id: str, user: dict = Depends(get_current_user)) -> dict:
+    deleted = trip_repository.delete(trip_id, user["id"])
     return {"deleted": deleted}
+
+
+@app.post("/trips/saved/{trip_id}/complete")
+def complete_saved_trip(trip_id: str, user: dict = Depends(get_current_user)) -> dict:
+    trip = trip_repository.mark_completed(trip_id, user["id"])
+    if not trip:
+        raise HTTPException(status_code=404, detail="Saved trip not found")
+    return {"trip": trip}
+
+
+@app.patch("/trips/saved/{trip_id}/visibility")
+def update_saved_trip_visibility(trip_id: str, request: VisibilityRequest, user: dict = Depends(get_current_user)) -> dict:
+    trip = trip_repository.set_visibility(trip_id, user["id"], request.is_public)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Only your saved trips can be published")
+    return {"trip": trip}
+
+
+@app.post("/trips/saved/{trip_id}/media")
+async def upload_saved_trip_media(
+    trip_id: str,
+    file: UploadFile = File(...),
+    caption: str = Form(default=""),
+    user: dict = Depends(get_current_user),
+) -> dict:
+    trip = trip_repository.get(trip_id)
+    if not trip or trip.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=404, detail="Saved trip not found")
+    media = await save_upload(trip_id, file)
+    media["caption"] = caption[:240]
+    updated_trip = trip_repository.add_media(trip_id, user["id"], media)
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Saved trip not found")
+    return {"media": media, "trip": updated_trip}
 
 
 @app.get("/trips/explore")

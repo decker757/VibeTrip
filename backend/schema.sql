@@ -18,7 +18,12 @@ CREATE TABLE IF NOT EXISTS trips (
     itinerary JSONB NOT NULL DEFAULT '[]'::jsonb,
     candidate_places JSONB NOT NULL DEFAULT '[]'::jsonb,
     cost_breakdown JSONB NOT NULL DEFAULT '{}'::jsonb,
+    media JSONB NOT NULL DEFAULT '[]'::jsonb,
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS is_completed BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS media JSONB NOT NULL DEFAULT '[]'::jsonb;

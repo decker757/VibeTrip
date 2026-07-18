@@ -24,7 +24,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
     {
         "id": "seed-boston-new-york-scenic",
         "owner_id": "seed-maya",
-        "author_name": "Maya · SMU exchange",
+        "author_name": "Maya · Exchange student",
         "title": "Coastline, coffee, and a little history",
         "start": "Boston, MA",
         "destination": "New York, NY",
@@ -47,12 +47,13 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "candidate_places": [],
         "cost_breakdown": {"estimated_total_sgd": 180, "estimated_per_person_sgd": 60, "items": []},
         "is_public": True,
+        "is_completed": True,
         "created_at": "2026-06-14T08:00:00+00:00",
     },
     {
         "id": "seed-portland-seattle-balanced",
         "owner_id": "seed-daniel",
-        "author_name": "Daniel · NTU exchange",
+        "author_name": "Daniel · Exchange student",
         "title": "Rainy-day stops up the Pacific Northwest",
         "start": "Portland, OR",
         "destination": "Seattle, WA",
@@ -74,12 +75,13 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "candidate_places": [],
         "cost_breakdown": {"estimated_total_sgd": 145, "estimated_per_person_sgd": 36, "items": []},
         "is_public": True,
+        "is_completed": True,
         "created_at": "2026-05-10T08:00:00+00:00",
     },
     {
         "id": "seed-munich-prague-fastest",
         "owner_id": "seed-isha",
-        "author_name": "Isha · SMU exchange",
+        "author_name": "Isha · Exchange student",
         "title": "Munich to Prague with only the good breaks",
         "start": "Munich, Germany",
         "destination": "Prague, Czechia",
@@ -100,6 +102,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "candidate_places": [],
         "cost_breakdown": {"estimated_total_sgd": 120, "estimated_per_person_sgd": 60, "items": []},
         "is_public": True,
+        "is_completed": True,
         "created_at": "2026-04-19T08:00:00+00:00",
     },
 ]
@@ -167,7 +170,7 @@ class TripRepository:
             "id", "owner_id", "author_name", "title", "start", "destination", "route_mode",
             "adventure_level", "budget_per_person", "travellers", "start_date", "end_date",
             "start_time", "end_time", "preferences", "route", "itinerary", "candidate_places",
-            "cost_breakdown", "is_public", "created_at",
+            "cost_breakdown", "media", "is_public", "is_completed", "created_at",
         ]
         trip = dict(zip(keys, row))
         if hasattr(trip.get("created_at"), "isoformat"):
@@ -179,6 +182,8 @@ class TripRepository:
         trip.setdefault("id", str(uuid4()))
         trip.setdefault("owner_id", OWNER_ID)
         trip.setdefault("author_name", "You · Singapore")
+        trip.setdefault("is_completed", False)
+        trip.setdefault("media", [])
         trip.setdefault("created_at", _now())
         trip["updated_at"] = _now()
         connection = self._connect()
@@ -191,13 +196,15 @@ class TripRepository:
                             id, owner_id, author_name, title, start_location, destination, route_mode,
                             adventure_level, budget_per_person, travellers, start_date, end_date,
                             start_time, end_time, preferences, route, itinerary, candidate_places,
-                            cost_breakdown, is_public, created_at, updated_at
+                            cost_breakdown, media, is_public, is_completed, created_at, updated_at
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                  %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s)
+                                  %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s, %s)
                         ON CONFLICT (id) DO UPDATE SET
                             title = EXCLUDED.title, route = EXCLUDED.route,
                             itinerary = EXCLUDED.itinerary, candidate_places = EXCLUDED.candidate_places,
-                            cost_breakdown = EXCLUDED.cost_breakdown, is_public = EXCLUDED.is_public,
+                            cost_breakdown = EXCLUDED.cost_breakdown, media = EXCLUDED.media,
+                            is_public = EXCLUDED.is_public,
+                            is_completed = EXCLUDED.is_completed,
                             updated_at = EXCLUDED.updated_at
                         """,
                         (
@@ -207,7 +214,9 @@ class TripRepository:
                             trip.get("end_date"), trip.get("start_time"), trip.get("end_time"),
                             json.dumps(trip.get("preferences", [])), json.dumps(trip.get("route", {})),
                             json.dumps(trip.get("itinerary", [])), json.dumps(trip.get("candidate_places", [])),
-                            json.dumps(trip.get("cost_breakdown", {})), trip.get("is_public", False),
+                            json.dumps(trip.get("cost_breakdown", {})), json.dumps(trip.get("media", [])),
+                            trip.get("is_public", False),
+                            trip.get("is_completed", False),
                             trip["created_at"], trip["updated_at"],
                         ),
                     )
@@ -227,7 +236,7 @@ class TripRepository:
                     cursor.execute(
                         """SELECT id, owner_id, author_name, title, start_location, destination, route_mode,
                         adventure_level, budget_per_person, travellers, start_date, end_date, start_time, end_time,
-                        preferences, route, itinerary, candidate_places, cost_breakdown, is_public, created_at
+                        preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at
                         FROM trips WHERE owner_id = %s ORDER BY updated_at DESC""",
                         (owner_id,),
                     )
@@ -237,7 +246,7 @@ class TripRepository:
             except Exception:
                 self._postgres_disabled = True
                 connection.close()
-        return [_copy_trip(trip) for trip in self._memory.values() if trip.get("owner_id") == owner_id and not trip.get("is_public")]
+        return [_copy_trip(trip) for trip in self._memory.values() if trip.get("owner_id") == owner_id]
 
     def get(self, trip_id: str) -> dict[str, Any] | None:
         trip = self._memory.get(trip_id)
@@ -260,8 +269,74 @@ class TripRepository:
                 connection.close()
         return True
 
+    def mark_completed(self, trip_id: str, owner_id: str = OWNER_ID) -> dict[str, Any] | None:
+        trip = self._memory.get(trip_id)
+        if not trip or trip.get("owner_id") != owner_id:
+            return None
+        trip["is_completed"] = True
+        trip["updated_at"] = _now()
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE trips SET is_completed = TRUE, updated_at = NOW() WHERE id = %s AND owner_id = %s",
+                        (trip_id, owner_id),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory[trip_id] = _copy_trip(trip)
+        return _copy_trip(trip)
+
+    def set_visibility(self, trip_id: str, owner_id: str, is_public: bool) -> dict[str, Any] | None:
+        trip = self._memory.get(trip_id)
+        if not trip or trip.get("owner_id") != owner_id or (is_public and not trip.get("is_completed")):
+            return None
+        trip["is_public"] = is_public
+        trip["updated_at"] = _now()
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE trips SET is_public = %s, updated_at = NOW() WHERE id = %s AND owner_id = %s",
+                        (is_public, trip_id, owner_id),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory[trip_id] = _copy_trip(trip)
+        return _copy_trip(trip)
+
+    def add_media(self, trip_id: str, owner_id: str, media: dict[str, Any]) -> dict[str, Any] | None:
+        trip = self._memory.get(trip_id)
+        if not trip or trip.get("owner_id") != owner_id:
+            return None
+        trip.setdefault("media", []).append(_copy_trip(media))
+        trip["updated_at"] = _now()
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE trips SET media = %s::jsonb, updated_at = NOW() WHERE id = %s AND owner_id = %s",
+                        (json.dumps(trip["media"]), trip_id, owner_id),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory[trip_id] = _copy_trip(trip)
+        return _copy_trip(trip)
+
     def list_explore(self, preferences: list[str] | None = None, adventure_level: int = 70, limit: int = 20) -> list[dict[str, Any]]:
-        trips_by_id = {trip["id"]: _copy_trip(trip) for trip in self._memory.values() if trip.get("is_public")}
+        trips_by_id = {trip["id"]: _copy_trip(trip) for trip in self._memory.values() if trip.get("is_public") and trip.get("is_completed")}
         connection = self._connect()
         if connection:
             try:
@@ -269,8 +344,8 @@ class TripRepository:
                     cursor.execute(
                         """SELECT id, owner_id, author_name, title, start_location, destination, route_mode,
                         adventure_level, budget_per_person, travellers, start_date, end_date, start_time, end_time,
-                        preferences, route, itinerary, candidate_places, cost_breakdown, is_public, created_at
-                        FROM trips WHERE is_public = TRUE ORDER BY updated_at DESC"""
+                        preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at
+                        FROM trips WHERE is_public = TRUE AND is_completed = TRUE ORDER BY updated_at DESC"""
                     )
                     for row in cursor.fetchall():
                         trip = self._row_to_trip(row)

@@ -6,10 +6,10 @@ function StopIcon({ type }) {
 
 export function TimelineRow({ stop, index, isLast, isFocused, isEditing, isManaging, onFocus, onChange, onRemove }) {
   return (
-    <div className={`timeline-item ${isFocused ? 'focused' : ''} ${isEditing ? 'editing' : ''}`} data-stop-index={index} role="button" tabIndex="0" aria-label={`Focus ${stop.title} on the map`} onClick={() => onFocus(stop, index)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onFocus(stop, index); } }}>
+    <div className={`timeline-item ${isManaging ? 'managing' : ''} ${isFocused ? 'focused' : ''} ${isEditing ? 'editing' : ''}`} data-stop-index={index} role="button" tabIndex="0" aria-label={`Focus ${stop.title} on the map`} onClick={() => onFocus(stop, index)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onFocus(stop, index); } }}>
       <div className="timeline-time">{stop.time}</div>
       <div className="timeline-rail"><StopIcon type={stop.type} />{!isLast && <span className="rail-line" />}</div>
-      <div className="timeline-copy"><strong>{stop.title}</strong>{isFocused && <span className="timeline-focus-state" aria-live="polite">On map</span>}<span>{stop.place} <i>·</i> {stop.detail}</span></div>
+      <div className="timeline-copy"><strong>{stop.title}</strong>{isFocused && <span className="timeline-focus-state" aria-live="polite">On map</span>}<span className="timeline-place">{stop.place}</span><span className="timeline-address">{stop.detail}</span></div>
       <span className="stop-duration">{stop.duration === 'overnight' ? 'overnight' : `${stop.duration} stop`}</span>
       <div className="timeline-actions">
         {isManaging && stop.type !== 'stay' && <button className="timeline-remove" title={`Remove ${stop.title}`} onClick={(event) => { event.stopPropagation(); onRemove(index); }}><Icon name="close" size={12} />Remove</button>}

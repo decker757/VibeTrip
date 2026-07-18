@@ -1,5 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+backend/media/
+backend/okf_profiles/
+backend/auth_users.json
 *.py[codz]
 *$py.class
 
