@@ -366,7 +366,11 @@ items below are hardening work rather than prerequisites for the local demo.
 - Users can mark a trip completed, attach photos or videos, keep it private, or
   publish it to the Explore feed.
 - The local media adapter validates MIME type and a 20 MB size limit. Replace it
-  with signed uploads and thumbnails when deploying object storage.
+  with signed uploads and thumbnails when deploying object storage. Each trip can
+  store up to five memories, and Explore opens a post detail view showing those
+  memories and the ordered stops before the user remixes the route. Built-in
+  Explore seed routes include two demo memory images separate from their route
+  covers; real users can add memories up to the five-item limit.
 - Explore is a preference-ranked, media-first community feed seeded with public
   exchange-student routes. Reporting, moderation, comments, follows, and real
   authentication remain post-MVP work.

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from .graph import day_builder, planner_graph
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
-from .media import MEDIA_ROOT, save_upload
+from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
 from .providers import DemoMapsProvider, get_maps_provider, suggest_cities
 from .simulation import SimulationEvent, recalibrate_trip
@@ -429,6 +429,8 @@ async def upload_saved_trip_media(
     trip = trip_repository.get(trip_id)
     if not trip or trip.get("owner_id") != user["id"]:
         raise HTTPException(status_code=404, detail="Saved trip not found")
+    if len(trip.get("media") or []) >= MAX_TRIP_MEDIA:
+        raise HTTPException(status_code=409, detail=f"A trip can have up to {MAX_TRIP_MEDIA} memories.")
     media = await save_upload(trip_id, file)
     media["caption"] = caption[:240]
     updated_trip = trip_repository.add_media(trip_id, user["id"], media)

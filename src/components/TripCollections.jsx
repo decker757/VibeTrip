@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from './Icon';
 import { formatMoney, formatTripDistance, formatTripDriveTime } from '../app/formatters';
-import { PLANNER_API_URL } from '../app/plannerData';
-
-function mediaUrl(media) {
-  if (!media?.url) return '';
-  return media.url.startsWith('http') || media.url.startsWith('data:') || media.url.startsWith('blob:') ? media.url : `${PLANNER_API_URL}${media.url}`;
-}
+import { MEDIA_ACCEPT, MAX_TRIP_MEDIA, isVideoMedia, resolveMediaUrl } from '../app/media';
+import TripPostDetail from './TripPostDetail';
 
 const preferenceLabels = {
   'local-gems': 'Local gems',
@@ -17,34 +13,57 @@ const preferenceLabels = {
 
 function TripMedia({ trip }) {
   const media = trip.media?.[0];
-  if (!media && trip.cover_image) return <div className={`trip-card-media trip-card-media-cover ${trip.route_mode || 'balanced'}`}><img src={trip.cover_image} alt={`${trip.start} to ${trip.destination} route`} loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} /><span>{trip.start} → {trip.destination}</span></div>;
+  const memoryCount = trip.media?.length || 0;
+  const handleImageError = (event) => {
+    if (trip.cover_image_fallback && !event.currentTarget.dataset.fallbackAttempted) {
+      event.currentTarget.dataset.fallbackAttempted = 'true';
+      event.currentTarget.src = trip.cover_image_fallback;
+      return;
+    }
+    event.currentTarget.style.display = 'none';
+  };
+  if (trip.cover_image) return <div className={`trip-card-media trip-card-media-cover ${trip.route_mode || 'balanced'}${memoryCount > 0 ? ' has-memory-count' : ''}`}><img src={trip.cover_image} alt={`${trip.start} to ${trip.destination} route`} loading="lazy" onError={handleImageError} /><span>{trip.start} → {trip.destination}</span>{memoryCount > 0 && <span className="media-count"><Icon name="image" size={12} />{memoryCount} {memoryCount === 1 ? 'memory' : 'memories'}</span>}</div>;
   if (!media) return <div className={`trip-card-media trip-card-media-placeholder ${trip.route_mode || 'balanced'}`}><Icon name="map" size={22} /><span>{trip.start} → {trip.destination}</span></div>;
-  const source = mediaUrl(media);
-  return <div className="trip-card-media">{media.type?.startsWith('video/') ? <video src={source} muted playsInline preload="metadata" aria-label={`${trip.title} video memory`} /> : <img src={source} alt={`${trip.title} memory`} loading="lazy" /> }<span className="media-count"><Icon name={media.type?.startsWith('video/') ? 'play' : 'image'} size={12} />{trip.media.length} {trip.media.length === 1 ? 'memory' : 'memories'}</span></div>;
+  const source = resolveMediaUrl(media);
+  return <div className="trip-card-media">{isVideoMedia(media) ? <video src={source} muted playsInline preload="metadata" aria-label={`${trip.title} video memory`} /> : <img src={source} alt={`${trip.title} memory`} loading="lazy" onError={handleImageError} /> }<span className="media-count"><Icon name={isVideoMedia(media) ? 'play' : 'image'} size={12} />{trip.media.length} {trip.media.length === 1 ? 'memory' : 'memories'}</span></div>;
 }
 
-function TripCard({ trip, actionLabel, onAction, onDelete, onComplete, onUploadMedia, onToggleVisibility, showPrivacy = false }) {
+function TripCard({ trip, actionLabel, onAction, onOpenTrip, onDelete, onComplete, onUploadMedia, onToggleVisibility, showPrivacy = false }) {
+  function handleCardClick(event) {
+    if (!onOpenTrip || event.target.closest('button, a, input, label')) return;
+    onOpenTrip(trip);
+  }
+
+  function handleCardKeyDown(event) {
+    if (!onOpenTrip || event.target.closest('button, a, input, label')) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onOpenTrip(trip);
+    }
+  }
+
   return (
-    <article className="trip-card">
-      <div className="trip-card-topline"><span className={`trip-mode-badge ${trip.route_mode || 'balanced'}`}>{trip.route_mode || 'balanced'} route</span><span className={`trip-status ${trip.is_completed ? 'completed' : ''}`}><Icon name={trip.is_completed ? 'check' : 'clock'} size={12} />{trip.is_completed ? 'Completed' : 'Draft'}</span>{showPrivacy && <span className="trip-privacy"><Icon name={trip.is_public ? 'grid' : 'bookmark'} size={12} />{trip.is_public ? 'Public' : 'Private'}</span>}</div>
+    <article className={`trip-card ${onOpenTrip ? 'explore-trip-card' : ''}`} onClick={handleCardClick} onKeyDown={handleCardKeyDown} tabIndex={onOpenTrip ? 0 : undefined} aria-label={onOpenTrip ? `View ${trip.title}` : undefined}>
+      <div className="trip-card-topline"><span className={`trip-mode-badge ${trip.route_mode || 'balanced'}`}>{trip.route_mode || 'balanced'} route</span>{showPrivacy && <span className="trip-privacy"><Icon name={trip.is_public ? 'grid' : 'bookmark'} size={12} />{trip.is_public ? 'Public' : 'Private'}</span>}</div>
       {trip.preferences?.length > 0 && <div className="trip-category-list" aria-label="Trip categories">{trip.preferences.map((preference) => preferenceLabels[preference] && <span className="trip-category" key={preference}>{preferenceLabels[preference]}</span>)}</div>}
       <TripMedia trip={trip} />
       <h3>{trip.title}</h3>
       <p className="trip-route"><span>{trip.start}</span><Icon name="arrow" size={14} /><span>{trip.destination}</span></p>
       <div className="trip-card-stats"><span><Icon name="clock" size={13} />{formatTripDriveTime(trip.route)}</span><span><Icon name="map" size={13} />{formatTripDistance(trip.route)}</span><span><Icon name="wallet" size={13} />{formatMoney(trip.budget_per_person)} / person</span></div>
-      <div className="trip-card-footer"><span className="trip-author">{trip.author_name || 'You · Singapore'} · {trip.itinerary?.length || 0} planned stops</span><div className="trip-card-actions"><button className="secondary-action" type="button" onClick={() => onAction(trip)}>{actionLabel}</button>{onComplete && !trip.is_completed && <button className="text-action" type="button" onClick={() => onComplete(trip)}>Mark completed</button>}{onUploadMedia && trip.is_completed && <label className="text-action upload-action">Add memory<input className="media-upload-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" onChange={(event) => { const [file] = event.target.files || []; if (file) onUploadMedia(trip, file); event.target.value = ''; }} /></label>}{onToggleVisibility && trip.is_completed && <button className="text-action" type="button" onClick={() => onToggleVisibility(trip)}>{trip.is_public ? 'Keep private' : 'Publish'}</button>}{onDelete && <button className="text-danger" type="button" onClick={() => onDelete(trip)}>Delete</button>}</div></div>
+      <div className="trip-card-footer"><span className="trip-author">{trip.author_name || 'You · Singapore'} · {trip.itinerary?.length || 0} planned stops</span><div className="trip-card-actions">{onOpenTrip && <button className="secondary-action" type="button" onClick={() => onOpenTrip(trip)}>View trip story</button>}{onAction && <button className="secondary-action" type="button" onClick={() => onAction(trip)}>{actionLabel}</button>}{onComplete && !trip.is_completed && <button className="text-action" type="button" onClick={() => onComplete(trip)}>Mark trip complete</button>}{onUploadMedia && trip.is_completed && <label className="text-action upload-action" title={`Add memories (${MAX_TRIP_MEDIA} maximum)`}>Add memories<input className="media-upload-input" type="file" multiple accept={MEDIA_ACCEPT} onChange={(event) => { const files = Array.from(event.target.files || []); if (files.length) onUploadMedia(trip, files); event.target.value = ''; }} /></label>}{onToggleVisibility && trip.is_completed && <button className="text-action" type="button" title={trip.is_public ? 'Remove this trip from Explore' : 'Share this completed trip on Explore'} onClick={() => onToggleVisibility(trip)}>{trip.is_public ? 'Keep private' : 'Publish to Explore'}</button>}{onDelete && <button className="text-danger" type="button" onClick={() => onDelete(trip)}>Delete</button>}</div></div>
     </article>
   );
 }
 
 export function SavedTripsView({ trips, isLoading, onOpen, onDelete, onComplete, onUploadMedia, onToggleVisibility, onRefresh }) {
-  return <div className="collection-page"><div className="collection-heading"><div><p className="eyebrow">YOUR LIBRARY</p><h1>Saved trips</h1><p>Keep a draft for later, then mark it completed after the road trip when you are ready to share it.</p></div><button className="secondary-action" type="button" onClick={onRefresh}><Icon name="arrow" size={14} />Refresh</button></div>{isLoading ? <div className="collection-loading" aria-live="polite">Loading your saved trips…</div> : trips.length === 0 ? <div className="empty-collection"><span className="empty-icon"><Icon name="bookmark" size={18} /></span><h2>Your next road trip starts here.</h2><p>Save a generated route from Plan a trip and it will appear in this library.</p><button className="primary-inline-action" type="button" onClick={onRefresh}>Refresh saved trips</button></div> : <div className="trip-card-grid">{trips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel="Open draft" onAction={onOpen} onComplete={onComplete} onUploadMedia={onUploadMedia} onToggleVisibility={onToggleVisibility} onDelete={onDelete} showPrivacy />)}</div>}</div>;
+  return <div className="collection-page"><div className="collection-heading"><div><p className="eyebrow">YOUR LIBRARY</p><h1>Saved trips</h1><p>Keep a draft for later, then mark it completed after the road trip when you are ready to share it.</p></div><button className="secondary-action" type="button" onClick={onRefresh}><Icon name="refresh" size={14} />Refresh</button></div>{isLoading ? <div className="collection-loading" aria-live="polite">Loading your saved trips…</div> : trips.length === 0 ? <div className="empty-collection"><span className="empty-icon"><Icon name="bookmark" size={18} /></span><h2>Your next road trip starts here.</h2><p>Save a generated route from Plan a trip and it will appear in this library.</p><button className="primary-inline-action" type="button" onClick={onRefresh}>Refresh saved trips</button></div> : <div className="trip-card-grid">{trips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel={trip.is_completed ? 'Open trip' : 'Open draft'} onAction={onOpen} onComplete={onComplete} onUploadMedia={onUploadMedia} onToggleVisibility={onToggleVisibility} onDelete={onDelete} showPrivacy />)}</div>}</div>;
 }
 
 export function ExploreView({ trips, isLoading, onUseTrip, onRefresh }) {
   const [query, setQuery] = useState('');
   const [routeFilter, setRouteFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [selectedTrip, setSelectedTrip] = useState(null);
   const pageSize = 6;
   const filteredTrips = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -64,6 +83,8 @@ export function ExploreView({ trips, isLoading, onUseTrip, onRefresh }) {
     setPage((current) => Math.min(current, totalPages));
   }, [totalPages]);
 
+  if (selectedTrip) return <TripPostDetail trip={selectedTrip} onBack={() => setSelectedTrip(null)} onUseTrip={onUseTrip} />;
+
   return <div className="collection-page">
     <div className="collection-heading"><div><p className="eyebrow">FROM THE VIBETRIP COMMUNITY</p><h1>Explore</h1><p>See how other exchange students travelled, then remix a route to your own pace, budget, and travel profile.</p></div><button className="secondary-action" type="button" onClick={onRefresh}><Icon name="refresh" size={14} />Refresh feed</button></div>
     <section className="explore-search" aria-label="Search the VibeTrip community">
@@ -73,6 +94,6 @@ export function ExploreView({ trips, isLoading, onUseTrip, onRefresh }) {
     </section>
     <div className="explore-filters" aria-label="Filter trips by route style">{[['all', 'All routes'], ['fastest', 'Fastest'], ['balanced', 'Balanced'], ['scenic', 'Scenic']].map(([value, label]) => <button type="button" key={value} className={routeFilter === value ? 'active' : ''} aria-pressed={routeFilter === value} onClick={() => { setRouteFilter(value); setPage(1); }}>{label}</button>)}</div>
     <div className="explore-context"><Icon name="sparkles" size={15} /><span>For you · ranked from your travel profile</span><strong>{filteredTrips.length} of {trips.length} public trips</strong></div>
-    {isLoading ? <div className="collection-loading" aria-live="polite">Finding trips that fit your profile…</div> : filteredTrips.length === 0 ? <div className="empty-collection explore-empty"><span className="empty-icon"><Icon name="search" size={18} /></span><h2>No matching trips yet.</h2><p>Try another destination, activity, or route style. You can also use the planner assistant to search live places.</p><button className="primary-inline-action" type="button" onClick={() => { setQuery(''); setRouteFilter('all'); setPage(1); }}>Clear search</button></div> : <><div className="trip-card-grid">{visibleTrips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel="Use this route" onAction={onUseTrip} />)}</div>{totalPages > 1 && <nav className="explore-pagination" aria-label="Explore pages"><button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1}>Previous</button><span aria-live="polite">Page {page} of {totalPages}</span><button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages}>Next</button></nav>}</>}
+    {isLoading ? <div className="collection-loading" aria-live="polite">Finding trips that fit your profile…</div> : filteredTrips.length === 0 ? <div className="empty-collection explore-empty"><span className="empty-icon"><Icon name="search" size={18} /></span><h2>No matching trips yet.</h2><p>Try another destination, activity, or route style. You can also use the planner assistant to search live places.</p><button className="primary-inline-action" type="button" onClick={() => { setQuery(''); setRouteFilter('all'); setPage(1); }}>Clear search</button></div> : <><div className="trip-card-grid">{visibleTrips.map((trip) => <TripCard key={trip.id} trip={trip} actionLabel="Use this route" onAction={onUseTrip} onOpenTrip={setSelectedTrip} />)}</div>{totalPages > 1 && <nav className="explore-pagination" aria-label="Explore pages"><button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1}>Previous</button><span aria-live="polite">Page {page} of {totalPages}</span><button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page === totalPages}>Next</button></nav>}</>}
   </div>;
 }

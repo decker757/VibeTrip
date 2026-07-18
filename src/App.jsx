@@ -6,6 +6,7 @@ import ProfileOnboarding from './components/ProfileOnboarding';
 import { ExploreView, SavedTripsView } from './components/TripCollections';
 import ProfileView from './components/ProfileView';
 import { addMinutesToTime, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, itineraryToStops } from './app/formatters';
+import { MAX_TRIP_MEDIA } from './app/media';
 import { defaultCostBreakdown, exploreFallbackTrips, initialCandidates, initialStops, navItems, PLANNER_API_URL, profileOptions, routeModeOptions } from './app/plannerData';
 
 function apiFetch(input, options = {}) {
@@ -183,40 +184,52 @@ function App() {
   const tripProfileSummary = adventureLevel >= 70 ? 'Curious, not rushed.' : adventureLevel <= 35 ? 'Easygoing, well paced.' : 'Balanced, open to detours.';
   const tripProfileBalance = adventureLevel >= 70 ? 'More adventurous' : adventureLevel <= 35 ? 'More laid back' : 'Balanced pace';
 
-  async function generateTrip() {
+  async function generateTrip(overrides = {}) {
     if (isGenerating) return;
     setIsGenerating(true);
     setMessage('');
 
-    if (!from.trim() || !to.trim()) {
+    const requestFrom = overrides.from ?? from;
+    const requestTo = overrides.to ?? to;
+    const requestStartDate = overrides.startDate ?? startDate;
+    const requestEndDate = overrides.endDate ?? endDate;
+    const requestStartTime = overrides.startTime ?? startTime;
+    const requestEndTime = overrides.endTime ?? endTime;
+    const requestTravellers = overrides.travellers ?? travellers;
+    const requestBudgetPerPerson = overrides.budgetPerPerson ?? budgetPerPerson;
+    const requestPreferences = overrides.preferences ?? preferences;
+    const requestAdventureLevel = overrides.adventureLevel ?? adventureLevel;
+    const requestRouteMode = overrides.routeMode ?? routeMode;
+
+    if (!requestFrom.trim() || !requestTo.trim()) {
       setMessage('Add both a starting city and destination before planning.');
       setIsGenerating(false);
       return;
     }
-    if (endDate < startDate) {
+    if (requestEndDate < requestStartDate) {
       setMessage('The return date must be on or after the departure date.');
       setIsGenerating(false);
       return;
     }
-    if (startDate === endDate && endTime <= startTime) {
+    if (requestStartDate === requestEndDate && requestEndTime <= requestStartTime) {
       setMessage('Choose a target end time later than the start time for a same-day trip.');
       setIsGenerating(false);
       return;
     }
 
     const request = {
-      start: from,
-      destination: to,
-      travellers,
-      budget_per_person: budgetPerPerson,
-      dates: `${startDate}/${endDate}`,
-      start_date: startDate,
-      end_date: endDate,
-      start_time: startTime,
-      end_time: endTime,
-      preferences,
-      adventure_level: adventureLevel,
-      route_mode: routeMode,
+      start: requestFrom,
+      destination: requestTo,
+      travellers: requestTravellers,
+      budget_per_person: requestBudgetPerPerson,
+      dates: `${requestStartDate}/${requestEndDate}`,
+      start_date: requestStartDate,
+      end_date: requestEndDate,
+      start_time: requestStartTime,
+      end_time: requestEndTime,
+      preferences: requestPreferences,
+      adventure_level: requestAdventureLevel,
+      route_mode: requestRouteMode,
       profile: {
         name: userProfile.name || 'VibeTrip traveller',
         home_base: userProfile.home || 'Singapore',
@@ -244,11 +257,11 @@ function App() {
         distanceKm: result.route?.distance_km || 348,
         confidence: result.confidence || 94,
       });
-      setCostBreakdown(result.cost_breakdown || buildClientCostBreakdown(result.route, candidates[0], travellers));
+      setCostBreakdown(result.cost_breakdown || buildClientCostBreakdown(result.route, candidates[0], requestTravellers));
       setPlannerSource('api');
       setRecommendationSource(result.recommendation_source || 'deterministic');
       setIsGenerated(true);
-      setMessage(result.warning || `${routeModeOptions.find((option) => option.id === routeMode)?.label} route ready — ${result.recommendation_source === 'llm' ? 'the LLM reviewer ranked the feasible candidates' : 'deterministic scoring ranked the feasible candidates'}.`);
+      setMessage(result.warning || `${routeModeOptions.find((option) => option.id === requestRouteMode)?.label} route ready — ${result.recommendation_source === 'llm' ? 'the LLM reviewer ranked the feasible candidates' : 'deterministic scoring ranked the feasible candidates'}.`);
     } catch {
       // The local preview keeps the MVP usable when FastAPI is not running yet.
       setPlannerSource('demo');
@@ -256,7 +269,7 @@ function App() {
       setCandidatePlaces(initialCandidates);
       setSelectedPlaceId('demo-lunch');
       setRoute({});
-      setCostBreakdown(buildClientCostBreakdown({ distance_km: 348 }, initialCandidates[1], travellers));
+      setCostBreakdown(buildClientCostBreakdown({ distance_km: 348 }, initialCandidates[1], requestTravellers));
       window.setTimeout(() => {
         setIsGenerated(true);
         setMessage('API unavailable — loaded a local preview so you can keep exploring.');
@@ -583,7 +596,17 @@ function App() {
       const remoteTrips = result.trips || [];
       const fallbackByTitle = new Map(exploreFallbackTrips.map((trip) => [trip.title, trip]));
       const mergedTrips = [...remoteTrips, ...exploreFallbackTrips]
-        .map((trip) => ({ ...trip, cover_image: trip.cover_image || fallbackByTitle.get(trip.title)?.cover_image }))
+        .map((trip) => {
+          const fallback = fallbackByTitle.get(trip.title);
+          return {
+            ...trip,
+            cover_image: trip.cover_image || fallback?.cover_image,
+            cover_image_fallback: trip.cover_image_fallback || fallback?.cover_image_fallback,
+            // A published trip with no uploaded media can still use the seeded
+            // community memories for the same built-in route idea.
+            media: trip.media?.length ? trip.media : fallback?.media || [],
+          };
+        })
         .filter((trip, index, trips) => trips.findIndex((item) => item.id === trip.id || item.title === trip.title) === index);
       setExploreTrips(mergedTrips.length ? mergedTrips : exploreFallbackTrips);
     } catch {
@@ -659,32 +682,54 @@ function App() {
     setMessage('Trip marked completed. It is ready for the Explore feed once published.');
   }
 
-  async function uploadTripMedia(trip, file) {
-    if (file.size > 20 * 1024 * 1024) {
-      setMessage('Media files must be 20 MB or smaller.');
+  async function uploadTripMedia(trip, files) {
+    const selectedFiles = Array.from(files || []).slice(0, Math.max(0, MAX_TRIP_MEDIA - (trip.media || []).length));
+    if (!selectedFiles.length) {
+      setMessage(`This trip already has the maximum of ${MAX_TRIP_MEDIA} memories.`);
       return;
     }
+    if (selectedFiles.some((file) => file.size > 20 * 1024 * 1024)) {
+      setMessage('Each media file must be 20 MB or smaller.');
+      return;
+    }
+    let latestTrip = trip;
+    let uploadedCount = 0;
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await apiFetch(`${PLANNER_API_URL}/trips/saved/${encodeURIComponent(trip.id)}/media`, { method: 'POST', body: formData });
-      if (!response.ok) throw new Error(`Media upload returned ${response.status}`);
-      const result = await response.json();
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await apiFetch(`${PLANNER_API_URL}/trips/saved/${encodeURIComponent(trip.id)}/media`, { method: 'POST', body: formData });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.detail || `Media upload returned ${response.status}`);
+        }
+        const result = await response.json();
+        latestTrip = result.trip;
+        uploadedCount += 1;
+      }
       setSavedTrips((current) => {
-        const nextTrips = current.map((item) => item.id === trip.id ? result.trip : item);
+        const nextTrips = current.map((item) => item.id === trip.id ? latestTrip : item);
         window.localStorage.setItem(savedTripsKey(authUser?.id), JSON.stringify(nextTrips));
         return nextTrips;
       });
-      setMessage('Memory added to your completed trip.');
-    } catch {
-      const previewUrl = URL.createObjectURL(file);
-      const media = { id: `local-media-${Date.now()}`, url: previewUrl, type: file.type, name: file.name, size_bytes: file.size };
+      setMessage(`${uploadedCount} ${uploadedCount === 1 ? 'memory' : 'memories'} added to your completed trip.`);
+    } catch (error) {
+      if (uploadedCount > 0) {
+        setSavedTrips((current) => {
+          const nextTrips = current.map((item) => item.id === trip.id ? latestTrip : item);
+          window.localStorage.setItem(savedTripsKey(authUser?.id), JSON.stringify(nextTrips));
+          return nextTrips;
+        });
+        setMessage(`${uploadedCount} ${uploadedCount === 1 ? 'memory was' : 'memories were'} added. ${error.message}`);
+        return;
+      }
+      const previewMedia = selectedFiles.map((file, index) => ({ id: `local-media-${Date.now()}-${index}`, url: URL.createObjectURL(file), type: file.type, name: file.name, size_bytes: file.size }));
       setSavedTrips((current) => {
-        const nextTrips = current.map((item) => item.id === trip.id ? { ...item, media: [...(item.media || []), media] } : item);
+        const nextTrips = current.map((item) => item.id === trip.id ? { ...item, media: [...(item.media || []), ...previewMedia] } : item);
         window.localStorage.setItem(savedTripsKey(authUser?.id), JSON.stringify(nextTrips));
         return nextTrips;
       });
-      setMessage('Memory preview added for this session. Start FastAPI to persist uploads.');
+      setMessage(`${selectedFiles.length} ${selectedFiles.length === 1 ? 'memory preview was' : 'memory previews were'} added for this session. Start FastAPI to persist uploads.`);
     }
   }
 
@@ -708,29 +753,62 @@ function App() {
     setMessage(isPublic ? 'Trip published to Explore.' : 'Trip is private again.');
   }
 
-  function openSavedTrip(trip) {
+  function openSavedTrip(trip, options = {}) {
+    const shouldRegenerate = options.regenerate === true;
     hasAutoGeneratedRef.current = true;
     const candidates = trip.candidate_places?.length ? trip.candidate_places : initialCandidates;
+    const nextStartDate = trip.start_date || startDate;
+    const nextEndDate = trip.end_date || endDate;
+    const nextStartTime = trip.start_time || startTime;
+    const nextEndTime = trip.end_time || endTime;
+    const nextTravellers = Number(trip.travellers ?? 4);
+    const nextBudgetPerPerson = Number(trip.budget_per_person ?? 400);
+    const nextAdventureLevel = Number(trip.adventure_level ?? 70);
+    const nextRouteMode = trip.route_mode || 'balanced';
+    const nextPreferences = trip.preferences || [];
     setFrom(trip.start);
     setTo(trip.destination);
-    setRouteMode(trip.route_mode || 'balanced');
-    setAdventureLevel(Number(trip.adventure_level ?? 70));
-    setBudgetPerPerson(Number(trip.budget_per_person ?? 400));
-    setTravellers(Number(trip.travellers ?? 4));
-    setStartDate(trip.start_date || startDate);
-    setEndDate(trip.end_date || endDate);
-    setStartTime(trip.start_time || startTime);
-    setEndTime(trip.end_time || endTime);
-    setPreferences(trip.preferences || []);
-    setCandidatePlaces(candidates);
-    setSelectedPlaceId(candidates[0]?.id || null);
-    setRoute(trip.route || {});
+    setRouteMode(nextRouteMode);
+    setAdventureLevel(nextAdventureLevel);
+    setBudgetPerPerson(nextBudgetPerPerson);
+    setTravellers(nextTravellers);
+    setStartDate(nextStartDate);
+    setEndDate(nextEndDate);
+    setStartTime(nextStartTime);
+    setEndTime(nextEndTime);
+    setPreferences(nextPreferences);
+    setCandidatePlaces(shouldRegenerate ? initialCandidates : candidates);
+    setSelectedPlaceId(shouldRegenerate ? null : candidates[0]?.id || null);
+    setRoute(shouldRegenerate ? {} : trip.route || {});
     setStops(itineraryToStops(trip.itinerary || [], candidates, trip.destination));
-    setRouteStats({ driveMinutes: trip.route?.drive_minutes || 229, distanceKm: trip.route?.distance_km || 348, confidence: 94 });
+    setRouteStats(shouldRegenerate ? { driveMinutes: 0, distanceKm: 0, confidence: 94 } : { driveMinutes: trip.route?.drive_minutes || 229, distanceKm: trip.route?.distance_km || 348, confidence: 94 });
     setCostBreakdown(trip.cost_breakdown || defaultCostBreakdown);
     setRecommendationSource(trip.recommendation_source || 'deterministic');
-    setIsGenerated(true);
+    setEditingStopIndex(null);
+    setFocusedStopIndex(null);
+    setIsManagingStops(false);
+    setPlaceQuery('');
+    setPlaceSearchResults([]);
+    setHasSearchedPlaces(false);
+    setSimulationResult(null);
+    setIsGenerated(!shouldRegenerate);
     navigateTo('Plan a trip');
+    if (shouldRegenerate) {
+      void generateTrip({
+        from: trip.start,
+        to: trip.destination,
+        startDate: nextStartDate,
+        endDate: nextEndDate,
+        startTime: nextStartTime,
+        endTime: nextEndTime,
+        travellers: nextTravellers,
+        budgetPerPerson: nextBudgetPerPerson,
+        preferences: nextPreferences,
+        adventureLevel: nextAdventureLevel,
+        routeMode: nextRouteMode,
+      });
+      return;
+    }
     setMessage(`Opened ${trip.title}. Generate again if you want to refresh live traffic and Places data.`);
   }
 
@@ -883,7 +961,7 @@ function App() {
         </header>
 
         <div className="content-wrap">
-          {activeNav === 'Plan a trip' ? <PlannerPage {...plannerPageProps} /> : activeNav === 'Saved trips' ? <SavedTripsView trips={savedTrips} isLoading={isLoadingCollection} onOpen={openSavedTrip} onDelete={deleteTrip} onComplete={completeTrip} onUploadMedia={uploadTripMedia} onToggleVisibility={toggleTripVisibility} onRefresh={loadSavedTrips} /> : activeNav === 'Travel profile' ? <ProfileView profile={profilePageProps} userProfile={userProfile} onUpdateProfile={updateUserProfile} onSaveProfile={saveUserProfile} onGoPlan={goToPlanner} /> : <ExploreView trips={exploreTrips} isLoading={isLoadingCollection} onUseTrip={openSavedTrip} onRefresh={loadExploreTrips} />}
+          {activeNav === 'Plan a trip' ? <PlannerPage {...plannerPageProps} /> : activeNav === 'Saved trips' ? <SavedTripsView trips={savedTrips} isLoading={isLoadingCollection} onOpen={openSavedTrip} onDelete={deleteTrip} onComplete={completeTrip} onUploadMedia={uploadTripMedia} onToggleVisibility={toggleTripVisibility} onRefresh={loadSavedTrips} /> : activeNav === 'Travel profile' ? <ProfileView profile={profilePageProps} userProfile={userProfile} onUpdateProfile={updateUserProfile} onSaveProfile={saveUserProfile} onGoPlan={goToPlanner} /> : <ExploreView trips={exploreTrips} isLoading={isLoadingCollection} onUseTrip={(trip) => openSavedTrip(trip, { regenerate: true })} onRefresh={loadExploreTrips} />}
         </div>
       </main>
     </div>

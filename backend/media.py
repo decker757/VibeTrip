@@ -17,6 +17,7 @@ from fastapi import HTTPException, UploadFile
 MEDIA_ROOT = Path(os.getenv("VIBETRIP_MEDIA_DIR", Path(__file__).with_name("media")))
 MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 MAX_MEDIA_BYTES = 20 * 1024 * 1024
+MAX_TRIP_MEDIA = 5
 ALLOWED_MEDIA_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"}
 
 

@@ -47,7 +47,67 @@ const exploreCoverImages = {
   'fallback-auckland-rotorua': 'https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=1200&q=82',
   'fallback-buenos-aires-tigre': 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1200&q=82',
   'fallback-santiago-valparaiso': 'https://images.unsplash.com/photo-1498307833015-e7b400441eb8?auto=format&fit=crop&w=1200&q=82',
+  // This direct Unsplash image is a more reliable free source for the Marrakech seed.
+  'fallback-marrakech-essaouira': 'https://images.unsplash.com/photo-1580746738099-1cb74f972feb?auto=format&fit=crop&w=1200&q=82',
+};
+
+const exploreCoverFallbacks = {
   'fallback-marrakech-essaouira': 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?auto=format&fit=crop&w=1200&q=82',
+};
+
+const exploreMemorySeeds = {
+  'fallback-boston-new-york': [
+    { url: exploreCoverImages['fallback-portland-seattle'], caption: 'A quiet forest stretch before the city.' },
+    { url: exploreCoverImages['fallback-munich-prague'], caption: 'The road opens up after the morning coffee stop.' },
+  ],
+  'fallback-portland-seattle': [
+    { url: exploreCoverImages['fallback-boston-new-york'], caption: 'Rainy roads and a warm café reset.' },
+    { url: exploreCoverImages['fallback-auckland-rotorua'], caption: 'A green detour before the final leg.' },
+  ],
+  'fallback-munich-prague': [
+    { url: exploreCoverImages['fallback-auckland-rotorua'], caption: 'A calm mountain-road pause.' },
+    { url: exploreCoverImages['fallback-boston-new-york'], caption: 'The best part of the drive was between cities.' },
+  ],
+  'fallback-singapore-malacca': [
+    { url: exploreCoverImages['fallback-bangkok-hua-hin'], caption: 'A little Southeast Asian city energy before crossing north.' },
+    { url: exploreCoverImages['fallback-kyoto-osaka'], caption: 'A green pause before the food stops in Malacca.' },
+  ],
+  'fallback-kyoto-osaka': [
+    { url: exploreCoverImages['fallback-singapore-malacca'], caption: 'An early start through the quieter streets.' },
+    { url: exploreCoverImages['fallback-auckland-rotorua'], caption: 'A peaceful view between tea and street food.' },
+  ],
+  'fallback-bangkok-hua-hin': [
+    { url: exploreCoverImages['fallback-singapore-malacca'], caption: 'The city fades as the road heads toward the coast.' },
+    { url: exploreCoverImages['fallback-cape-town-stellenbosch'], caption: 'A slower stop before the beachside dinner.' },
+  ],
+  'fallback-cape-town-stellenbosch': [
+    { url: exploreCoverImages['fallback-melbourne-apollo-bay'], caption: 'Mountain light on the way to the winelands.' },
+    { url: exploreCoverImages['fallback-boston-new-york'], caption: 'A lookout worth pulling over for.' },
+  ],
+  'fallback-nairobi-naivasha': [
+    { url: exploreCoverImages['fallback-cape-town-stellenbosch'], caption: 'Wide-open landscapes between the viewpoint stops.' },
+    { url: exploreCoverImages['fallback-melbourne-apollo-bay'], caption: 'A quiet road before the lakeside lunch.' },
+  ],
+  'fallback-melbourne-apollo-bay': [
+    { url: exploreCoverImages['fallback-nairobi-naivasha'], caption: 'Coastal light after leaving Torquay.' },
+    { url: exploreCoverImages['fallback-portland-seattle'], caption: 'A forested stretch before the Twelve Apostles.' },
+  ],
+  'fallback-auckland-rotorua': [
+    { url: exploreCoverImages['fallback-melbourne-apollo-bay'], caption: 'A long green road toward the geothermal country.' },
+    { url: exploreCoverImages['fallback-cape-town-stellenbosch'], caption: 'A scenic pause before the evening soak.' },
+  ],
+  'fallback-buenos-aires-tigre': [
+    { url: exploreCoverImages['fallback-singapore-malacca'], caption: 'A slow morning leaving the city behind.' },
+    { url: exploreCoverImages['fallback-bangkok-hua-hin'], caption: 'Market colours before the riverside lunch.' },
+  ],
+  'fallback-santiago-valparaiso': [
+    { url: exploreCoverImages['fallback-cape-town-stellenbosch'], caption: 'Mountain light on the long way to the coast.' },
+    { url: exploreCoverImages['fallback-melbourne-apollo-bay'], caption: 'A roadside view before the street art walk.' },
+  ],
+  'fallback-marrakech-essaouira': [
+    { url: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?auto=format&fit=crop&w=1200&q=82', caption: 'Colour and texture from the Marrakech souks.' },
+    { url: 'https://images.unsplash.com/photo-1536237717235-0acadb345d8c?auto=format&fit=crop&w=1200&q=82', caption: 'A roadside pause on the way to the Atlantic.' },
+  ],
 };
 
 export const exploreFallbackTrips = [
@@ -64,7 +124,21 @@ export const exploreFallbackTrips = [
   { id: 'fallback-buenos-aires-tigre', author_name: 'Camila · Exchange student', title: 'Buenos Aires to Tigre for a slow Sunday', start: 'Buenos Aires, Argentina', destination: 'Tigre, Argentina', route_mode: 'fastest', adventure_level: 42, budget_per_person: 75, travellers: 2, preferences: ['slow-mornings', 'student-budget'], route: { distance_km: 35, drive_minutes: 55 }, itinerary: [{ title: 'Palermo coffee', kind: 'coffee' }, { title: 'Tigre market', kind: 'attraction' }, { title: 'Riverside lunch', kind: 'meal' }], is_public: true, is_completed: true, media: [] },
   { id: 'fallback-santiago-valparaiso', author_name: 'Mateo · Exchange student', title: 'Santiago to Valparaiso by the long way round', start: 'Santiago, Chile', destination: 'Valparaiso, Chile', route_mode: 'scenic', adventure_level: 86, budget_per_person: 130, travellers: 4, preferences: ['local-gems', 'adventurous'], route: { distance_km: 160, drive_minutes: 145 }, itinerary: [{ title: 'Casablanca Valley stop', kind: 'attraction' }, { title: 'Coastal lunch', kind: 'meal' }, { title: 'Valparaiso street art', kind: 'attraction' }], is_public: true, is_completed: true, media: [] },
   { id: 'fallback-marrakech-essaouira', author_name: 'Amal · Exchange student', title: 'Marrakech to Essaouira for ocean air', start: 'Marrakech, Morocco', destination: 'Essaouira, Morocco', route_mode: 'balanced', adventure_level: 73, budget_per_person: 110, travellers: 3, preferences: ['local-gems', 'student-budget'], route: { distance_km: 190, drive_minutes: 175 }, itinerary: [{ title: 'Argan cooperative', kind: 'attraction' }, { title: 'Roadside mint tea', kind: 'coffee' }, { title: 'Essaouira harbour dinner', kind: 'meal' }], is_public: true, is_completed: true, media: [] },
-].map((trip) => ({ ...trip, cover_image: exploreCoverImages[trip.id] }));
+].map((trip) => {
+  const coverImage = exploreCoverImages[trip.id];
+  const seededMedia = trip.media?.length ? trip.media : (exploreMemorySeeds[trip.id] || []).map((memory, index) => ({
+    ...memory,
+    id: `seed-${trip.id}-memory-${index + 1}`,
+    type: 'image/jpeg',
+    name: `${trip.destination} memory ${index + 1}`,
+  }));
+  return {
+    ...trip,
+    cover_image: coverImage,
+    cover_image_fallback: exploreCoverFallbacks[trip.id],
+    media: seededMedia,
+  };
+});
 
 export const defaultCostBreakdown = {
   estimated_total_sgd: 0,
