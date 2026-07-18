@@ -66,9 +66,10 @@ The map UI shows the top candidates as route markers and the planner exposes
 `POST /trips/simulate` to test a closure, crowd spike, or late-running event.
 
 `POST /trips/search` powers the route-request assistant. It accepts a
-natural-language request such as “a quiet cafe with a view” and searches
-several points along the current route before returning scored alternatives
-that can be used as a draft stop. The MVP does not need a vector store for
+natural-language request such as “a quiet cafe with a view” and, when replacing
+an existing timeline stop, searches only the geographic segment between the
+previous and next checkpoints. Results are ordered by route progress near the
+selected stop before enjoyment scoring is used as a tie-break. The MVP does not need a vector store for
 this live discovery flow: Google Places handles free-form place search, while
 LangGraph remains responsible for route fit and itinerary decisions. A vector
 store becomes useful later for persistent user taste, saved places, and
@@ -224,8 +225,8 @@ constraints.
 
 ### Phase 4 — Product expansion and deployment
 
-- Add route sharing and richer Google Maps/Waze handoff for the final ordered
-  stop list.
+- Add route sharing and richer Google Maps handoff for the final ordered stop
+  list.
 - Add saved places, trip-history retrieval, and only then evaluate a vector
   store for persistent taste and semantic discovery.
 - Add authentication, secret management, logging, usage limits, cost tracking,

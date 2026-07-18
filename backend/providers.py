@@ -86,7 +86,7 @@ def _normalize_place_search_query(query: str) -> str:
         return "restaurant"
     if any(word in words for word in ("fuel", "gas", "petrol", "snack", "convenience")):
         return "gas station convenience store"
-    if any(word in words for word in ("scenic", "view", "attraction", "museum", "park")):
+    if any(word in words for word in ("scenic", "scenery", "view", "attraction", "museum", "park")):
         return "scenic attraction"
     return " ".join(words[:8]) or query.strip()
 
@@ -180,6 +180,44 @@ def _route_progress_km(location: tuple[float, float], route_points: list[tuple[f
         if index < len(route_points) - 1:
             progress += _distance_km(point, route_points[index + 1])
     return round(closest_progress, 1)
+
+
+def _route_segment_bounds(
+    route_distance_km: float,
+    segment_start_progress_km: float | None,
+    segment_end_progress_km: float | None,
+) -> tuple[float, float]:
+    """Clamp an optional replacement-search window to the active route."""
+    lower = 0.0 if segment_start_progress_km is None else float(segment_start_progress_km)
+    upper = route_distance_km if segment_end_progress_km is None else float(segment_end_progress_km)
+    lower = max(0.0, min(lower, route_distance_km))
+    upper = max(0.0, min(upper, route_distance_km))
+    return (lower, upper) if lower <= upper else (upper, lower)
+
+
+def _candidate_in_route_segment(
+    candidate: dict[str, Any],
+    route_distance_km: float,
+    segment_start_progress_km: float | None,
+    segment_end_progress_km: float | None,
+) -> bool:
+    """Keep replacement candidates between the adjacent timeline checkpoints."""
+    if segment_start_progress_km is None and segment_end_progress_km is None:
+        return True
+    progress = candidate.get("route_progress_km")
+    if progress is None:
+        return False
+    lower, upper = _route_segment_bounds(route_distance_km, segment_start_progress_km, segment_end_progress_km)
+    # The upper checkpoint belongs to the next timeline row, so do not offer
+    # places at or beyond it as replacements for the current row.
+    return lower <= float(progress) < upper
+
+
+def _sort_route_matches(candidates: list[dict[str, Any]], target_progress_km: float | None) -> list[dict[str, Any]]:
+    """Make the nearest feasible alternatives appear first, then use enjoyment."""
+    if target_progress_km is None:
+        return sorted(candidates, key=lambda item: (float(item.get("route_progress_km") or 0), -float(item.get("enjoyment_score") or 0)))
+    return sorted(candidates, key=lambda item: (abs(float(item.get("route_progress_km") or 0) - target_progress_km), -float(item.get("enjoyment_score") or 0)))
 
 
 def _distance_km(first: tuple[float, float], second: tuple[float, float]) -> float:
@@ -339,11 +377,30 @@ class DemoMapsProvider:
             "waypoint_note": f"Demo route reserves {len(waypoint_ids)} planned stop(s); connect Google Maps for live waypoint geometry.",
         }
 
-    async def search_route_places(self, query: str, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, route_mode: str = "balanced") -> ProviderResult:
+    async def search_route_places(
+        self,
+        query: str,
+        start: str,
+        destination: str,
+        budget_per_person: int,
+        crowd_tolerance: str,
+        route_mode: str = "balanced",
+        segment_start_progress_km: float | None = None,
+        segment_end_progress_km: float | None = None,
+        target_progress_km: float | None = None,
+    ) -> ProviderResult:
         result = await self.plan_trip(start, destination, budget_per_person, crowd_tolerance, route_mode=route_mode)
         normalized_query = _normalize_place_search_query(query)
         query_terms = [term for term in re.findall(r"[a-z0-9]+", normalized_query.lower()) if len(term) > 2]
-        matches = [candidate for candidate in result.candidates if _place_matches_search_intent(candidate, normalized_query) and (not query_terms or any(term in " ".join((candidate.get("name", ""), candidate.get("category", ""), candidate.get("reason", ""))).lower() for term in query_terms))]
+        route_distance_km = float(result.route.get("distance_km") or 0)
+        matches = [
+            candidate
+            for candidate in result.candidates
+            if _candidate_in_route_segment(candidate, route_distance_km, segment_start_progress_km, segment_end_progress_km)
+            and _place_matches_search_intent(candidate, normalized_query)
+            and (not query_terms or any(term in " ".join((candidate.get("name", ""), candidate.get("category", ""), candidate.get("reason", ""))).lower() for term in query_terms))
+        ]
+        matches = _sort_route_matches(matches, target_progress_km)
         warning = result.warning
         if not matches:
             warning = f"{warning + ' ' if warning else ''}No route places matched “{query}”. Try a broader request."
@@ -457,7 +514,18 @@ class GoogleMapsProvider:
                             candidates[normalized["id"]] = normalized
         return ProviderResult(route=route_result, candidates=sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True), provider="google")
 
-    async def search_route_places(self, query: str, start: str, destination: str, budget_per_person: int, crowd_tolerance: str, route_mode: str = "balanced") -> ProviderResult:
+    async def search_route_places(
+        self,
+        query: str,
+        start: str,
+        destination: str,
+        budget_per_person: int,
+        crowd_tolerance: str,
+        route_mode: str = "balanced",
+        segment_start_progress_km: float | None = None,
+        segment_end_progress_km: float | None = None,
+        target_progress_km: float | None = None,
+    ) -> ProviderResult:
         """Search a free-form request at several points along the live route."""
         normalized_query = _normalize_place_search_query(query)
         mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
@@ -480,7 +548,19 @@ class GoogleMapsProvider:
                 raise RuntimeError("Google Routes returned no route for place search")
             route_result = self._parse_route(raw_route, start, destination, route_mode)
             route_geometry = _decode_polyline(route_result.get("polyline") or "")
+            route_distance_km = float(route_result.get("distance_km") or 0)
             route_points = _sample_polyline(route_geometry, count=min(5, mode_config["corridor_sample_count"]))
+            if segment_start_progress_km is not None or segment_end_progress_km is not None:
+                lower, upper = _route_segment_bounds(route_distance_km, segment_start_progress_km, segment_end_progress_km)
+                segment_points = [
+                    point for point in route_points
+                    if lower <= float(_route_progress_km(point, route_geometry) or 0) < upper
+                ]
+                if segment_points:
+                    route_points = segment_points
+                elif route_points:
+                    target = target_progress_km if target_progress_km is not None else lower
+                    route_points = [min(route_points, key=lambda point: abs(float(_route_progress_km(point, route_geometry) or 0) - target))]
             candidates: dict[str, dict[str, Any]] = {}
             for route_point in (route_points[1:-1] or route_points):
                 payload = {
@@ -504,9 +584,9 @@ class GoogleMapsProvider:
                     )
                     if normalized:
                         normalized["types"] = place.get("types") or []
-                    if normalized and _place_matches_search_intent(normalized, normalized_query) and normalized["id"] not in candidates:
+                    if normalized and _candidate_in_route_segment(normalized, route_distance_km, segment_start_progress_km, segment_end_progress_km) and _place_matches_search_intent(normalized, normalized_query) and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
-        results = sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True)
+        results = _sort_route_matches(list(candidates.values()), target_progress_km)
         warning = None if results else f"No route places matched “{query}”. Try a broader request."
         return ProviderResult(route=route_result, candidates=results, provider="google", warning=warning)
 

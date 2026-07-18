@@ -7,9 +7,9 @@ export const navItems = [
 ];
 
 export const initialStops = [
-  { time: '08:10', title: 'Coffee stop', place: 'The Coffee Exchange', detail: 'Providence, RI', type: 'coffee', duration: '25 min' },
-  { time: '11:30', title: 'Lunch with a view', place: 'The Lobster Shack', detail: 'Mystic, CT', type: 'lunch', duration: '55 min' },
-  { time: '13:35', title: 'Fuel up', place: 'Shell · Exit 8', detail: 'New Haven, CT', type: 'fuel', duration: '15 min' },
+  { time: '08:10', title: 'Coffee stop', place: 'The Coffee Exchange', detail: 'Providence, RI', type: 'coffee', duration: '25 min', place_id: 'demo-coffee', route_progress_km: 65 },
+  { time: '10:55', title: 'Fuel up', place: 'Shell · Exit 8', detail: 'New Haven, CT', type: 'fuel', duration: '15 min', place_id: 'demo-fuel', route_progress_km: 125 },
+  { time: '12:30', title: 'Lunch with a view', place: 'The Lobster Shack', detail: 'Mystic, CT', type: 'lunch', duration: '55 min', place_id: 'demo-lunch', route_progress_km: 205 },
   { time: '15:40', title: 'Check-in', place: 'The Hoxton, Williamsburg', detail: 'Brooklyn, NY', type: 'stay', duration: 'overnight' },
 ];
 

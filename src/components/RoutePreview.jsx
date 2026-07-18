@@ -1,14 +1,14 @@
 import Icon from './Icon';
 import { formatDuration } from '../app/formatters';
 
-export function RouteMap({ candidates = [], from = 'Boston, MA', to = 'New York, NY', routeStats }) {
+export function RouteMap({ candidates = [], from = 'Boston, MA', to = 'New York, NY', routeStats, onFocusCandidate }) {
   const markerPositions = [[30, 22], [43, 37], [55, 53], [67, 68]];
   return (
     <div className="map-canvas" aria-label={`Map preview of the route from ${from} to ${to}`}>
       <div className="map-controls"><button className="map-button active" aria-label="Map view"><Icon name="map" size={16} /></button><button className="map-button" aria-label="Layers"><Icon name="layers" size={16} /></button></div>
       <div className="map-zoom"><button aria-label="Zoom in"><Icon name="plus" size={16} /></button><button aria-label="Zoom out"><span>−</span></button></div>
       <div className="map-label label-boston">{from.split(',')[0].toUpperCase()}</div><div className="map-label label-providence">PROVIDENCE</div><div className="map-label label-newhaven">NEW HAVEN</div><div className="map-label label-nyc">{to.split(',')[0].toUpperCase()}</div>
-      {candidates.slice(0, 4).map((candidate, index) => { const [left, top] = markerPositions[index]; return <button className="map-place" key={candidate.id} style={{ left: `${left}%`, top: `${top}%` }} aria-label={`${candidate.name}, ${candidate.enjoyment_score} enjoyment score`} title={`${candidate.name} · ${candidate.detour_minutes} min detour`}><Icon name="sparkles" size={12} /></button>; })}
+      {candidates.slice(0, 4).map((candidate, index) => { const [left, top] = markerPositions[index]; return <button className="map-place" key={candidate.id} style={{ left: `${left}%`, top: `${top}%` }} aria-label={`${candidate.name}, ${candidate.enjoyment_score} enjoyment score`} title={`${candidate.name} · ${candidate.detour_minutes} min detour`} onClick={() => onFocusCandidate?.(candidate)}><Icon name="sparkles" size={12} /></button>; })}
       <svg className="route-art" viewBox="0 0 800 500" preserveAspectRatio="none" role="presentation">
         <path className="water-shape" d="M555 0c-11 47-7 82 12 113 17 28 20 56 10 83-11 29-5 63 18 95 26 36 44 66 45 111l160 98V0H555Z" />
         <path className="state-line" d="M286 54c-40 44-59 102-63 157-3 52 26 64 50 94 22 28 22 73 58 91 28 14 80-2 111-27 32-25 54-39 71-80 12-29 13-69-5-107-20-42-20-80-8-128" />

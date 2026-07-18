@@ -32,10 +32,6 @@ export function buildGoogleMapsUrl(from, destination, stops) {
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
-export function buildWazeUrl(destination) {
-  return `https://waze.com/ul?q=${encodeURIComponent(destination)}&navigate=yes&utm_source=vibetrip`;
-}
-
 export function buildClientCostBreakdown(route, candidate, travellers) {
   const distanceKm = Number(route?.distance_km || 0);
   const fuel = Number((distanceKm / 12 * 2.1).toFixed(2));
@@ -74,7 +70,7 @@ export function itineraryToStops(itinerary, detours, destination) {
           : item.kind === 'attraction'
             ? { place: associatedPlace?.name || item.title, detail: associatedPlace?.address || 'Scenic stop along the route', type: 'attraction' }
             : details[item.kind] || details.coffee;
-    return { time: item.time, title: item.title, place_id: item.place_id, location: associatedPlace?.location, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
+    return { time: item.time, title: item.title, place_id: item.place_id, location: associatedPlace?.location, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
   });
 }
 
@@ -83,7 +79,7 @@ export function candidateToStop(candidate, time = '12:30') {
   return {
     time, title: candidate.name, place: candidate.name, detail: candidate.address || 'Along the route',
     type: category.includes('cafe') || category.includes('coffee') ? 'coffee' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : category.includes('attraction') ? 'attraction' : 'lunch',
-    duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location,
+    duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location, route_progress_km: candidate.route_progress_km,
   };
 }
 

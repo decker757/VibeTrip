@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PlannerPage from './components/PlannerPage';
 import Icon from './components/Icon';
 import { ExploreView, SavedTripsView } from './components/TripCollections';
-import { addMinutesToTime, buildClientCostBreakdown, buildGoogleMapsUrl, buildWazeUrl, candidateToStop, itineraryToStops } from './app/formatters';
+import { addMinutesToTime, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, itineraryToStops } from './app/formatters';
 import { defaultCostBreakdown, exploreFallbackTrips, initialCandidates, initialStops, navItems, PLANNER_API_URL, profileOptions, routeModeOptions } from './app/plannerData';
 
 function App() {
@@ -55,7 +55,6 @@ function App() {
   const defaultReplacementIndex = Math.max(0, stops.findIndex((stop) => stop.type === 'lunch'));
   const replacementStopIndex = editingStopIndex ?? focusedStopIndex ?? defaultReplacementIndex;
   const displayedCandidates = useMemo(() => candidatePlaces.slice(0, routeMode === 'fastest' ? 4 : 6), [candidatePlaces, routeMode]);
-  const alongRouteCandidates = useMemo(() => displayedCandidates.filter((candidate) => candidate.recommendation_scope !== 'destination'), [displayedCandidates]);
   const destinationCandidates = useMemo(() => candidatePlaces.filter((candidate) => candidate.recommendation_scope === 'destination').slice(0, 4), [candidatePlaces]);
   const mapCandidates = useMemo(() => {
     const visibleIds = new Set(displayedCandidates.map((candidate) => candidate.id));
@@ -66,7 +65,6 @@ function App() {
     return candidatePlaces.filter((candidate) => visibleIds.has(candidate.id) || waypointIds.has(candidate.id));
   }, [candidatePlaces, displayedCandidates, route.routed_waypoint_ids, stops]);
   const googleMapsUrl = useMemo(() => buildGoogleMapsUrl(from, to, stops), [from, to, stops]);
-  const wazeUrl = useMemo(() => buildWazeUrl(to), [to]);
   const profileSummary = adventureLevel >= 70 ? 'Curious, not rushed.' : adventureLevel <= 35 ? 'Easygoing, well paced.' : 'Balanced, open to detours.';
   const profileBalance = adventureLevel >= 70 ? 'More adventurous' : adventureLevel <= 35 ? 'More laid back' : 'Balanced pace';
 
@@ -221,6 +219,16 @@ function App() {
     void rerouteDraft(nextStops, `${candidate.name} selected and the route was recalculated through it.`);
   }
 
+  function focusCandidate(candidate) {
+    const timelineIndex = stops.findIndex((stop) => stop.place_id === candidate.id);
+    if (timelineIndex >= 0) {
+      focusTimelineStop(stops[timelineIndex], timelineIndex);
+      return;
+    }
+    const focused = mapControllerRef.current?.focusStop(candidateToStop(candidate));
+    setMessage(focused ? `${candidate.name} focused on the map. Choose “Use here” to add it to the selected stop.` : `${candidate.name} selected. Choose “Use here” to add it to the selected stop.`);
+  }
+
   function addDestinationCandidate(candidate) {
     const existingIndex = stops.findIndex((stop) => stop.place_id === candidate.id);
     if (existingIndex >= 0) {
@@ -276,6 +284,25 @@ function App() {
     event.preventDefault();
     const query = placeQuery.trim();
     if (query.length < 3 || isSearchingPlaces) return;
+    const candidateForStop = (stop) => candidatePlaces.find((candidate) => candidate.id === stop?.place_id);
+    const progressForStop = (stop) => {
+      const progress = stop?.route_progress_km ?? candidateForStop(stop)?.route_progress_km;
+      return Number.isFinite(Number(progress)) ? Number(progress) : null;
+    };
+    const previousStop = [...stops.slice(0, replacementStopIndex)].reverse().find((stop) => stop.type !== 'stay');
+    const currentStop = stops[replacementStopIndex];
+    const nextStop = stops.slice(replacementStopIndex + 1).find((stop) => stop.type !== 'stay');
+    const previousProgress = progressForStop(previousStop);
+    const currentProgress = progressForStop(currentStop);
+    const nextProgress = progressForStop(nextStop);
+    const routeDistance = Number(route.distance_km || routeStats.distanceKm || 348);
+    const segmentStartProgress = previousProgress ?? (currentProgress == null ? null : Math.max(0, currentProgress - 45));
+    const segmentEndProgress = nextProgress ?? (currentProgress == null ? null : Math.min(routeDistance, currentProgress + 45));
+    const isInReplacementSegment = (candidate) => {
+      if (segmentStartProgress == null && segmentEndProgress == null) return true;
+      const progress = Number(candidate.route_progress_km);
+      return Number.isFinite(progress) && progress >= (segmentStartProgress ?? 0) && progress < (segmentEndProgress ?? routeDistance);
+    };
     setIsSearchingPlaces(true);
     setPlaceSearchResults([]);
     setHasSearchedPlaces(false);
@@ -283,21 +310,22 @@ function App() {
       const response = await fetch(`${PLANNER_API_URL}/trips/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode }),
+        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress }),
       });
       if (!response.ok) throw new Error(`Search returned ${response.status}`);
       const result = await response.json();
-      setPlaceSearchResults(result.candidate_places || []);
+      const contextualResults = (result.candidate_places || []).filter(isInReplacementSegment);
+      setPlaceSearchResults(contextualResults);
       setHasSearchedPlaces(true);
-      setCandidatePlaces((current) => [...(result.candidate_places || []), ...current.filter((candidate) => !(result.candidate_places || []).some((match) => match.id === candidate.id))]);
-      setMessage(result.warning || `Found ${result.candidate_places?.length || 0} route matches for “${query}”.`);
+      setCandidatePlaces((current) => [...contextualResults, ...current.filter((candidate) => !contextualResults.some((match) => match.id === candidate.id))]);
+      setMessage(result.warning || `Found ${contextualResults.length} matches on the ${currentStop?.title || 'selected'} leg for “${query}”.`);
     } catch {
       const terms = query.toLowerCase().split(/\s+/).filter((term) => term.length > 2);
       const cuisine = ['chinese', 'japanese', 'korean', 'thai', 'indian', 'malay', 'vietnamese', 'mexican', 'italian', 'mediterranean'].find((term) => terms.includes(term));
-      const localMatches = candidatePlaces.filter((candidate) => {
+      const localMatches = candidatePlaces.filter((candidate) => isInReplacementSegment(candidate) && (() => {
         const haystack = `${candidate.name} ${candidate.category} ${candidate.reason}`.toLowerCase();
         return cuisine ? haystack.includes(cuisine) : terms.some((term) => haystack.includes(term));
-      });
+      })());
       setPlaceSearchResults(localMatches);
       setHasSearchedPlaces(true);
       setMessage(localMatches.length ? 'Showing local route matches while the search service is unavailable.' : 'The route search is unavailable. Try a broader description.');
@@ -387,6 +415,10 @@ function App() {
     const mapCard = document.querySelector('.map-card');
     if (mapCard && (mapCard.getBoundingClientRect().top < 0 || mapCard.getBoundingClientRect().bottom > window.innerHeight)) {
       mapCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const timelineItem = document.querySelector(`.timeline-item[data-stop-index="${index}"]`);
+    if (timelineItem && (timelineItem.getBoundingClientRect().top < 0 || timelineItem.getBoundingClientRect().bottom > window.innerHeight)) {
+      timelineItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     setMessage(focused ? `${stop.title} focused on the map.` : `${stop.title} selected. Generate a live route to focus it on the map.`);
   }
@@ -524,15 +556,13 @@ function App() {
     },
       route: {
       from, to, routeTitle, routeModeOptions, routeMode, isGenerating, plannerSource, recommendationSource, routeStats, currentRoute: route,
-      googleMapsUrl, wazeUrl, isRerouting, mapControllerRef, mapCandidates, onSelectCandidate: selectCandidate,
+      googleMapsUrl, isRerouting, mapControllerRef, mapCandidates, onSelectCandidate: selectCandidate, onFocusCandidate: focusCandidate,
       destinationCandidates, onAddDestinationCandidate: addDestinationCandidate, onSaveTrip: saveCurrentTrip, isSavingTrip,
       onRouteMode: (nextMode) => { setRouteMode(nextMode); setMessage(`${routeModeOptions.find((option) => option.id === nextMode)?.label} route selected. Generate the route to update recommendations.`); },
     },
     itinerary: { stops, focusedStopIndex, editingStopIndex, isManagingStops, onToggleManager: toggleStopManager, onFocusStop: focusTimelineStop, onBeginChange: beginStopChange, onRemove: removeStop, onAddStop: addStop },
     assistant: { replacementStopIndex, onChooseReplacement: chooseReplacementStop, placeQuery, onPlaceQuery: setPlaceQuery, onSearch: searchRoutePlaces, isSearching: isSearchingPlaces, placeSearchResults, hasSearched: hasSearchedPlaces },
-    candidates: { alongRouteCandidates, selectedPlaceId },
     budget: { costBreakdown, travellers },
-    simulator: { onSimulate: simulateTrip, isSimulating, simulationResult },
   };
 
   return (
@@ -562,7 +592,7 @@ function App() {
         <header className="topbar">
           <button className="mobile-menu" aria-label="Open navigation"><Icon name="menu" size={20} /></button>
           <div className="breadcrumbs"><span>My trips</span><Icon name="chevron" size={13} /><strong>{activeNav}</strong></div>
-          <div className="topbar-actions"><span className="save-status"><span className="status-dot" />All changes saved</span><button className="icon-button" aria-label="Help"><Icon name="help" size={18} /></button><button className="icon-button" aria-label="Settings"><Icon name="settings" size={18} /></button></div>
+          <div className="topbar-actions"><span className="save-status"><span className="status-dot" />All changes saved</span></div>
         </header>
 
         <div className="content-wrap">

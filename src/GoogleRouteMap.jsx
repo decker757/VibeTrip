@@ -42,24 +42,26 @@ function infoContent(candidate) {
   return `<div class="map-info-card"><strong>${escapeHtml(candidate.name)}</strong><span>${escapeHtml(candidate.category || 'Place')} · ${candidate.price_label || '$'}</span><span>★ ${Number(candidate.rating || 0).toFixed(1)} (${Number(candidate.review_count || 0).toLocaleString()}) · ${candidate.detour_minutes || 0} min detour</span>${cost}${quote}<a href="${escapeHtml(candidate.google_maps_uri || '#')}" target="_blank" rel="noreferrer">Open in Google Maps ↗</a></div>`;
 }
 
-const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, fallback, onSelectCandidate }, ref) {
+const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, fallback, onFocusCandidate }, ref) {
   const mapElement = useRef(null);
   const mapRef = useRef(null);
   const overlaysRef = useRef([]);
   const routePointsRef = useRef([]);
   const markerRefs = useRef(new Map());
   const infoWindowRef = useRef(null);
-  const onSelectCandidateRef = useRef(onSelectCandidate);
+  const lastFocusedCandidateIdRef = useRef(null);
+  const onFocusCandidateRef = useRef(onFocusCandidate);
   const [state, setState] = useState(BROWSER_MAPS_KEY && route?.polyline ? 'loading' : 'fallback');
 
   useEffect(() => {
-    onSelectCandidateRef.current = onSelectCandidate;
-  }, [onSelectCandidate]);
+    onFocusCandidateRef.current = onFocusCandidate;
+  }, [onFocusCandidate]);
 
   useImperativeHandle(ref, () => ({
     focusStop(stop) {
       if (!mapRef.current || routePointsRef.current.length === 0) return false;
       const candidate = candidates.find((item) => item.id === stop?.place_id && item.location);
+      if (candidate) lastFocusedCandidateIdRef.current = candidate.id;
       const points = routePointsRef.current;
       const fallbackIndex = stop?.type === 'stay' ? points.length - 1 : stop?.type === 'coffee' ? Math.round((points.length - 1) * 0.12) : stop?.type === 'fuel' ? Math.round((points.length - 1) * 0.38) : Math.round((points.length - 1) * 0.58);
       const position = candidate?.location ? { lat: candidate.location.latitude, lng: candidate.location.longitude } : points[Math.max(0, Math.min(points.length - 1, fallbackIndex))];
@@ -103,9 +105,10 @@ const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, f
         const trafficLayer = new TrafficLayer();
         trafficLayer.setMap(map);
         const routeLine = new google.maps.Polyline({ path: points, geodesic: true, strokeColor: '#1e7bff', strokeOpacity: 0.95, strokeWeight: 5, map });
-        const infoWindow = new InfoWindow({ disableAutoPan: false });
+        const infoWindow = new InfoWindow({ disableAutoPan: true });
         infoWindowRef.current = infoWindow;
         markerRefs.current.clear();
+        lastFocusedCandidateIdRef.current = null;
         const overlays = [routeLine, trafficLayer];
         candidates.forEach((candidate) => {
           if (!candidate.location) return;
@@ -116,11 +119,15 @@ const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, f
             infoWindow.setContent(infoContent(candidate));
             infoWindow.open({ map, anchor: marker });
           };
+          const focus = () => {
+            if (lastFocusedCandidateIdRef.current === candidate.id) return;
+            lastFocusedCandidateIdRef.current = candidate.id;
+            onFocusCandidateRef.current?.(candidate);
+          };
           marker.addEventListener('gmp-click', () => {
             open();
-            onSelectCandidateRef.current?.(candidate);
+            focus();
           });
-          pin.addEventListener('mouseenter', open);
           overlays.push(marker);
         });
         bounds.extend(points[0]);
@@ -144,6 +151,7 @@ const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, f
       mapRef.current = null;
       routePointsRef.current = [];
       markerRefs.current.clear();
+      lastFocusedCandidateIdRef.current = null;
       infoWindowRef.current = null;
     };
   }, [route?.polyline, candidates]);

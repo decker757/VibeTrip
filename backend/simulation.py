@@ -32,15 +32,15 @@ def recalibrate_trip(
     ]
     options.sort(key=lambda candidate: candidate.get("enjoyment_score", 0), reverse=True)
     replacement = options[0] if options else None
+    replacement_index = None
     if current_stop_index is not None and 0 <= current_stop_index < len(itinerary):
-        current_item = itinerary[current_stop_index]
-        updated_itinerary = [item for index, item in enumerate(itinerary) if index != current_stop_index]
+        replacement_index = current_stop_index
     elif current_stop_id:
-        current_item = next((item for item in itinerary if item.get("place_id") == current_stop_id), None)
-        updated_itinerary = [item for item in itinerary if item.get("place_id") != current_stop_id]
+        replacement_index = next((index for index, item in enumerate(itinerary) if item.get("place_id") == current_stop_id), None)
     else:
-        current_item = next((item for item in itinerary if item.get("title") == current_stop_title), None)
-        updated_itinerary = [item for item in itinerary if item.get("title") != current_stop_title]
+        replacement_index = next((index for index, item in enumerate(itinerary) if item.get("title") == current_stop_title), None)
+    current_item = itinerary[replacement_index] if replacement_index is not None else None
+    updated_itinerary = list(itinerary)
     if replacement:
         replacement_category = replacement.get("category", "").lower()
         replacement_kind = (
@@ -48,13 +48,17 @@ def recalibrate_trip(
             else "fuel" if any(term in replacement_category for term in ("gas", "fuel", "convenience", "store"))
             else "coffee"
         )
-        updated_itinerary.append({
+        replacement_item = {
             "time": current_item.get("time", "13:05") if current_item else "13:05",
-            "title": f"{replacement['name']} (backup)",
+            "title": replacement["name"],
             "kind": replacement_kind,
             "duration_min": 45,
             "place_id": replacement.get("id"),
-        })
+        }
+        if replacement_index is None:
+            updated_itinerary.append(replacement_item)
+        else:
+            updated_itinerary[replacement_index] = replacement_item
         updated_itinerary.sort(key=lambda item: item.get("time", ""))
         return {
             "action": "replace_stop",
@@ -63,6 +67,8 @@ def recalibrate_trip(
             "itinerary": updated_itinerary,
             "destination": destination,
         }
+    if replacement_index is not None:
+        updated_itinerary.pop(replacement_index)
     updated_itinerary.append({"time": "now", "title": f"Head straight to {destination}", "kind": "stay", "duration_min": 0})
     return {
         "action": "go_to_destination",

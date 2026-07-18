@@ -45,6 +45,9 @@ class RoutePlaceSearchRequest(BaseModel):
     budget_per_person: int = Field(default=400, ge=0)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
+    segment_start_progress_km: float | None = Field(default=None, ge=0)
+    segment_end_progress_km: float | None = Field(default=None, ge=0)
+    target_progress_km: float | None = Field(default=None, ge=0)
 
 
 class RerouteRequest(BaseModel):
@@ -108,6 +111,9 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
             request.budget_per_person,
             request.crowd_tolerance,
             request.route_mode,
+            request.segment_start_progress_km,
+            request.segment_end_progress_km,
+            request.target_progress_km,
         )
     except Exception as error:
         provider = DemoMapsProvider()
@@ -118,6 +124,9 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
             request.budget_per_person,
             request.crowd_tolerance,
             request.route_mode,
+            request.segment_start_progress_km,
+            request.segment_end_progress_km,
+            request.target_progress_km,
         )
         result.warning = f"Maps provider unavailable ({type(error).__name__}); showing demo matches."
     return {
