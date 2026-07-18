@@ -10,6 +10,8 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from .recommender import refine_recommendations
+
 
 class PlannerState(TypedDict, total=False):
     start: str
@@ -31,6 +33,9 @@ class PlannerState(TypedDict, total=False):
     detours: list[dict[str, Any]]
     itinerary: list[dict[str, Any]]
     confidence: int
+    recommendation_source: str
+    recommendation_confidence: int
+    recommendation_explanation: str
 
 
 def _is_refuel_or_convenience(place: dict[str, Any]) -> bool:
@@ -326,11 +331,13 @@ def build_planner_graph():
     workflow.add_node("route_scout", route_scout)
     workflow.add_node("vibe_matcher", vibe_matcher)
     workflow.add_node("detour_reviewer", detour_reviewer)
+    workflow.add_node("llm_reviewer", refine_recommendations)
     workflow.add_node("day_builder", day_builder)
     workflow.add_edge(START, "route_scout")
     workflow.add_edge("route_scout", "vibe_matcher")
     workflow.add_edge("vibe_matcher", "detour_reviewer")
-    workflow.add_edge("detour_reviewer", "day_builder")
+    workflow.add_edge("detour_reviewer", "llm_reviewer")
+    workflow.add_edge("llm_reviewer", "day_builder")
     workflow.add_edge("day_builder", END)
     return workflow.compile()
 
