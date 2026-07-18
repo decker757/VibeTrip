@@ -6,12 +6,13 @@
 
 Codex Hackathon Project
 
-An early MVP for an agentic road-trip planner designed around Singaporean exchange students. The current web app is a frontend prototype of the core planning loop:
+VibeTrip is a working MVP for an agentic road-trip planner designed around Singaporean exchange students. It reduces the cognitive load of planning a road trip by combining route geometry, practical breaks, personal preferences, and route-aware place recommendations:
 
 1. Add a starting point and destination.
 2. Set the trip context (dates, group size, budget).
 3. Review an agent-produced route, detours, buffers, and timeline.
 4. Adjust stops and refine the travel profile.
+5. Save, complete, and optionally publish trips with photos or videos to Explore.
 
 ## Run the frontend locally
 
@@ -23,7 +24,7 @@ npm run dev
 ## Run the planner API
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
@@ -33,6 +34,16 @@ cp .env.example .env
 # DATABASE_URL is already provided in `.env.example` for that container.
 uvicorn backend.main:app --reload --port 8000 --env-file .env
 ```
+
+Open a second terminal for the frontend:
+
+```bash
+npm install
+npm run dev
+```
+
+Docker is optional. It is only needed for the local Postgres service; the app
+falls back to memory/localStorage when Postgres is not running.
 
 The API exposes `GET /health`, `POST /trips/plan`, `POST /trips/reroute`, and
 `POST /trips/search`, `POST /trips/save`, `GET /trips/saved`,
@@ -49,6 +60,68 @@ the first successful sign-in for an account opens `/onboarding` so they can set
 their travel preferences before entering the planner. Completing onboarding is
 stored per account in the browser, and the preferences can be changed later
 from the account menu’s Travel profile page.
+
+### Demo mode versus live mode
+
+The repository is designed to remain judgeable without paid provider keys:
+
+- **Demo mode:** omit Google and OpenAI keys. The deterministic provider returns
+  seeded route/place data and the UI remains fully navigable.
+- **Live map mode:** provide both `GOOGLE_MAPS_API_KEY` for the backend Routes +
+  Places calls and `VITE_GOOGLE_MAPS_BROWSER_KEY` for the browser map. Restrict
+  the browser key by HTTP referrer and restrict the server key by API and quota.
+- **LLM review:** provide `OPENAI_API_KEY` and keep `VIBETRIP_LLM_ENABLED=true`.
+  The LLM is optional and only ranks deterministic, already-validated
+  candidates.
+
+Never put `GOOGLE_MAPS_API_KEY` or `OPENAI_API_KEY` in a `VITE_*` variable or
+commit them to Git. Google Maps usage requires billing, so set quota and budget
+alerts before enabling live mode.
+
+### Environment variables
+
+Copy `.env.example` to `.env` and configure only what the chosen mode needs:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `GOOGLE_MAPS_API_KEY` | Live mode | Backend Routes and Places requests |
+| `VITE_GOOGLE_MAPS_BROWSER_KEY` | Live mode | Interactive browser map |
+| `OPENAI_API_KEY` | Optional | LLM recommendation reviewer |
+| `VITE_API_URL` | Deployment | Public backend URL used by the frontend |
+| `VIBETRIP_AUTH_SECRET` | Deployment | Secret used to sign session cookies |
+| `DATABASE_URL` | Persistent data | Postgres connection string |
+| `VIBETRIP_MEDIA_DIR` | Optional | Local media storage directory |
+| `VIBETRIP_OKF_DIR` | Optional | Local OKF profile directory |
+
+`VITE_*` values are bundled into the browser and are not secret. The server
+variables must remain backend-only.
+
+## Verification checklist
+
+Run these checks before opening a pull request or recording the demo:
+
+```bash
+npm run build
+python3 -m compileall -q backend
+git diff --check
+```
+
+Then manually verify the primary journey:
+
+1. Create an account or use the demo login.
+2. Complete onboarding and confirm the name and travel profile are reflected in
+   the planner.
+3. Generate a route with dates, start time, travellers, budget, and route style.
+4. Replace one stop through the route assistant and confirm the route is
+   recalculated through the replacement waypoint in the correct order.
+5. Add an optional destination stop and verify the timeline and route update.
+6. Save the trip, mark it complete, add media, publish it, and find it through
+   Explore search, filters, and pagination.
+7. Test logout/login, a second account, keyboard focus, mobile layout, and the
+   no-API-key demo fallback.
+
+The current repository has no automated test suite yet, so the manual journey
+above is an important pre-submission check.
 
 ## Saved trips and Explore
 
@@ -222,13 +295,32 @@ Route style and travel profile are intentionally separate inputs. `fastest`,
 builder may add. The adventure slider only changes recommendation scoring and
 the inferred archetype within that route strategy.
 
-The eventual FastAPI boundary should expose a streaming `POST /trips/plan` endpoint so the frontend can render agent progress rather than waiting on one opaque response. Keep the planner state typed and serializable so it can be persisted as a draft and resumed if a plan changes mid-trip.
+The current FastAPI boundary exposes a synchronous `POST /trips/plan` endpoint
+and keeps planner state typed and serializable so drafts can be saved and
+resumed. Streaming agent progress remains a future enhancement.
+
+## Deploying the MVP
+
+For a hosted demo, deploy the Vite frontend and FastAPI backend separately. Set
+`VITE_API_URL` to the public backend URL before building the frontend, and set
+the backend's `VIBETRIP_AUTH_SECRET` to a long random value. A hosted Postgres
+instance is recommended for saved trips; the default local JSON, memory, and
+filesystem adapters are intended for judging and local development, not
+durable production storage.
+
+Uploaded memories also need persistent object storage or a persistent volume in
+deployment. The current media adapter writes to `backend/media/`, so ephemeral
+hosting will lose uploads after a restart. Replace it with S3, Cloudflare R2,
+or another sharable object store before treating the app as production-ready.
+
+Before publishing a repository or demo, confirm that `.env`, API keys, local
+auth data, OKF artifacts, media, and database volumes are not committed. The
+repository's `.gitignore` excludes these local state files.
 
 ## Remaining roadmap
 
-The next implementation step is to validate the end-to-end MVP and harden the
-planner without giving the model control of routing or safety-critical
-constraints.
+The MVP is implemented and ready for end-to-end validation. The remaining
+items below are hardening work rather than prerequisites for the local demo.
 
 ### Phase 0 — Frontend modularization (implemented)
 
@@ -257,7 +349,7 @@ constraints.
   and rate limits. The model must not invent places, prices, reviews, hours,
   coordinates, or route geometry.
 
-### Phase 2 — Planner reliability and live-trip readiness
+### Phase 2 — Planner reliability and live-trip readiness (remaining)
 
 - Add end-to-end tests for waypoint ordering, opening hours, budget limits,
   realistic first-stop timing, rerouting, and simulator recalibration.
