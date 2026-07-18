@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS trips (
     owner_id TEXT NOT NULL,
     author_name TEXT,
     title TEXT NOT NULL,
+    post_caption TEXT NOT NULL DEFAULT '',
     start_location TEXT NOT NULL,
     destination TEXT NOT NULL,
     route_mode TEXT NOT NULL,
@@ -27,3 +28,16 @@ CREATE TABLE IF NOT EXISTS trips (
 
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS is_completed BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS media JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS post_caption TEXT NOT NULL DEFAULT '';
+
+CREATE TABLE IF NOT EXISTS trip_events (
+    id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL,
+    trip_id TEXT,
+    event_type TEXT NOT NULL,
+    data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS trip_events_owner_created_idx
+    ON trip_events (owner_id, created_at DESC);

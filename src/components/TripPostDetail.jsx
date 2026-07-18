@@ -6,7 +6,6 @@ import { isVideoMedia, resolveMediaUrl } from '../app/media';
 const preferenceLabels = {
   'local-gems': 'Local gems',
   'slow-mornings': 'Slow mornings',
-  'student-budget': 'Student budget',
   adventurous: 'More adventure',
 };
 
@@ -84,6 +83,7 @@ export default function TripPostDetail({ trip, onBack, onUseTrip }) {
         <p className="eyebrow">COMMUNITY TRIP</p>
         <h1>{trip.title}</h1>
         <p className="trip-post-author">{trip.author_name || 'VibeTrip traveller'} · shared a completed route</p>
+        {trip.post_caption && <p className="trip-post-caption">{trip.post_caption}</p>}
       </div>
       <button className="primary-inline-action trip-post-use" type="button" onClick={() => onUseTrip(trip)}><Icon name="compass" size={15} />Use this route</button>
     </header>

@@ -1,5 +1,6 @@
 """FastAPI entrypoint for the VibeTrip planning workflow."""
 
+from datetime import date
 from typing import Literal
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Response, UploadFile
@@ -13,7 +14,7 @@ from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
 from .providers import DemoMapsProvider, get_maps_provider, suggest_cities
 from .simulation import SimulationEvent, recalibrate_trip
-from .storage import OWNER_ID, trip_repository
+from .storage import OWNER_ID, context_event_repository, trip_repository
 
 
 class ProfileContext(BaseModel):
@@ -28,11 +29,11 @@ class TripRequest(BaseModel):
     travellers: int = Field(default=4, ge=1, le=12)
     budget_per_person: int = Field(default=400, ge=0)
     dates: str = ""
-    start_date: str = "2025-09-14"
-    end_date: str = "2025-09-16"
+    start_date: str = Field(default_factory=lambda: date.today().isoformat())
+    end_date: str = Field(default_factory=lambda: date.today().isoformat())
     start_time: str = "08:10"
     end_time: str = "18:00"
-    preferences: list[Literal["adventurous", "local-gems", "slow-mornings", "student-budget"]] = Field(default_factory=list)
+    preferences: list[Literal["adventurous", "local-gems", "slow-mornings"]] = Field(default_factory=list)
     adventure_level: int = Field(default=70, ge=0, le=100)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
@@ -73,6 +74,7 @@ class RerouteRequest(BaseModel):
 
 
 class SaveTripRequest(BaseModel):
+    id: str | None = None
     owner_id: str = OWNER_ID
     title: str = Field(min_length=2, max_length=140)
     start: str = Field(min_length=2)
@@ -91,12 +93,19 @@ class SaveTripRequest(BaseModel):
     candidate_places: list[dict] = Field(default_factory=list)
     cost_breakdown: dict = Field(default_factory=dict)
     media: list[dict] = Field(default_factory=list)
+    post_caption: str = Field(default="", max_length=2000)
     is_public: bool = False
     is_completed: bool = False
 
 
 class VisibilityRequest(BaseModel):
     is_public: bool
+
+
+class PublishTripRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=140)
+    post_caption: str = Field(default="", max_length=2000)
+    media_captions: dict[str, str] = Field(default_factory=dict)
 
 
 class UserProfileRequest(ProfileContext):
@@ -106,6 +115,12 @@ class UserProfileRequest(ProfileContext):
     budget_per_person_sgd: int = Field(default=400, ge=0)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
     pace: str = Field(default="balanced", max_length=40)
+
+
+class AgentEventRequest(BaseModel):
+    event_type: str = Field(min_length=2, max_length=60)
+    trip_id: str | None = None
+    data: dict = Field(default_factory=dict)
 
 
 class AuthRequest(BaseModel):
@@ -273,17 +288,26 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         provider = fallback
         provider_result = await fallback.plan_trip(request.start, request.destination, request.budget_per_person, request.crowd_tolerance, request.start_time, request.route_mode)
         provider_result.warning = f"Maps provider unavailable ({type(error).__name__}); showing demo candidates."
-    profile_context = okf_profile_exporter.export(
-        request.profile.model_dump() | {
+    profile = request.profile.model_dump() | {
             "preferences": request.preferences,
             "adventure_level": request.adventure_level,
             "budget_per_person_sgd": request.budget_per_person,
             "crowd_tolerance": request.crowd_tolerance,
             "pace": "adventurous" if request.adventure_level >= 70 else "laid-back" if request.adventure_level <= 35 else "balanced",
-        },
+        }
+    profile_context = okf_profile_exporter.export(
+        profile,
         owner_id=user["id"],
+        trips=trip_repository.list_saved(user["id"]),
+        events=context_event_repository.list_for_owner(user["id"]),
     )
-    state = request.model_dump() | {"route": provider_result.route, "candidate_places": provider_result.candidates, "profile_okf": profile_context["document"]}
+    state = request.model_dump() | {
+        "route": provider_result.route,
+        "candidate_places": provider_result.candidates,
+        "profile_okf": profile_context["document"],
+        "agent_context": profile_context["context"],
+        "context_summary": profile_context["context"].get("summary", {}),
+    }
     result = planner_graph.invoke(state)
     reroute_warning = None
     for _ in range(3):
@@ -328,7 +352,12 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         "recommendation_source": result.get("recommendation_source", "deterministic"),
         "recommendation_confidence": result.get("recommendation_confidence", 0),
         "recommendation_explanation": result.get("recommendation_explanation", ""),
-        "profile_context": {"format": "okf", "resource": profile_context["resource"]},
+        "profile_context": {
+            "format": "okf",
+            "resource": profile_context["resource"],
+            "summary": profile_context["context"].get("summary", {}),
+        },
+        "context_summary": result.get("context_summary", profile_context["context"].get("summary", {})),
         "cost_breakdown": _build_cost_breakdown(result["route"], result.get("selected_places", []), request.travellers),
         "provider": provider_result.provider,
         "warning": " ".join(warnings) or None,
@@ -382,14 +411,36 @@ def save_trip(request: SaveTripRequest, user: dict = Depends(get_current_user)) 
     return {"trip": trip}
 
 
+@app.post("/profiles/events")
+def record_agent_event(request: AgentEventRequest, user: dict = Depends(get_current_user)) -> dict:
+    """Record explicit route feedback for the user's next agent context refresh."""
+    event = context_event_repository.record(
+        owner_id=user["id"],
+        trip_id=request.trip_id,
+        event_type=request.event_type,
+        data=request.data,
+    )
+    return {"event": event}
+
+
 @app.post("/profiles/okf")
 def export_okf_profile(request: UserProfileRequest, user: dict = Depends(get_current_user)) -> dict:
     """Create a private OKF context artifact for the profile/recommendation agents."""
     payload = request.model_dump()
     payload["name"] = user["display_name"]
     payload["home_base"] = user["home_base"]
-    artifact = okf_profile_exporter.export(payload, owner_id=user["id"])
-    return {"format": artifact["format"], "resource": artifact["resource"], "document": artifact["document"]}
+    artifact = okf_profile_exporter.export(
+        payload,
+        owner_id=user["id"],
+        trips=trip_repository.list_saved(user["id"]),
+        events=context_event_repository.list_for_owner(user["id"]),
+    )
+    return {
+        "format": artifact["format"],
+        "resource": artifact["resource"],
+        "document": artifact["document"],
+        "summary": artifact["context"].get("summary", {}),
+    }
 
 
 @app.get("/trips/saved")
@@ -419,6 +470,14 @@ def update_saved_trip_visibility(trip_id: str, request: VisibilityRequest, user:
     return {"trip": trip}
 
 
+@app.post("/trips/saved/{trip_id}/publish")
+def publish_saved_trip(trip_id: str, request: PublishTripRequest, user: dict = Depends(get_current_user)) -> dict:
+    trip = trip_repository.publish(trip_id, user["id"], request.title, request.post_caption, request.media_captions)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Only completed saved trips can be published")
+    return {"trip": trip}
+
+
 @app.post("/trips/saved/{trip_id}/media")
 async def upload_saved_trip_media(
     trip_id: str,
@@ -436,6 +495,27 @@ async def upload_saved_trip_media(
     updated_trip = trip_repository.add_media(trip_id, user["id"], media)
     if not updated_trip:
         raise HTTPException(status_code=404, detail="Saved trip not found")
+    return {"media": media, "trip": updated_trip}
+
+
+@app.put("/trips/saved/{trip_id}/media/{media_id}")
+async def replace_saved_trip_media(
+    trip_id: str,
+    media_id: str,
+    file: UploadFile = File(...),
+    caption: str = Form(default=""),
+    user: dict = Depends(get_current_user),
+) -> dict:
+    trip = trip_repository.get(trip_id)
+    if not trip or trip.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=404, detail="Saved trip not found")
+    if not any(str(media.get("id", "")) == media_id for media in trip.get("media") or []):
+        raise HTTPException(status_code=404, detail="Memory not found")
+    media = await save_upload(trip_id, file)
+    media["caption"] = caption[:240]
+    updated_trip = trip_repository.replace_media(trip_id, user["id"], media_id, media)
+    if not updated_trip:
+        raise HTTPException(status_code=404, detail="Memory not found")
     return {"media": media, "trip": updated_trip}
 
 

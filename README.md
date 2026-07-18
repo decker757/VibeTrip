@@ -50,7 +50,7 @@ The API exposes `GET /health`, `POST /trips/plan`, `POST /trips/reroute`, and
 `DELETE /trips/saved/{id}`, `POST /trips/saved/{id}/complete`,
 `PATCH /trips/saved/{id}/visibility`, `POST /trips/saved/{id}/media`, and
 `GET /trips/explore`, plus `POST /profiles/okf` for a private agent context
-artifact. Authentication is provided by `POST /auth/signup`, `POST /auth/login`,
+artifact and `POST /profiles/events` for explicit route feedback. Authentication is provided by `POST /auth/signup`, `POST /auth/login`,
 `POST /auth/logout`, `GET /auth/me`, and `PATCH /auth/me`.
 The frontend calls the planner from `src/App.jsx` and falls back to a local
 preview when FastAPI is not running, so the UI remains usable without API keys.
@@ -176,14 +176,24 @@ production deployment.
 
 ### OKF agent context
 
-`POST /profiles/okf` exports the current structured travel profile as a private
-OKF v0.1-style Markdown document. The planner also refreshes this artifact
-automatically before each route generation and passes it to the optional LLM
-reviewer. The OKF document is context, not authority: route geometry, opening
-hours, waypoint ordering, and budget checks remain deterministic. Local files
-are written to `backend/okf_profiles/` and ignored by Git; set
-`VIBETRIP_OKF_DIR` to use another private directory or replace the adapter with
-an object-store/knowledge-catalog writer later.
+`POST /profiles/okf` exports a private, versioned OKF-style Markdown context
+document for the authenticated traveller. It combines the current profile,
+the user's saved trip history, and explicit route feedback stored in the
+`trip_events` table. The planner refreshes this artifact automatically before
+each route generation, passes the structured context through LangGraph, and
+includes it in the optional LLM reviewer prompt. The document is context, not
+authority: route geometry, opening hours, waypoint ordering, and budget checks
+remain deterministic. Local files are written to `backend/okf_profiles/` and
+ignored by Git; set `VIBETRIP_OKF_DIR` to use another private directory or
+replace the adapter with an object-store/knowledge-catalog writer later.
+
+The frontend records meaningful feedback such as replacing a stop, removing a
+stop, using an Explore route, and searching for a better fit through
+`POST /profiles/events`. On the next generation, the context builder turns
+those events into soft signals such as local food, quieter stops, scenic views,
+or budget-conscious choices. This is the value of OKF plus the database: the
+agent receives a compact, human-readable preference memory derived from real
+trip behaviour without adding a vector store to the MVP.
 
 With `GOOGLE_MAPS_API_KEY`, the backend calls the current Google Routes API to
 get a driving route and samples its polyline to search nearby tourist
@@ -234,8 +244,8 @@ the deterministic recommendation result.
 2. **Vibe matcher (`vibe_matcher`)**
    - Converts the travel profile into a lightweight archetype such as
      “Curious, not rushed” or “Easygoing explorer.”
-   - Combines explicit preferences, adventure-slider level, group size, and
-     student-budget context.
+   - Combines explicit preferences, adventure-slider level, group size,
+     saved-trip history, and learned feedback signals from the OKF context.
    - Sets planning defaults such as the buffer allowance and recommendation
      balance; it does not change the road geometry.
 
@@ -243,7 +253,8 @@ the deterministic recommendation result.
    - Scores candidate attractions, eateries, cafes, fuel stations, and
      convenience stores.
    - Weighs rating quality, review volume, price, estimated crowd risk,
-     enjoyment, opening hours, detour time, route style, and adventure level.
+     enjoyment, opening hours, detour time, route style, adventure level, and
+     the traveller's learned soft preferences.
    - Selects the best along-route candidates for the current route mode:
      `fastest` keeps only essentials, `balanced` allows worthwhile detours,
      and `scenic` allows more intermediate experiences.
@@ -392,3 +403,50 @@ next production order is: managed authentication and hosted ownership → signed
 object storage/thumbnails → moderation and reporting → streaming planner
 progress → richer social interactions. This keeps the route experience
 maintainable and trustworthy before adding engagement mechanics.
+
+## How Codex accelerated development
+
+VibeTrip was developed iteratively in Codex as a product, design, and
+engineering partner. Codex was used to turn user research observations and
+visual feedback into working changes across the React frontend, FastAPI
+backend, LangGraph workflow, persistence layer, and README.
+
+### Where Codex contributed
+
+- **Product framing:** translated the planning problem for Singaporean
+  exchange students into a focused journey: generate a route, validate the
+  stops, save and edit it, then learn from completed trips.
+- **UX iteration:** reviewed screenshots and corrected unclear affordances,
+  timeline ordering, stop replacement behaviour, map focus, accessibility of
+  text and controls, saved-trip actions, media previews, and Explore navigation.
+- **Agentic workflow:** modularized the planner into route scouting, profile
+  matching, detour review, optional LLM review, and day building. Deterministic
+  routing and feasibility checks remain authoritative; the LLM only ranks a
+  validated shortlist.
+- **Reliability debugging:** diagnosed and fixed route waypoint omissions,
+  incorrect geographic ordering, unrealistic arrival times, opening-hour
+  mismatches, map fallback regressions, replacement-vs-append media bugs, and
+  Explore routes opening in stale editing state.
+- **Personalization architecture:** evaluated whether a vector store was
+  necessary, then implemented a simpler MVP boundary: Postgres stores trips
+  and feedback events, while a derived OKF context gives the agents a compact,
+  human-readable memory of saved trips and learned preferences.
+- **Cost and safety decisions:** kept Google Maps and Places optional, added a
+  deterministic demo fallback, separated browser and server keys, and kept
+  provider calls behind the backend so usage can be monitored and limited.
+- **Validation and handoff:** ran focused backend context tests, persistence
+  checks, frontend production builds, syntax checks, and maintained a bug
+  journal to prevent regressions during rapid iteration.
+
+### Key decisions made with Codex
+
+1. Route geometry, waypoint order, opening hours, budget, and safety constraints
+   are deterministic.
+2. The optional LLM adds subjective ranking and explanation only after the hard
+   feasibility filter.
+3. OKF is a derived agent-readable context artifact, not a replacement for
+   the database.
+4. A vector store is deferred until saved-place discovery or semantic trip
+   retrieval actually requires one.
+5. The product remains demonstrable without paid API keys, while live Maps,
+   Places, and LLM capabilities can be enabled independently.

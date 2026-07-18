@@ -27,7 +27,7 @@ export default function ProfileView({
           <div>
             <p className="eyebrow">ACCOUNT</p>
             <h2>Exchange student</h2>
-            <p className="account-copy">A simple profile is enough for the MVP. School and driving credentials are intentionally not required.</p>
+            <p className="account-copy">Your name and home base help personalize every route you plan.</p>
           </div>
           <label className="profile-field"><span>Display name</span><input value={userProfile.name} onChange={(event) => onUpdateProfile('name', event.target.value)} onBlur={onSaveProfile} /></label>
           <label className="profile-field"><span>Home base</span><input value={userProfile.home} onChange={(event) => onUpdateProfile('home', event.target.value)} onBlur={onSaveProfile} /></label>

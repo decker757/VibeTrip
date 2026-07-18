@@ -79,6 +79,8 @@ def refine_recommendations(state: dict[str, Any]) -> dict[str, Any]:
             "adventure_level": state.get("adventure_level", 50),
         },
         "profile_okf": state.get("profile_okf", ""),
+        "learned_preferences": state.get("agent_context", {}).get("learned_preferences", []),
+        "context_summary": state.get("context_summary", {}),
         "candidate_places": [
             {
                 "id": item.get("id"),
@@ -105,6 +107,7 @@ def refine_recommendations(state: dict[str, Any]) -> dict[str, Any]:
                 "You are VibeTrip's recommendation reviewer. Choose only IDs from the supplied candidate list. "
                 f"Return at most {max_choices} IDs. Prefer a practical stop when the route mode is fastest, "
                 "and balance memorable experiences with cost, crowd risk, detour time, and the user's profile. "
+                "Use learned preferences as soft signals only; do not treat them as hard constraints. "
                 "Do not invent facts. Coordinates, route order, opening hours, and final feasibility are handled "
                 "by deterministic code. Keep the rationale to one concise sentence.",
             ),

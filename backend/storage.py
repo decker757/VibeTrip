@@ -36,7 +36,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "end_date": "2026-06-13",
         "start_time": "08:00",
         "end_time": "20:00",
-        "preferences": ["local-gems", "adventurous", "student-budget"],
+        "preferences": ["local-gems", "adventurous"],
         "route": {"distance_km": 365, "drive_minutes": 244, "estimated_arrival_time": "19:15", "route_mode": "scenic"},
         "itinerary": [
             {"time": "09:20", "title": "Cedar Street Café", "kind": "coffee", "duration_min": 25},
@@ -65,7 +65,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "end_date": "2026-05-09",
         "start_time": "09:00",
         "end_time": "18:00",
-        "preferences": ["slow-mornings", "student-budget"],
+        "preferences": ["slow-mornings"],
         "route": {"distance_km": 280, "drive_minutes": 175, "estimated_arrival_time": "16:50", "route_mode": "balanced"},
         "itinerary": [
             {"time": "10:10", "title": "Farmers market coffee", "kind": "coffee", "duration_min": 25},
@@ -93,7 +93,7 @@ EXPLORE_SEED_TRIPS: list[dict[str, Any]] = [
         "end_date": "2026-04-18",
         "start_time": "07:30",
         "end_time": "17:30",
-        "preferences": ["student-budget"],
+        "preferences": [],
         "route": {"distance_km": 382, "drive_minutes": 260, "estimated_arrival_time": "15:30", "route_mode": "fastest"},
         "itinerary": [
             {"time": "09:00", "title": "Autohof fuel + snack", "kind": "fuel", "duration_min": 15},
@@ -113,7 +113,10 @@ def _now() -> str:
 
 
 def _copy_trip(trip: dict[str, Any]) -> dict[str, Any]:
-    return deepcopy(trip)
+    copied = deepcopy(trip)
+    if isinstance(copied.get("preferences"), list):
+        copied["preferences"] = [preference for preference in copied["preferences"] if preference != "student-budget"]
+    return copied
 
 
 def _similarity_score(trip: dict[str, Any], preferences: list[str], adventure_level: int) -> int:
@@ -167,7 +170,7 @@ class TripRepository:
     @staticmethod
     def _row_to_trip(row: tuple[Any, ...]) -> dict[str, Any]:
         keys = [
-            "id", "owner_id", "author_name", "title", "start", "destination", "route_mode",
+            "id", "owner_id", "author_name", "title", "post_caption", "start", "destination", "route_mode",
             "adventure_level", "budget_per_person", "travellers", "start_date", "end_date",
             "start_time", "end_time", "preferences", "route", "itinerary", "candidate_places",
             "cost_breakdown", "media", "is_public", "is_completed", "created_at",
@@ -179,11 +182,13 @@ class TripRepository:
 
     def save(self, payload: dict[str, Any]) -> dict[str, Any]:
         trip = _copy_trip(payload)
-        trip.setdefault("id", str(uuid4()))
+        if not trip.get("id"):
+            trip["id"] = str(uuid4())
         trip.setdefault("owner_id", OWNER_ID)
         trip.setdefault("author_name", "You · Singapore")
         trip.setdefault("is_completed", False)
         trip.setdefault("media", [])
+        trip.setdefault("post_caption", "")
         trip.setdefault("created_at", _now())
         trip["updated_at"] = _now()
         connection = self._connect()
@@ -193,14 +198,14 @@ class TripRepository:
                     cursor.execute(
                         """
                         INSERT INTO trips (
-                            id, owner_id, author_name, title, start_location, destination, route_mode,
+                            id, owner_id, author_name, title, post_caption, start_location, destination, route_mode,
                             adventure_level, budget_per_person, travellers, start_date, end_date,
                             start_time, end_time, preferences, route, itinerary, candidate_places,
                             cost_breakdown, media, is_public, is_completed, created_at, updated_at
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                                   %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s, %s)
                         ON CONFLICT (id) DO UPDATE SET
-                            title = EXCLUDED.title, route = EXCLUDED.route,
+                            title = EXCLUDED.title, post_caption = EXCLUDED.post_caption, route = EXCLUDED.route,
                             itinerary = EXCLUDED.itinerary, candidate_places = EXCLUDED.candidate_places,
                             cost_breakdown = EXCLUDED.cost_breakdown, media = EXCLUDED.media,
                             is_public = EXCLUDED.is_public,
@@ -208,7 +213,7 @@ class TripRepository:
                             updated_at = EXCLUDED.updated_at
                         """,
                         (
-                            trip["id"], trip["owner_id"], trip.get("author_name"), trip["title"], trip["start"],
+                            trip["id"], trip["owner_id"], trip.get("author_name"), trip["title"], trip.get("post_caption", ""), trip["start"],
                             trip["destination"], trip.get("route_mode", "balanced"), trip.get("adventure_level", 50),
                             trip.get("budget_per_person", 0), trip.get("travellers", 1), trip.get("start_date"),
                             trip.get("end_date"), trip.get("start_time"), trip.get("end_time"),
@@ -234,7 +239,7 @@ class TripRepository:
             try:
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        """SELECT id, owner_id, author_name, title, start_location, destination, route_mode,
+                        """SELECT id, owner_id, author_name, title, post_caption, start_location, destination, route_mode,
                         adventure_level, budget_per_person, travellers, start_date, end_date, start_time, end_time,
                         preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at
                         FROM trips WHERE owner_id = %s ORDER BY updated_at DESC""",
@@ -313,11 +318,67 @@ class TripRepository:
         self._memory[trip_id] = _copy_trip(trip)
         return _copy_trip(trip)
 
+    def publish(self, trip_id: str, owner_id: str, title: str, post_caption: str, media_captions: dict[str, str]) -> dict[str, Any] | None:
+        trip = self._memory.get(trip_id)
+        if not trip or trip.get("owner_id") != owner_id or not trip.get("is_completed"):
+            return None
+        trip["title"] = title.strip()[:140]
+        trip["post_caption"] = post_caption.strip()[:2000]
+        for media in trip.setdefault("media", []):
+            media_id = str(media.get("id", ""))
+            if media_id in media_captions:
+                media["caption"] = str(media_captions[media_id]).strip()[:240]
+        trip["is_public"] = True
+        trip["updated_at"] = _now()
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """UPDATE trips
+                        SET title = %s, post_caption = %s, media = %s::jsonb, is_public = TRUE, updated_at = NOW()
+                        WHERE id = %s AND owner_id = %s AND is_completed = TRUE""",
+                        (trip["title"], trip["post_caption"], json.dumps(trip["media"]), trip_id, owner_id),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory[trip_id] = _copy_trip(trip)
+        return _copy_trip(trip)
+
     def add_media(self, trip_id: str, owner_id: str, media: dict[str, Any]) -> dict[str, Any] | None:
         trip = self._memory.get(trip_id)
         if not trip or trip.get("owner_id") != owner_id:
             return None
         trip.setdefault("media", []).append(_copy_trip(media))
+        trip["updated_at"] = _now()
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE trips SET media = %s::jsonb, updated_at = NOW() WHERE id = %s AND owner_id = %s",
+                        (json.dumps(trip["media"]), trip_id, owner_id),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory[trip_id] = _copy_trip(trip)
+        return _copy_trip(trip)
+
+    def replace_media(self, trip_id: str, owner_id: str, media_id: str, media: dict[str, Any]) -> dict[str, Any] | None:
+        trip = self._memory.get(trip_id)
+        if not trip or trip.get("owner_id") != owner_id:
+            return None
+        media_items = trip.setdefault("media", [])
+        replacement_index = next((index for index, item in enumerate(media_items) if str(item.get("id", "")) == media_id), None)
+        if replacement_index is None:
+            return None
+        media_items[replacement_index] = _copy_trip(media)
         trip["updated_at"] = _now()
         connection = self._connect()
         if connection:
@@ -342,7 +403,7 @@ class TripRepository:
             try:
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        """SELECT id, owner_id, author_name, title, start_location, destination, route_mode,
+                        """SELECT id, owner_id, author_name, title, post_caption, start_location, destination, route_mode,
                         adventure_level, budget_per_person, travellers, start_date, end_date, start_time, end_time,
                         preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at
                         FROM trips WHERE is_public = TRUE AND is_completed = TRUE ORDER BY updated_at DESC"""
@@ -364,3 +425,75 @@ class TripRepository:
 
 
 trip_repository = TripRepository()
+
+
+class ContextEventRepository:
+    """Persist lightweight user feedback used to derive future agent context."""
+
+    def __init__(self) -> None:
+        self._memory: list[dict[str, Any]] = []
+        self._postgres_disabled = False
+
+    @property
+    def database_url(self) -> str | None:
+        return os.getenv("DATABASE_URL") or None
+
+    def _connect(self):
+        if not self.database_url or self._postgres_disabled:
+            return None
+        try:
+            import psycopg
+            connection = psycopg.connect(self.database_url, connect_timeout=2)
+            with connection.cursor() as cursor:
+                cursor.execute(Path(__file__).with_name("schema.sql").read_text())
+            connection.commit()
+            return connection
+        except Exception:
+            self._postgres_disabled = True
+            return None
+
+    def record(self, owner_id: str, event_type: str, data: dict[str, Any] | None = None, trip_id: str | None = None) -> dict[str, Any]:
+        event = {
+            "id": str(uuid4()),
+            "owner_id": owner_id,
+            "trip_id": trip_id,
+            "event_type": event_type,
+            "data": deepcopy(data or {}),
+            "created_at": _now(),
+        }
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO trip_events (id, owner_id, trip_id, event_type, data, created_at) VALUES (%s, %s, %s, %s, %s::jsonb, %s)",
+                        (event["id"], owner_id, trip_id, event_type, json.dumps(event["data"]), event["created_at"]),
+                    )
+                connection.commit()
+            except Exception:
+                self._postgres_disabled = True
+            finally:
+                connection.close()
+        self._memory.append(deepcopy(event))
+        return deepcopy(event)
+
+    def list_for_owner(self, owner_id: str) -> list[dict[str, Any]]:
+        events_by_id = {event["id"]: deepcopy(event) for event in self._memory if event.get("owner_id") == owner_id}
+        connection = self._connect()
+        if connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT id, owner_id, trip_id, event_type, data, created_at FROM trip_events WHERE owner_id = %s ORDER BY created_at ASC", (owner_id,))
+                    for row in cursor.fetchall():
+                        event = dict(zip(("id", "owner_id", "trip_id", "event_type", "data", "created_at"), row))
+                        if hasattr(event.get("created_at"), "isoformat"):
+                            event["created_at"] = event["created_at"].isoformat()
+                        events_by_id[event["id"]] = event
+                connection.close()
+            except Exception:
+                self._postgres_disabled = True
+                connection.close()
+        return list(events_by_id.values())
+
+
+context_event_repository = ContextEventRepository()

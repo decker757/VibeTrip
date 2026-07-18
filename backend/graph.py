@@ -5,7 +5,7 @@ weather, and recommendation providers can be added behind each node without
 changing the API contract or the frontend's state model.
 """
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -37,6 +37,13 @@ class PlannerState(TypedDict, total=False):
     recommendation_confidence: int
     recommendation_explanation: str
     profile_okf: str
+    agent_context: dict[str, Any]
+    context_summary: dict[str, Any]
+    learned_preferences: list[str]
+
+
+def _normalise_category(place: dict[str, Any]) -> str:
+    return str(place.get("category") or "").lower()
 
 
 def _is_refuel_or_convenience(place: dict[str, Any]) -> bool:
@@ -109,15 +116,23 @@ def route_scout(state: PlannerState) -> PlannerState:
 def vibe_matcher(state: PlannerState) -> PlannerState:
     """Infer a lightweight archetype from the user's explicit preferences."""
     preferences = set(state.get("preferences", []))
+    context = state.get("agent_context", {})
+    learned_preferences = set(context.get("learned_preferences", []))
     configured_level = state.get("adventure_level")
     adventure_score = int(configured_level) if configured_level is not None else (70 if "adventurous" in preferences or "local-gems" in preferences else 48)
+    if "scenic_views" in learned_preferences:
+        adventure_score = min(100, adventure_score + 5)
+    if "quiet_low_crowd_stops" in learned_preferences:
+        adventure_score = max(0, adventure_score - 3)
     return {
         **state,
+        "learned_preferences": sorted(learned_preferences),
         "vibe_profile": {
             "archetype": "Curious, not rushed" if adventure_score >= 70 else "Easygoing explorer" if adventure_score <= 35 else "Balanced explorer",
             "adventure_score": adventure_score,
             "budget_mode": "student-friendly",
             "buffer_percent": 20,
+            "learned_preferences": sorted(learned_preferences),
         },
     }
 
@@ -136,6 +151,7 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
     }]
     route_mode = state.get("route_mode", "balanced")
     adventure_level = int(state.get("adventure_level") or 50)
+    learned_preferences = set(state.get("agent_context", {}).get("learned_preferences", []))
 
     def recommendation_score(item: dict[str, Any]) -> float:
         """Use the profile to rank choices without changing route geometry."""
@@ -148,7 +164,20 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
             detour_cost *= 1.5
         elif route_mode == "scenic":
             scenic_bonus *= 2
-        return enjoyment + scenic_bonus * adventure_weight - detour_cost
+        learned_bonus = 0.0
+        category = _normalise_category(item)
+        crowd_risk = item.get("crowd_risk", "medium")
+        if "quiet_low_crowd_stops" in learned_preferences:
+            learned_bonus += 9 if crowd_risk in {"low", "medium"} else -9
+        if "local_food" in learned_preferences and any(term in category for term in ("restaurant", "cafe", "food")):
+            learned_bonus += 8
+        if "scenic_views" in learned_preferences and item.get("recommendation_kind") == "scenic":
+            learned_bonus += 8
+        if "budget_conscious" in learned_preferences:
+            price_level = item.get("price_level")
+            if price_level is not None and int(price_level) <= 2:
+                learned_bonus += 5
+        return enjoyment + scenic_bonus * adventure_weight + learned_bonus - detour_cost
 
     ranked = sorted(candidates, key=recommendation_score, reverse=True)
     available = [item for item in ranked if _candidate_is_plannable(item)]
@@ -213,10 +242,11 @@ def day_builder(state: PlannerState) -> PlannerState:
     scenic_stop = scenic_stop or next((item for item in all_candidates if item.get("recommendation_kind") == "scenic" and item.get("recommendation_scope") == "along_route" and _candidate_is_plannable(item)), None)
     route = dict(state.get("route") or {})
     drive_minutes = max(0, int(route.get("drive_minutes") or 229))
+    today = date.today()
     try:
-        trip_date = datetime.strptime(state.get("start_date", "2025-09-14"), "%Y-%m-%d").date()
+        trip_date = datetime.strptime(state.get("start_date", today.isoformat()), "%Y-%m-%d").date()
     except ValueError:
-        trip_date = datetime.strptime("2025-09-14", "%Y-%m-%d").date()
+        trip_date = today
     try:
         start = datetime.combine(trip_date, datetime.strptime(state.get("start_time", "08:10"), "%H:%M").time())
     except ValueError:
