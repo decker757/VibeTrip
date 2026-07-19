@@ -348,6 +348,11 @@ def _cost_metadata(category: str, price_level: int) -> dict[str, Any]:
     }
 
 
+def _is_fuel_candidate(candidate: dict[str, Any]) -> bool:
+    category = str(candidate.get("category") or "").lower()
+    return any(term in category for term in ("gas", "fuel", "petrol"))
+
+
 def _score_place(
     place: dict[str, Any],
     route_point: tuple[float, float],
@@ -583,6 +588,42 @@ class GoogleMapsProvider:
                     )
                     if normalized and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
+            # Nearby Search returns one shared result set for all included
+            # types. Restaurants and cafes can consume every result slot,
+            # leaving a long Fastest route without the safety-critical fuel
+            # stop it needs. Reserve a second pass for gas stations only when
+            # the broad corridor search did not return one.
+            if route_mode == "fastest" and not any(_is_fuel_candidate(item) for item in candidates.values()):
+                fuel_points = route_points[1:-1] or route_points
+                fuel_radius = max(mode_config["corridor_radius"], 5000)
+                for route_point in fuel_points:
+                    fuel_payload = {
+                        "includedTypes": ["gas_station"],
+                        "maxResultCount": 5,
+                        "rankPreference": "DISTANCE",
+                        "locationRestriction": {
+                            "circle": {
+                                "center": {"latitude": route_point[0], "longitude": route_point[1]},
+                                "radius": fuel_radius,
+                            }
+                        },
+                    }
+                    _reserve_google_request("places")
+                    fuel_response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=fuel_payload)
+                    fuel_response.raise_for_status()
+                    for place in fuel_response.json().get("places", []):
+                        location = _place_location(place)
+                        normalized = _score_place(
+                            place,
+                            route_point,
+                            budget_per_person,
+                            crowd_tolerance,
+                            route_mode,
+                            "along_route",
+                            _route_progress_km(location, route_geometry) if location else None,
+                        )
+                        if normalized and normalized["id"] not in candidates:
+                            candidates[normalized["id"]] = normalized
         return ProviderResult(route=route_result, candidates=sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True), provider="google")
 
     async def search_route_places(
