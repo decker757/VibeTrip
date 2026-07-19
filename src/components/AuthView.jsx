@@ -16,13 +16,19 @@ export default function AuthView({ onAuthenticated, onDemoMode }) {
     setIsSubmitting(true);
     setError('');
     try {
+      const payload = isSignup
+        ? { email, password, display_name: displayName, home_base: homeBase }
+        : { email, password };
       const response = await fetch(`${PLANNER_API_URL}/auth/${isSignup ? 'signup' : 'login'}`, {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, display_name: displayName, home_base: homeBase }),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) {
         const result = await response.json().catch(() => ({}));
-        throw new Error(result.detail || 'Authentication failed.');
+        const detail = Array.isArray(result.detail)
+          ? result.detail.map((item) => item.msg || item.detail || 'Invalid request.').join(' ')
+          : result.detail;
+        throw new Error(detail || 'Authentication failed.');
       }
       const result = await response.json();
       onAuthenticated(result.user);
