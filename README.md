@@ -1,7 +1,7 @@
 # VibeTrip
 
 <p align="center">
-  <img src="./public/vibetrip-logo.png" alt="VibeTrip" width="233" />
+  <img src="./public/vibetrip-readme-logo.png" alt="VibeTrip" width="487" />
 </p>
 
 Codex Hackathon Project
@@ -30,8 +30,8 @@ pip install -r requirements.txt
 cp .env.example .env
 # Add GOOGLE_MAPS_API_KEY for live Routes + Places results.
 # Add VITE_GOOGLE_MAPS_BROWSER_KEY for the interactive browser map.
-# Optional: start Postgres with `docker compose up -d postgres`.
-# DATABASE_URL is already provided in `.env.example` for that container.
+# Optional: DATABASE_URL can point at a Postgres adapter, but it is not required
+# for the judged local MVP flow.
 uvicorn backend.main:app --reload --port 8000 --env-file .env
 ```
 
@@ -42,8 +42,9 @@ npm install
 npm run dev
 ```
 
-Docker is optional. It is only needed for the local Postgres service; the app
-falls back to memory/localStorage when Postgres is not running.
+Docker is optional and not required for the judged local MVP flow. The app uses
+local auth, process memory, and browser `localStorage` fallbacks when no
+database is running.
 
 The API exposes `GET /health`, `POST /trips/plan`, `POST /trips/reroute`, and
 `POST /trips/search`, `POST /trips/save`, `GET /trips/saved`,
@@ -93,6 +94,16 @@ The repository is designed to remain judgeable without paid provider keys:
 - **Hard off switch:** set `VIBETRIP_LIVE_MAPS_ENABLED=false` to force the
   deterministic demo provider even if a Google key remains in `.env`.
 
+### Demo account and fallback mode
+
+No separate seed script is required for judging. On first API startup, the
+local auth adapter creates the demo account shown below. If Google Maps keys
+are provided, the planner uses live Routes and Places results. If keys are
+omitted, the deterministic provider supplies fallback route geometry, route
+candidates, fuel stops, destination suggestions, and Explore examples so the
+planner can still be exercised end to end. Saved drafts fall back to process
+memory and browser `localStorage` in the judged local flow.
+
 Never put `GOOGLE_MAPS_API_KEY` or `OPENAI_API_KEY` in a `VITE_*` variable or
 commit them to Git. Google Maps usage requires billing, so set quota and budget
 alerts before enabling live mode.
@@ -112,7 +123,7 @@ Copy `.env.example` to `.env` and configure only what the chosen mode needs:
 | `VIBETRIP_LLM_SEARCH_MAX_PER_MINUTE` | Optional | Process-local route assistant LLM limit |
 | `VITE_API_URL` | Deployment | Public backend URL used by the frontend |
 | `VIBETRIP_AUTH_SECRET` | Deployment | Secret used to sign session cookies |
-| `DATABASE_URL` | Persistent data | Postgres connection string |
+| `DATABASE_URL` | Optional | Postgres adapter connection string |
 | `VIBETRIP_MEDIA_DIR` | Optional | Local media storage directory |
 | `VIBETRIP_OKF_DIR` | Optional | Local OKF profile directory |
 | `VIBETRIP_AUTOCOMPLETE_MAX_PER_MINUTE` | Live mode | Per-client autocomplete safety limit |
@@ -152,11 +163,11 @@ above is an important pre-submission check.
 
 ## Saved trips and Explore
 
-Saved drafts use a small repository boundary in `backend/storage.py`. When
-`DATABASE_URL` points to the local Compose service and `psycopg` is installed,
-the repository stores complete trip drafts in Postgres JSONB columns. If the
-database is not running, the API falls back to process memory and the browser
-also keeps local-preview saves in `localStorage`. Start the database with:
+Saved drafts use a small repository boundary in `backend/storage.py`. For the
+judged local MVP, the API can fall back to process memory and the browser also
+keeps local-preview saves in `localStorage`, so Postgres is not required to run
+or demonstrate the core flow. A Postgres adapter exists as future persistence
+work, and the local Compose service can be started with:
 
 ```bash
 docker compose up -d postgres
@@ -399,8 +410,9 @@ items below are hardening work rather than prerequisites for the local demo.
 
 ### Phase 3 — Saved trips and social foundation (implemented for MVP)
 
-- Saved drafts are stored through the repository boundary, using Postgres JSONB
-  when available and local browser/API fallbacks when it is not.
+- Saved drafts are stored through the repository boundary, with local browser
+  and API fallbacks for the judged MVP. The Postgres adapter is present but not
+  part of the required demo path.
 - Users can mark a trip completed, attach photos or videos, keep it private, or
   publish it to the Explore feed.
 - The local media adapter validates MIME type and a 20 MB size limit. Replace it
@@ -433,10 +445,13 @@ maintainable and trustworthy before adding engagement mechanics.
 
 ## How Codex accelerated development
 
-VibeTrip was developed iteratively in Codex as a product, design, and
-engineering partner. Codex was used to turn user research observations and
-visual feedback into working changes across the React frontend, FastAPI
-backend, LangGraph workflow, persistence layer, and README.
+VibeTrip was developed iteratively in Codex, using GPT-5.6 as the coding and
+reasoning model for product, design, and engineering decisions. Codex turned
+user research observations, screenshots, and bug reports into working changes
+across the React frontend, FastAPI backend, LangGraph workflow, persistence
+layer, and README. This was a development workflow choice: the app's optional
+runtime LLM configuration is separate and can be disabled for deterministic
+demo mode.
 
 ### Where Codex contributed
 
@@ -455,9 +470,10 @@ backend, LangGraph workflow, persistence layer, and README.
   mismatches, map fallback regressions, replacement-vs-append media bugs, and
   Explore routes opening in stale editing state.
 - **Personalization architecture:** evaluated whether a vector store was
-  necessary, then implemented a simpler MVP boundary: Postgres stores trips
-  and feedback events, while a derived OKF context gives the agents a compact,
-  human-readable memory of saved trips and learned preferences.
+  necessary, then implemented a simpler MVP boundary: saved trips and feedback
+  events are captured through local repository adapters, while a derived OKF
+  context gives the agents a compact, human-readable memory of saved trips and
+  learned preferences.
 - **Cost and safety decisions:** kept Google Maps and Places optional, added a
   deterministic demo fallback, separated browser and server keys, and kept
   provider calls behind the backend so usage can be monitored and limited.
