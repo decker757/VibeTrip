@@ -21,15 +21,32 @@ npm run dev
 
 ## Run the planner API
 
+For judging, copy the template and paste the provided demo keys into `.env`.
+Keep this file local; it is ignored by Git.
+
+```dotenv
+GOOGLE_MAPS_API_KEY=<provided-google-server-key>
+VIBETRIP_LIVE_MAPS_ENABLED=true
+
+VITE_GOOGLE_MAPS_BROWSER_ENABLED=true
+VITE_GOOGLE_MAPS_BROWSER_KEY=<provided-google-browser-key>
+VITE_GOOGLE_MAPS_MAP_ID=<provided-google-map-id-or-DEMO_MAP_ID>
+
+OPENAI_API_KEY=<provided-openai-key>
+VIBETRIP_LLM_ENABLED=true
+VIBETRIP_LLM_SEARCH_ENABLED=true
+VIBETRIP_LLM_MODEL=gpt-4o-mini
+
+VITE_API_URL=http://localhost:8000
+VIBETRIP_AUTH_SECRET=vibetrip-local-development-secret
+```
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Add GOOGLE_MAPS_API_KEY for live Routes + Places results.
-# Add VITE_GOOGLE_MAPS_BROWSER_KEY for the interactive browser map.
-# Optional: DATABASE_URL can point at a Postgres adapter, but it is not required
-# for the judged local MVP flow.
+# Edit .env with the provided keys above.
 uvicorn backend.main:app --reload --port 8000 --env-file .env
 ```
 
@@ -363,83 +380,6 @@ or another sharable object store before treating the app as production-ready.
 Before publishing a repository or demo, confirm that `.env`, API keys, local
 auth data, OKF artifacts, media, and database volumes are not committed. The
 repository's `.gitignore` excludes these local state files.
-
-## Remaining roadmap
-
-The MVP is implemented and ready for end-to-end validation. The remaining
-items below are hardening work rather than prerequisites for the local demo.
-
-### Phase 0 — Frontend modularization (implemented)
-
-- Break `src/App.jsx` into focused page sections and components for planning,
-  route display, itinerary management, destination suggestions, travel profile,
-  chatbot search, simulator, saved trips, and Explore.
-- Extract rendering, formatting, map previews, itinerary controls, and
-  collection views into focused modules. API and state hooks remain the next
-  cleanup target as the planner grows.
-- Keep shared types, formatting helpers, and itinerary actions in reusable
-  modules so edits, reroutes, simulations, and saved trips use one source of
-  truth.
-- Preserve the current behavior while adding component-level tests before the
-  LLM and social features increase the surface area further.
-
-### Phase 1 — LLM-assisted recommendations (implemented, optional)
-
-- The `llm_reviewer` node runs after deterministic Places filtering.
-- Give it a small shortlist of feasible candidates plus the user's profile,
-  route mode, budget, arrival window, and route preferences.
-- Let it rank subjective fit, explain the trade-offs, and choose among the
-  feasible candidates already found by the Places layer.
-- Validate its structured response against hard constraints, then pass the
-  accepted choice to the existing deterministic reroute and day-builder flow.
-- Keeps a deterministic fallback for missing API keys, timeouts, invalid output,
-  and rate limits. The model must not invent places, prices, reviews, hours,
-  coordinates, or route geometry.
-
-### Phase 2 — Planner reliability and live-trip readiness (remaining)
-
-- Add end-to-end tests for waypoint ordering, opening hours, budget limits,
-  realistic first-stop timing, rerouting, and simulator recalibration.
-- Add streaming planner progress so the UI can show the agents working.
-- Improve live traffic, construction, crowd-estimate, and provider-error
-  handling while clearly labelling estimates.
-- Finish accessibility and mobile checks, including readable type, keyboard
-  controls, focus states, and large touch targets.
-
-### Phase 3 — Saved trips and social foundation (implemented for MVP)
-
-- Saved drafts are stored through the repository boundary, with local browser
-  and API fallbacks for the judged MVP. The Postgres adapter is present but not
-  part of the required demo path.
-- Users can mark a trip completed, attach photos or videos, keep it private, or
-  publish it to the Explore feed.
-- The local media adapter validates MIME type and a 20 MB size limit. Replace it
-  with signed uploads and thumbnails when deploying object storage. Each trip can
-  store up to five memories, and Explore opens a post detail view showing those
-  memories and the ordered stops before the user remixes the route. Built-in
-  Explore seed routes include two demo memory images separate from their route
-  covers; real users can add memories up to the five-item limit.
-- Explore is a preference-ranked, media-first community feed seeded with public
-  exchange-student routes. Reporting, moderation, comments, follows, and real
-  authentication remain post-MVP work.
-
-### Phase 4 — Product expansion and deployment
-
-- Add route sharing and richer Google Maps handoff for the final ordered stop
-  list.
-- Add saved places, trip-history retrieval, and only then evaluate a vector
-  store for persistent taste and semantic discovery.
-- Move local authentication to a managed identity provider, add secret
-  management, logging, usage limits, cost tracking, and a deployed
-  Postgres/object-storage environment.
-
-The implemented MVP order is: frontend modularization → optional LLM shortlist
-decision → route-aware saved drafts → local authentication and per-user OKF
-context → completion and media memories → preference-ranked Explore feed. The
-next production order is: managed authentication and hosted ownership → signed
-object storage/thumbnails → moderation and reporting → streaming planner
-progress → richer social interactions. This keeps the route experience
-maintainable and trustworthy before adding engagement mechanics.
 
 ## How Codex accelerated development
 
