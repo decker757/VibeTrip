@@ -479,17 +479,20 @@ function App() {
     const nextProgress = progressForStop(nextStop);
     const routeDistance = Number(route.distance_km || routeStats.distanceKm || 348);
     // A stop's route progress can be missing or stale after a saved trip is
-    // reopened. Do not let a malformed next checkpoint collapse the search
-    // window to zero; the first stop must still be replaceable anywhere from
-    // the origin up to the next valid checkpoint (e.g. Singapore → JB → Yong
-    // Peng). The provider applies the same bounds after it receives results.
+    // reopened. Do not let a malformed checkpoint collapse the search window
+    // to zero. When replacing the first physical stop, the origin is the
+    // lower bound so a user can move it closer to Singapore/Johor and let the
+    // next checkpoint be recalculated downstream. Later stops still stay
+    // after their previous checkpoint.
     const hasValidPreviousProgress = previousProgress != null && (currentProgress == null || previousProgress < currentProgress);
     const hasValidNextProgress = nextProgress != null && (currentProgress == null || nextProgress > currentProgress);
     const segmentStartProgress = hasValidPreviousProgress
       ? previousProgress
       : currentProgress == null
         ? null
-        : Math.max(0, currentProgress - 90);
+        : previousStop
+          ? Math.max(0, currentProgress - 90)
+          : 0;
     const fallbackSegmentEnd = currentProgress == null ? null : Math.min(routeDistance, currentProgress + 90);
     const segmentEndProgress = hasValidNextProgress ? nextProgress : fallbackSegmentEnd;
     const isInReplacementSegment = (candidate) => {
@@ -513,8 +516,9 @@ function App() {
       const parsedIntent = result.parsed_intent || {};
       const locationHint = parsedIntent.location_hint;
       const readableLocation = locationHint ? locationHint.replace(/\b\w/g, (letter) => letter.toUpperCase()) : '';
-      const openLeg = `${previousStop?.title || from} → ${nextStop?.title || to}`;
-      const routeHint = `Replacement candidates are limited to the open leg ${openLeg}, so the route stays in order.`;
+      const routeHint = previousStop
+        ? `Replacement candidates stay between ${previousStop.title} and ${nextStop?.title || to}, so the route stays in order.`
+        : `The first stop can move anywhere before ${nextStop?.title || to}; choosing one recalculates the route through it and onward.`;
       const searchHint = locationHint
         ? `Searching for ${parsedIntent.category || 'a place'} near ${readableLocation}. ${routeHint}`
         : routeHint;

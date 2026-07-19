@@ -221,6 +221,7 @@ __marimo__/
 .streamlit/secrets.toml
 node_modules/
 dist/
+graphify-out/
 .DS_Store
 __pycache__/
 .venv/
