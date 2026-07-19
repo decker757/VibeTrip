@@ -1,5 +1,3 @@
-# VibeTrip
-
 <p align="center">
   <img src="./public/vibetrip-readme-logo.png" alt="VibeTrip" width="487" />
 </p>
