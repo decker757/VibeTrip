@@ -6,9 +6,11 @@ keeps local development and the UI prototype usable without external keys.
 
 from __future__ import annotations
 
+from collections import defaultdict, deque
 import math
 import os
 import re
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,6 +21,34 @@ GOOGLE_ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
 GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchNearby"
 GOOGLE_TEXT_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
 GOOGLE_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete"
+GOOGLE_PLACE_DETAILS_URL = "https://places.googleapis.com/v1/places"
+
+
+def _request_limit(name: str, default: int) -> int:
+    try:
+        return max(1, int(os.getenv(name, str(default))))
+    except ValueError:
+        return default
+
+
+GOOGLE_REQUEST_LIMITS = {
+    "routes": _request_limit("VIBETRIP_GOOGLE_ROUTES_MAX_PER_MINUTE", 10),
+    "places": _request_limit("VIBETRIP_GOOGLE_PLACES_MAX_PER_MINUTE", 30),
+    "details": _request_limit("VIBETRIP_GOOGLE_DETAILS_MAX_PER_MINUTE", 20),
+}
+_google_request_windows: dict[str, deque[float]] = defaultdict(deque)
+
+
+def _reserve_google_request(kind: str) -> None:
+    """Apply a process-local circuit breaker before a billable Google call."""
+    now = time.monotonic()
+    requests = _google_request_windows[kind]
+    while requests and now - requests[0] >= 60:
+        requests.popleft()
+    limit = GOOGLE_REQUEST_LIMITS[kind]
+    if len(requests) >= limit:
+        raise RuntimeError(f"Google {kind} request budget reached; using demo fallback until the window resets.")
+    requests.append(now)
 PRICE_LEVELS = {
     "PRICE_LEVEL_FREE": 0,
     "PRICE_LEVEL_INEXPENSIVE": 1,
@@ -63,15 +93,50 @@ ROUTE_MODE_CONFIG = {
 }
 
 GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals"
-GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types,places.reviews"
+# Keep broad route searches to the fields needed for ranking and scheduling.
+# Review text is intentionally fetched only by a future on-demand details view.
+GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types"
 
 SEARCH_STOP_WORDS = {
     "a", "an", "and", "another", "are", "at", "be", "by", "can", "for", "from", "has", "have",
     "i", "in", "is", "it", "like", "maybe", "me", "my", "of", "on", "place", "please", "really",
     "that", "the", "there", "this", "to", "under", "want", "with", "would", "you",
+    "around", "close", "closest", "near", "nearer", "nearby", "pit", "pitstop", "stop", "stops", "toward", "towards",
 }
 SEARCH_FEEDBACK_WORDS = {"dont", "doesnt", "hate", "not", "rather", "instead", "prefer", "looking", "find", "show"}
 CUISINE_TERMS = {"chinese", "japanese", "korean", "thai", "indian", "malay", "vietnamese", "mexican", "italian", "mediterranean"}
+LOCATION_BOUNDARY_WORDS = {"under", "within", "with", "for", "that", "and", "but", "on"}
+
+
+def _extract_location_hint(query: str) -> str | None:
+    """Extract an explicit locality without asking the ranking model to infer it."""
+    patterns = (
+        r"\bnearer?\s+to\s+(.+?)(?=\s+(?:under|within|with|for|that|and|but|on)\b|$)",
+        r"\bclose\s+to\s+(.+?)(?=\s+(?:under|within|with|for|that|and|but|on)\b|$)",
+        r"\b(?:near|around|in|at)\s+(.+?)(?=\s+(?:under|within|with|for|that|and|but|on)\b|$)",
+    )
+    lowered = query.lower().strip()
+    for pattern in patterns:
+        match = re.search(pattern, lowered)
+        if not match:
+            continue
+        hint = re.sub(r"[^a-z0-9 ]+", " ", match.group(1)).strip()
+        tokens = [
+            token for token in hint.split()
+            if len(token) > 2 and token not in SEARCH_STOP_WORDS | SEARCH_FEEDBACK_WORDS | LOCATION_BOUNDARY_WORDS
+        ]
+        if tokens:
+            return " ".join(tokens[:5])
+    return None
+
+
+def _place_matches_location_hint(candidate: dict[str, Any], location_hint: str | None) -> bool:
+    """Apply a conservative locality check after Maps returns candidates."""
+    if not location_hint:
+        return True
+    haystack = " ".join((candidate.get("name", ""), candidate.get("address", ""))).lower()
+    tokens = location_hint.split()
+    return location_hint in haystack or all(token in haystack for token in tokens)
 
 
 def _normalize_place_search_query(query: str) -> str:
@@ -82,7 +147,7 @@ def _normalize_place_search_query(query: str) -> str:
         return f"{cuisine} restaurant"
     if any(word in words for word in ("cafe", "coffee", "bakery")):
         return "cafe coffee"
-    if any(word in words for word in ("food", "meal", "restaurant", "eatery")):
+    if any(word in words for word in ("eat", "food", "meal", "meals", "restaurant", "eatery")):
         return "restaurant"
     if any(word in words for word in ("fuel", "gas", "petrol", "snack", "convenience")):
         return "gas station convenience store"
@@ -391,6 +456,7 @@ class DemoMapsProvider:
     ) -> ProviderResult:
         result = await self.plan_trip(start, destination, budget_per_person, crowd_tolerance, route_mode=route_mode)
         normalized_query = _normalize_place_search_query(query)
+        location_hint = _extract_location_hint(query)
         query_terms = [term for term in re.findall(r"[a-z0-9]+", normalized_query.lower()) if len(term) > 2]
         route_distance_km = float(result.route.get("distance_km") or 0)
         matches = [
@@ -398,12 +464,14 @@ class DemoMapsProvider:
             for candidate in result.candidates
             if _candidate_in_route_segment(candidate, route_distance_km, segment_start_progress_km, segment_end_progress_km)
             and _place_matches_search_intent(candidate, normalized_query)
+            and _place_matches_location_hint(candidate, location_hint)
             and (not query_terms or any(term in " ".join((candidate.get("name", ""), candidate.get("category", ""), candidate.get("reason", ""))).lower() for term in query_terms))
         ]
         matches = _sort_route_matches(matches, target_progress_km)
         warning = result.warning
         if not matches:
-            warning = f"{warning + ' ' if warning else ''}No route places matched “{query}”. Try a broader request."
+            location_message = f" near {location_hint}" if location_hint else ""
+            warning = f"{warning + ' ' if warning else ''}No route places matched “{query}”{location_message}. Try a broader request or choose a checkpoint closer to that area."
         return ProviderResult(route=result.route, candidates=matches, provider="demo", warning=warning)
 
 
@@ -470,6 +538,7 @@ class GoogleMapsProvider:
         }
         route_payload = self._route_payload(start, destination)
         async with httpx.AsyncClient(timeout=18) as client:
+            _reserve_google_request("routes")
             route_response = await client.post(GOOGLE_ROUTES_URL, headers=headers, json=route_payload)
             route_response.raise_for_status()
             route_data = route_response.json()
@@ -490,28 +559,30 @@ class GoogleMapsProvider:
                 search_specs.append((route_points[-1], "destination", mode_config["destination_radius"]))
             for route_point, recommendation_scope, radius in search_specs:
                 search_types = mode_config["destination_types"] if recommendation_scope == "destination" else mode_config["corridor_types"]
-                for place_type in search_types:
-                    payload = {
-                        "includedTypes": [place_type],
-                        "maxResultCount": mode_config["max_results"],
-                        "rankPreference": "POPULARITY",
-                        "locationRestriction": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": radius}},
-                    }
-                    response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=payload)
-                    response.raise_for_status()
-                    for place in response.json().get("places", []):
-                        location = _place_location(place)
-                        normalized = _score_place(
-                            place,
-                            route_point,
-                            budget_per_person,
-                            crowd_tolerance,
-                            route_mode,
-                            recommendation_scope,
-                            _route_progress_km(location, route_geometry) if location else None,
-                        )
-                        if normalized and normalized["id"] not in candidates:
-                            candidates[normalized["id"]] = normalized
+                payload = {
+                    # Batch categories per corridor point instead of paying for
+                    # one Nearby Search request per category.
+                    "includedTypes": list(search_types),
+                    "maxResultCount": mode_config["max_results"],
+                    "rankPreference": "POPULARITY",
+                    "locationRestriction": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": radius}},
+                }
+                _reserve_google_request("places")
+                response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=payload)
+                response.raise_for_status()
+                for place in response.json().get("places", []):
+                    location = _place_location(place)
+                    normalized = _score_place(
+                        place,
+                        route_point,
+                        budget_per_person,
+                        crowd_tolerance,
+                        route_mode,
+                        recommendation_scope,
+                        _route_progress_km(location, route_geometry) if location else None,
+                    )
+                    if normalized and normalized["id"] not in candidates:
+                        candidates[normalized["id"]] = normalized
         return ProviderResult(route=route_result, candidates=sorted(candidates.values(), key=lambda item: item["enjoyment_score"], reverse=True), provider="google")
 
     async def search_route_places(
@@ -528,6 +599,8 @@ class GoogleMapsProvider:
     ) -> ProviderResult:
         """Search a free-form request at several points along the live route."""
         normalized_query = _normalize_place_search_query(query)
+        location_hint = _extract_location_hint(query)
+        maps_query = f"{normalized_query} near {location_hint}" if location_hint else normalized_query
         mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
         route_headers = {
             "Content-Type": "application/json",
@@ -540,6 +613,7 @@ class GoogleMapsProvider:
             "X-Goog-FieldMask": GOOGLE_PLACE_FIELD_MASK,
         }
         async with httpx.AsyncClient(timeout=18) as client:
+            _reserve_google_request("routes")
             route_response = await client.post(GOOGLE_ROUTES_URL, headers=route_headers, json=self._route_payload(start, destination))
             route_response.raise_for_status()
             route_data = route_response.json()
@@ -562,13 +636,22 @@ class GoogleMapsProvider:
                     target = target_progress_km if target_progress_km is not None else lower
                     route_points = [min(route_points, key=lambda point: abs(float(_route_progress_km(point, route_geometry) or 0) - target))]
             candidates: dict[str, dict[str, Any]] = {}
-            for route_point in (route_points[1:-1] or route_points):
+            # When the user names a locality, let Places resolve that locality
+            # directly. A sparse route-point bias can otherwise anchor the
+            # search near the selected checkpoint (for example Yong Peng) and
+            # miss an earlier but still valid locality such as Johor Bahru.
+            # Actual route geometry and segment bounds below remain the source
+            # of truth for whether a result can replace this stop.
+            search_points = [route_points[0] if route_points else (0.0, 0.0)] if location_hint else (route_points[1:-1] or route_points)
+            for route_point in search_points:
                 payload = {
-                    "textQuery": normalized_query,
+                    "textQuery": maps_query,
                     "maxResultCount": 5,
                     "rankPreference": "RELEVANCE",
-                    "locationBias": {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": mode_config["corridor_radius"]}},
                 }
+                if not location_hint:
+                    payload["locationBias"] = {"circle": {"center": {"latitude": route_point[0], "longitude": route_point[1]}, "radius": mode_config["corridor_radius"]}}
+                _reserve_google_request("places")
                 response = await client.post(GOOGLE_TEXT_SEARCH_URL, headers=places_headers, json=payload)
                 response.raise_for_status()
                 for place in response.json().get("places", []):
@@ -584,10 +667,11 @@ class GoogleMapsProvider:
                     )
                     if normalized:
                         normalized["types"] = place.get("types") or []
-                    if normalized and _candidate_in_route_segment(normalized, route_distance_km, segment_start_progress_km, segment_end_progress_km) and _place_matches_search_intent(normalized, normalized_query) and normalized["id"] not in candidates:
+                    if normalized and _candidate_in_route_segment(normalized, route_distance_km, segment_start_progress_km, segment_end_progress_km) and _place_matches_search_intent(normalized, normalized_query) and _place_matches_location_hint(normalized, location_hint) and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
         results = _sort_route_matches(list(candidates.values()), target_progress_km)
-        warning = None if results else f"No route places matched “{query}”. Try a broader request."
+        location_message = f" near {location_hint}" if location_hint else ""
+        warning = None if results else f"No route places matched “{query}”{location_message}. Try a broader request or choose a checkpoint closer to that area."
         return ProviderResult(route=route_result, candidates=results, provider="google", warning=warning)
 
     async def reroute_with_stops(self, start: str, destination: str, route: dict[str, Any], stops: list[dict[str, Any]], start_time: str = "08:10") -> dict[str, Any]:
@@ -604,6 +688,7 @@ class GoogleMapsProvider:
             "X-Goog-FieldMask": GOOGLE_ROUTE_FIELD_MASK,
         }
         async with httpx.AsyncClient(timeout=18) as client:
+            _reserve_google_request("routes")
             response = await client.post(
                 GOOGLE_ROUTES_URL,
                 headers=headers,
@@ -620,13 +705,18 @@ class GoogleMapsProvider:
         route_result["waypoint_note"] = f"Route plotted through {len(waypoint_ids)} planned stop(s)."
         return route_result
 
-    async def suggest_cities(self, query: str) -> list[dict[str, str]]:
+    async def suggest_cities(self, query: str, session_token: str | None = None) -> list[dict[str, str]]:
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
             "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text,suggestions.placePrediction.structuredFormat",
         }
-        payload = {"input": query, "includedPrimaryTypes": ["(cities)"], "languageCode": "en"}
+        # Endpoints may be campuses, hotels, attractions, or exact addresses;
+        # restricting autocomplete to cities makes the route look precise while
+        # still routing from an ambiguous centroid.
+        payload = {"input": query, "languageCode": "en"}
+        if session_token:
+            payload["sessionToken"] = session_token
         async with httpx.AsyncClient(timeout=8) as client:
             response = await client.post(GOOGLE_AUTOCOMPLETE_URL, headers=headers, json=payload)
             response.raise_for_status()
@@ -646,23 +736,76 @@ class GoogleMapsProvider:
             })
         return normalized
 
+    async def place_details(self, place_id: str, session_token: str | None = None) -> dict[str, Any] | None:
+        """Resolve a selected autocomplete prediction to its canonical address."""
+        headers = {
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": "id,displayName,formattedAddress,location,googleMapsUri",
+        }
+        async with httpx.AsyncClient(timeout=8) as client:
+            _reserve_google_request("details")
+            response = await client.get(
+                f"{GOOGLE_PLACE_DETAILS_URL}/{place_id}",
+                headers=headers,
+                params={"sessionToken": session_token} if session_token else None,
+            )
+            response.raise_for_status()
+            place = response.json()
+        display_name = (place.get("displayName") or {}).get("text") or place.get("formattedAddress")
+        formatted_address = place.get("formattedAddress") or display_name
+        if not formatted_address:
+            return None
+        return {
+            "id": place.get("id") or place_id,
+            "text": formatted_address,
+            "main_text": display_name or formatted_address,
+            "secondary_text": formatted_address,
+            "formatted_address": formatted_address,
+            "location": place.get("location") or {},
+            "google_maps_uri": place.get("googleMapsUri") or "",
+        }
 
-async def suggest_cities(query: str) -> list[dict[str, str]]:
-    """Return city disambiguation suggestions with a deterministic local fallback."""
+
+async def suggest_cities(query: str, session_token: str | None = None) -> list[dict[str, str]]:
+    """Return endpoint suggestions with a deterministic local fallback."""
     provider = get_maps_provider()
     if isinstance(provider, GoogleMapsProvider):
-        return await provider.suggest_cities(query)
+        return await provider.suggest_cities(query, session_token)
     hints = [
+        {"id": "demo-boston-university", "text": "Boston University, 233 Bay State Road, Boston, MA, USA", "main_text": "Boston University", "secondary_text": "233 Bay State Road, Boston, MA, USA"},
         {"id": "demo-boston-ma", "text": "Boston, Massachusetts, USA", "main_text": "Boston", "secondary_text": "Massachusetts, USA"},
         {"id": "demo-boston-uk", "text": "Boston, Lincolnshire, UK", "main_text": "Boston", "secondary_text": "Lincolnshire, UK"},
+        {"id": "demo-empire-state-building", "text": "Empire State Building, 350 5th Avenue, New York, NY 10118, USA", "main_text": "Empire State Building", "secondary_text": "350 5th Avenue, New York, NY 10118, USA"},
         {"id": "demo-new-york", "text": "New York, New York, USA", "main_text": "New York", "secondary_text": "New York, USA"},
+        {"id": "demo-hoxton-williamsburg", "text": "The Hoxton Williamsburg, 97 Wythe Avenue, Brooklyn, NY, USA", "main_text": "The Hoxton Williamsburg", "secondary_text": "97 Wythe Avenue, Brooklyn, NY, USA"},
         {"id": "demo-singapore", "text": "Singapore", "main_text": "Singapore", "secondary_text": "Singapore"},
         {"id": "demo-kuala-lumpur", "text": "Kuala Lumpur, Malaysia", "main_text": "Kuala Lumpur", "secondary_text": "Malaysia"},
     ]
     normalized_query = query.lower().strip()
-    return [hint for hint in hints if normalized_query in hint["text"].lower() or normalized_query in hint["main_text"].lower()][:5]
+    matches = [hint for hint in hints if normalized_query in hint["text"].lower() or normalized_query in hint["main_text"].lower()]
+    return sorted(
+        matches,
+        key=lambda hint: (
+            hint["main_text"].lower() != normalized_query,
+            not hint["main_text"].lower().startswith(normalized_query),
+        ),
+    )[:5]
+
+
+async def place_details(place_id: str, session_token: str | None = None) -> dict[str, Any] | None:
+    """Resolve a place ID using Google or a deterministic local fallback."""
+    provider = get_maps_provider()
+    if isinstance(provider, GoogleMapsProvider):
+        return await provider.place_details(place_id, session_token)
+    fallback_details = {
+        "demo-boston-university": {"id": "demo-boston-university", "text": "Boston University, 233 Bay State Road, Boston, MA, USA", "main_text": "Boston University", "secondary_text": "233 Bay State Road, Boston, MA, USA"},
+        "demo-empire-state-building": {"id": "demo-empire-state-building", "text": "Empire State Building, 350 5th Avenue, New York, NY 10118, USA", "main_text": "Empire State Building", "secondary_text": "350 5th Avenue, New York, NY 10118, USA"},
+        "demo-hoxton-williamsburg": {"id": "demo-hoxton-williamsburg", "text": "The Hoxton Williamsburg, 97 Wythe Avenue, Brooklyn, NY, USA", "main_text": "The Hoxton Williamsburg", "secondary_text": "97 Wythe Avenue, Brooklyn, NY, USA"},
+    }
+    return fallback_details.get(place_id)
 
 
 def get_maps_provider() -> GoogleMapsProvider | DemoMapsProvider:
     api_key = os.getenv("GOOGLE_MAPS_API_KEY")
-    return GoogleMapsProvider(api_key) if api_key else DemoMapsProvider()
+    live_maps_enabled = os.getenv("VIBETRIP_LIVE_MAPS_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+    return GoogleMapsProvider(api_key) if api_key and live_maps_enabled else DemoMapsProvider()

@@ -29,7 +29,7 @@ def llm_enabled() -> bool:
 
 
 @lru_cache(maxsize=1)
-def _chat_model() -> Any:
+def get_chat_model() -> Any:
     """Create the model lazily so demo mode does not require the provider package."""
     from langchain_openai import ChatOpenAI
 
@@ -101,7 +101,7 @@ def refine_recommendations(state: dict[str, Any]) -> dict[str, Any]:
     }
 
     try:
-        decision = _chat_model().with_structured_output(RecommendationDecision).invoke([
+        decision = get_chat_model().with_structured_output(RecommendationDecision).invoke([
             (
                 "system",
                 "You are VibeTrip's recommendation reviewer. Choose only IDs from the supplied candidate list. "

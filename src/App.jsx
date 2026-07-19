@@ -6,7 +6,7 @@ import ProfileOnboarding from './components/ProfileOnboarding';
 import { ExploreView, SavedTripsView } from './components/TripCollections';
 import ProfileView from './components/ProfileView';
 import { addMinutesToTime, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, itineraryToStops } from './app/formatters';
-import { estimateTripEndDate, getLocalTodayISO } from './app/dateUtils';
+import { estimateTripEndDate, getLocalTimeISO, getLocalTodayISO } from './app/dateUtils';
 import { MAX_TRIP_MEDIA } from './app/media';
 import { defaultCostBreakdown, exploreFallbackTrips, initialCandidates, initialStops, navItems, PLANNER_API_URL, profileOptions, routeModeOptions, tripProfileOptions } from './app/plannerData';
 
@@ -71,6 +71,8 @@ function navFromPath(pathname) {
 function App() {
   const [from, setFrom] = useState('Boston, MA');
   const [to, setTo] = useState('New York, NY');
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
   const [stops, setStops] = useState(initialStops);
   const [activeNav, setActiveNav] = useState(() => navFromPath(window.location.pathname));
   const [routeMode, setRouteMode] = useState('balanced');
@@ -85,7 +87,7 @@ function App() {
   const [route, setRoute] = useState({});
   const [startDate, setStartDate] = useState(() => getLocalTodayISO());
   const [endDate, setEndDate] = useState(() => getLocalTodayISO());
-  const [startTime, setStartTime] = useState('08:10');
+  const [startTime, setStartTime] = useState(() => getLocalTimeISO());
   const [endTime, setEndTime] = useState('18:00');
   const [travellers, setTravellers] = useState(4);
   const [budgetPerPerson, setBudgetPerPerson] = useState(400);
@@ -101,6 +103,7 @@ function App() {
   const [isManagingStops, setIsManagingStops] = useState(false);
   const [placeQuery, setPlaceQuery] = useState('');
   const [placeSearchResults, setPlaceSearchResults] = useState([]);
+  const [placeSearchHint, setPlaceSearchHint] = useState('');
   const [hasSearchedPlaces, setHasSearchedPlaces] = useState(false);
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -475,8 +478,20 @@ function App() {
     const currentProgress = progressForStop(currentStop);
     const nextProgress = progressForStop(nextStop);
     const routeDistance = Number(route.distance_km || routeStats.distanceKm || 348);
-    const segmentStartProgress = previousProgress ?? (currentProgress == null ? null : Math.max(0, currentProgress - 45));
-    const segmentEndProgress = nextProgress ?? (currentProgress == null ? null : Math.min(routeDistance, currentProgress + 45));
+    // A stop's route progress can be missing or stale after a saved trip is
+    // reopened. Do not let a malformed next checkpoint collapse the search
+    // window to zero; the first stop must still be replaceable anywhere from
+    // the origin up to the next valid checkpoint (e.g. Singapore → JB → Yong
+    // Peng). The provider applies the same bounds after it receives results.
+    const hasValidPreviousProgress = previousProgress != null && (currentProgress == null || previousProgress < currentProgress);
+    const hasValidNextProgress = nextProgress != null && (currentProgress == null || nextProgress > currentProgress);
+    const segmentStartProgress = hasValidPreviousProgress
+      ? previousProgress
+      : currentProgress == null
+        ? null
+        : Math.max(0, currentProgress - 90);
+    const fallbackSegmentEnd = currentProgress == null ? null : Math.min(routeDistance, currentProgress + 90);
+    const segmentEndProgress = hasValidNextProgress ? nextProgress : fallbackSegmentEnd;
     const isInReplacementSegment = (candidate) => {
       if (segmentStartProgress == null && segmentEndProgress == null) return true;
       const progress = Number(candidate.route_progress_km);
@@ -484,20 +499,38 @@ function App() {
     };
     setIsSearchingPlaces(true);
     setPlaceSearchResults([]);
+    setPlaceSearchHint('');
     setHasSearchedPlaces(false);
     try {
       const response = await apiFetch(`${PLANNER_API_URL}/trips/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress }),
+        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress, selected_stop_title: currentStop?.title || '', previous_stop_title: previousStop?.title || '', next_stop_title: nextStop?.title || '' }),
       });
       if (!response.ok) throw new Error(`Search returned ${response.status}`);
       const result = await response.json();
       const contextualResults = (result.candidate_places || []).filter(isInReplacementSegment);
+      const parsedIntent = result.parsed_intent || {};
+      const locationHint = parsedIntent.location_hint;
+      const readableLocation = locationHint ? locationHint.replace(/\b\w/g, (letter) => letter.toUpperCase()) : '';
+      const openLeg = `${previousStop?.title || from} → ${nextStop?.title || to}`;
+      const routeHint = `Replacement candidates are limited to the open leg ${openLeg}, so the route stays in order.`;
+      const searchHint = locationHint
+        ? `Searching for ${parsedIntent.category || 'a place'} near ${readableLocation}. ${routeHint}`
+        : routeHint;
+      setPlaceSearchHint(result.warning && (result.candidate_places || []).length === 0
+        ? `${result.warning} ${searchHint}`
+        : searchHint);
       setPlaceSearchResults(contextualResults);
       setHasSearchedPlaces(true);
       setCandidatePlaces((current) => [...contextualResults, ...current.filter((candidate) => !contextualResults.some((match) => match.id === candidate.id))]);
-      setMessage(result.warning || `Found ${contextualResults.length} matches on the ${currentStop?.title || 'selected'} leg for “${query}”.`);
+      if (contextualResults.length > 0) {
+        setMessage(result.warning || `Found ${contextualResults.length} matches on the ${currentStop?.title || 'selected'} leg for “${query}”.`);
+      } else if ((result.candidate_places || []).length > 0) {
+        setMessage('Places were found elsewhere on the route, but none fit this selected leg. Choose another stop to replace or broaden the request.');
+      } else {
+        setMessage(result.warning || 'No suitable places fit this selected leg. Choose another stop to replace or try a more specific request, such as “Chinese restaurant”.');
+      }
     } catch {
       const terms = query.toLowerCase().split(/\s+/).filter((term) => term.length > 2);
       const cuisine = ['chinese', 'japanese', 'korean', 'thai', 'indian', 'malay', 'vietnamese', 'mexican', 'italian', 'mediterranean'].find((term) => terms.includes(term));
@@ -597,7 +630,19 @@ function App() {
   function swapLocations() {
     setFrom(to);
     setTo(from);
+    setFromLocation(toLocation);
+    setToLocation(fromLocation);
     setMessage('Direction swapped.');
+  }
+
+  function updateFrom(value, location = null) {
+    setFrom(value);
+    setFromLocation(location);
+  }
+
+  function updateTo(value, location = null) {
+    setTo(value);
+    setToLocation(location);
   }
 
   function focusTimelineStop(stop, index) {
@@ -771,7 +816,7 @@ function App() {
         window.localStorage.setItem(savedTripsKey(authUser?.id), JSON.stringify(nextTrips));
         return nextTrips;
       });
-      setMessage(`${uploadedCount} ${uploadedCount === 1 ? (replacementMediaId ? 'memory replaced' : 'memory added') : 'memories added'} to your completed trip.`);
+      setMessage(`${uploadedCount} ${uploadedCount === 1 ? (replacementMediaId ? 'memory replaced' : 'memory added') : 'memories added'} to your trip.`);
     } catch (error) {
       if (uploadedCount > 0) {
         setSavedTrips((current) => {
@@ -852,9 +897,11 @@ function App() {
     activeTripIdRef.current = shouldRegenerate ? null : trip.id;
     hasAutoGeneratedRef.current = true;
     const candidates = trip.candidate_places?.length ? trip.candidate_places : initialCandidates;
-    const nextStartDate = trip.start_date || startDate;
-    const nextEndDate = trip.end_date || estimateTripEndDate(nextStartDate, trip.route, trip.itinerary || []);
-    const nextStartTime = trip.start_time || startTime;
+    const currentDate = getLocalTodayISO();
+    const currentTime = getLocalTimeISO();
+    const nextStartDate = shouldRegenerate ? currentDate : trip.start_date || startDate;
+    const nextEndDate = shouldRegenerate ? currentDate : trip.end_date || estimateTripEndDate(nextStartDate, trip.route, trip.itinerary || []);
+    const nextStartTime = shouldRegenerate ? currentTime : trip.start_time || startTime;
     const nextEndTime = trip.end_time || endTime;
     const nextTravellers = Number(trip.travellers ?? 4);
     const nextBudgetPerPerson = Number(trip.budget_per_person ?? 400);
@@ -863,6 +910,8 @@ function App() {
     const nextPreferences = (trip.preferences || []).filter((preference) => preference !== 'student-budget');
     setFrom(trip.start);
     setTo(trip.destination);
+    setFromLocation(null);
+    setToLocation(null);
     setRouteMode(nextRouteMode);
     setAdventureLevel(nextAdventureLevel);
     setBudgetPerPerson(nextBudgetPerPerson);
@@ -911,6 +960,9 @@ function App() {
   function goToPlanner() {
     setPreferences(profilePreferences.filter((preference) => preference !== 'student-budget'));
     setAdventureLevel(profileAdventureLevel);
+    setStartDate(getLocalTodayISO());
+    setEndDate(getLocalTodayISO());
+    setStartTime(getLocalTimeISO());
     navigateTo('Plan a trip');
   }
 
@@ -1013,7 +1065,7 @@ function App() {
     },
     form: {
       from, to, routeTitle, routeModeOptions, isGenerating, plannerSource, routeStats, startDate, startTime, endTime,
-      travellers, budgetPerPerson, isGenerated, message, onFrom: setFrom, onTo: setTo, onSwap: swapLocations,
+      travellers, budgetPerPerson, isGenerated, message, fromLocation, toLocation, onFrom: updateFrom, onTo: updateTo, onSwap: swapLocations,
       onStartDate: (value) => { setStartDate(value); setEndDate(value); }, onStartTime: setStartTime, onEndTime: setEndTime,
       onTravellers: setTravellers, onBudget: setBudgetPerPerson, onGenerate: generateTrip,
     },
@@ -1024,7 +1076,7 @@ function App() {
       onRouteMode: (nextMode) => { setRouteMode(nextMode); setMessage(`${routeModeOptions.find((option) => option.id === nextMode)?.label} route selected. Generate the route to update recommendations.`); },
     },
     itinerary: { stops, focusedStopIndex, editingStopIndex, isManagingStops, onToggleManager: toggleStopManager, onFocusStop: focusTimelineStop, onBeginChange: beginStopChange, onRemove: removeStop, onAddStop: addStop },
-    assistant: { replacementStopIndex, onChooseReplacement: chooseReplacementStop, placeQuery, onPlaceQuery: setPlaceQuery, onSearch: searchRoutePlaces, isSearching: isSearchingPlaces, placeSearchResults, hasSearched: hasSearchedPlaces },
+    assistant: { replacementStopIndex, onChooseReplacement: chooseReplacementStop, placeQuery, onPlaceQuery: setPlaceQuery, onSearch: searchRoutePlaces, isSearching: isSearchingPlaces, placeSearchResults, placeSearchHint, hasSearched: hasSearchedPlaces },
     budget: { costBreakdown, travellers },
     agentContextSummary: contextSummary,
   };

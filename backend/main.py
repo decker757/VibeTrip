@@ -1,9 +1,12 @@
 """FastAPI entrypoint for the VibeTrip planning workflow."""
 
+from collections import defaultdict, deque
 from datetime import date
+import os
+import time
 from typing import Literal
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Response, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -12,7 +15,8 @@ from .graph import day_builder, planner_graph
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
 from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
-from .providers import DemoMapsProvider, get_maps_provider, suggest_cities
+from .providers import DemoMapsProvider, get_maps_provider, place_details, suggest_cities
+from .search_intent import parse_place_search_intent
 from .simulation import SimulationEvent, recalibrate_trip
 from .storage import OWNER_ID, context_event_repository, trip_repository
 
@@ -60,6 +64,9 @@ class RoutePlaceSearchRequest(BaseModel):
     segment_start_progress_km: float | None = Field(default=None, ge=0)
     segment_end_progress_km: float | None = Field(default=None, ge=0)
     target_progress_km: float | None = Field(default=None, ge=0)
+    selected_stop_title: str = ""
+    previous_stop_title: str = ""
+    next_stop_title: str = ""
 
 
 class RerouteRequest(BaseModel):
@@ -137,6 +144,23 @@ class ProfileUpdateRequest(BaseModel):
 
 app = FastAPI(title="VibeTrip Planner API", version="0.1.0")
 app.mount("/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
+
+AUTOCOMPLETE_MAX_PER_MINUTE = max(1, int(os.getenv("VIBETRIP_AUTOCOMPLETE_MAX_PER_MINUTE", "20")))
+_autocomplete_requests: dict[str, deque[float]] = defaultdict(deque)
+
+
+def _allow_autocomplete(client_key: str) -> bool:
+    """Stop an accidental typing loop from exhausting the Places budget."""
+    now = time.monotonic()
+    requests = _autocomplete_requests[client_key]
+    while requests and now - requests[0] >= 60:
+        requests.popleft()
+    if len(requests) >= AUTOCOMPLETE_MAX_PER_MINUTE:
+        return False
+    requests.append(now)
+    return True
+
+
 app.add_middleware(
     CORSMiddleware,
     # Vite normally runs on :5173, while the in-app preview may proxy the
@@ -200,10 +224,23 @@ def health() -> dict[str, str]:
 @app.post("/trips/search")
 async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
     """Find a free-form place request near several points on the route."""
+    parsed_intent = parse_place_search_intent(
+        request.query,
+        {
+            "start": request.start,
+            "destination": request.destination,
+            "selected_stop": request.selected_stop_title,
+            "previous_stop": request.previous_stop_title,
+            "next_stop": request.next_stop_title,
+            "segment_start_progress_km": request.segment_start_progress_km,
+            "segment_end_progress_km": request.segment_end_progress_km,
+            "target_progress_km": request.target_progress_km,
+        },
+    )
     provider = get_maps_provider()
     try:
         result = await provider.search_route_places(
-            request.query,
+            parsed_intent.maps_query,
             request.start,
             request.destination,
             request.budget_per_person,
@@ -216,7 +253,7 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
     except Exception as error:
         provider = DemoMapsProvider()
         result = await provider.search_route_places(
-            request.query,
+            parsed_intent.maps_query,
             request.start,
             request.destination,
             request.budget_per_person,
@@ -229,6 +266,7 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
         result.warning = f"Maps provider unavailable ({type(error).__name__}); showing demo matches."
     return {
         "query": request.query,
+        "parsed_intent": parsed_intent.model_dump(),
         "candidate_places": result.candidates,
         "provider": result.provider,
         "warning": result.warning,
@@ -530,11 +568,33 @@ def explore_trips(
 
 
 @app.get("/places/autocomplete")
-async def places_autocomplete(q: str = Query(min_length=2, max_length=100)) -> dict:
+async def places_autocomplete(
+    request: Request,
+    q: str = Query(min_length=3, max_length=100),
+    session_token: str | None = Query(default=None, max_length=120),
+) -> dict:
     try:
-        return {"suggestions": await suggest_cities(q)}
+        if isinstance(get_maps_provider(), DemoMapsProvider):
+            return {"suggestions": await suggest_cities(q, session_token)}
+        if not _allow_autocomplete(request.client.host if request.client else "unknown"):
+            raise HTTPException(status_code=429, detail="Autocomplete rate limit reached; try again shortly.")
+        return {"suggestions": await suggest_cities(q, session_token)}
+    except HTTPException:
+        raise
     except Exception:
         return {"suggestions": []}
+
+
+@app.get("/places/details")
+async def places_details(
+    place_id: str = Query(min_length=2, max_length=300),
+    session_token: str | None = Query(default=None, max_length=120),
+) -> dict:
+    try:
+        details = await place_details(place_id, session_token)
+        return {"place": details}
+    except Exception:
+        return {"place": None}
 
 
 @app.post("/trips/simulate")

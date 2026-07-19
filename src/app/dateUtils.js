@@ -5,6 +5,12 @@ export function getLocalTodayISO(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+export function getLocalTimeISO(date = new Date()) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
 export function addDaysToISO(value, days) {
   const date = new Date(`${value}T00:00:00`);
   date.setDate(date.getDate() + days);

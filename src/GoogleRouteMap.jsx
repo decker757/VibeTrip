@@ -2,7 +2,8 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { decodePolyline } from './app/mapGeometry';
 
-const BROWSER_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY;
+const BROWSER_MAPS_ENABLED = ['1', 'true', 'yes', 'on'].includes(String(import.meta.env.VITE_GOOGLE_MAPS_BROWSER_ENABLED || 'false').toLowerCase());
+const BROWSER_MAPS_KEY = BROWSER_MAPS_ENABLED ? import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY : '';
 const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID';
 
 function escapeHtml(value = '') {

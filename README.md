@@ -67,12 +67,31 @@ The repository is designed to remain judgeable without paid provider keys:
 
 - **Demo mode:** omit Google and OpenAI keys. The deterministic provider returns
   seeded route/place data and the UI remains fully navigable.
-- **Live map mode:** provide both `GOOGLE_MAPS_API_KEY` for the backend Routes +
-  Places calls and `VITE_GOOGLE_MAPS_BROWSER_KEY` for the browser map. Restrict
-  the browser key by HTTP referrer and restrict the server key by API and quota.
-- **LLM review:** provide `OPENAI_API_KEY` and keep `VIBETRIP_LLM_ENABLED=true`.
-  The LLM is optional and only ranks deterministic, already-validated
-  candidates.
+- **Live map mode:** explicitly set `VIBETRIP_LIVE_MAPS_ENABLED=true`, provide
+  `GOOGLE_MAPS_API_KEY` for the backend Routes + Places calls, and provide
+  `VITE_GOOGLE_MAPS_BROWSER_ENABLED=true` plus
+  `VITE_GOOGLE_MAPS_BROWSER_KEY` for the browser map. Restrict the browser key
+  by HTTP referrer and restrict the server key by API and quota.
+- **LLM review and route requests:** provide `OPENAI_API_KEY` and keep
+  `VIBETRIP_LLM_ENABLED=true`. `VIBETRIP_LLM_SEARCH_ENABLED=true` lets the
+  route assistant parse conversational requests into a concise Maps query,
+  while the backend still enforces explicit locality, checkpoint ordering,
+  opening hours, and budget constraints deterministically. The LLM may rank
+  or interpret requests, but it cannot invent places or override geography.
+- **Cost guard:** live autocomplete waits for three characters, debounces
+  requests, uses one Places session token per field interaction, and applies a
+  per-client rolling-minute limit controlled by
+  `VIBETRIP_AUTOCOMPLETE_MAX_PER_MINUTE` (default `20`). Broad place searches
+  request ranking/scheduling fields only; review text is intentionally deferred.
+  Nearby categories are batched into one search per sampled route point instead
+  of one request per category.
+  The backend also applies process-local circuit breakers to Routes, Places
+  search, and Place Details (defaults `10`, `30`, and `20` requests per minute)
+  and falls back to demo data when a limit is reached. Lower these values for a
+  live demo, and still configure Google Cloud quotas because these guards reset
+  when the backend process restarts.
+- **Hard off switch:** set `VIBETRIP_LIVE_MAPS_ENABLED=false` to force the
+  deterministic demo provider even if a Google key remains in `.env`.
 
 Never put `GOOGLE_MAPS_API_KEY` or `OPENAI_API_KEY` in a `VITE_*` variable or
 commit them to Git. Google Maps usage requires billing, so set quota and budget
@@ -85,13 +104,21 @@ Copy `.env.example` to `.env` and configure only what the chosen mode needs:
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `GOOGLE_MAPS_API_KEY` | Live mode | Backend Routes and Places requests |
+| `VIBETRIP_LIVE_MAPS_ENABLED` | Live mode | Explicitly enables billable backend Maps calls |
 | `VITE_GOOGLE_MAPS_BROWSER_KEY` | Live mode | Interactive browser map |
+| `VITE_GOOGLE_MAPS_BROWSER_ENABLED` | Live mode | Explicitly enables billable browser map loads |
 | `OPENAI_API_KEY` | Optional | LLM recommendation reviewer |
+| `VIBETRIP_LLM_SEARCH_ENABLED` | Optional | LLM parser for route assistant requests |
+| `VIBETRIP_LLM_SEARCH_MAX_PER_MINUTE` | Optional | Process-local route assistant LLM limit |
 | `VITE_API_URL` | Deployment | Public backend URL used by the frontend |
 | `VIBETRIP_AUTH_SECRET` | Deployment | Secret used to sign session cookies |
 | `DATABASE_URL` | Persistent data | Postgres connection string |
 | `VIBETRIP_MEDIA_DIR` | Optional | Local media storage directory |
 | `VIBETRIP_OKF_DIR` | Optional | Local OKF profile directory |
+| `VIBETRIP_AUTOCOMPLETE_MAX_PER_MINUTE` | Live mode | Per-client autocomplete safety limit |
+| `VIBETRIP_GOOGLE_ROUTES_MAX_PER_MINUTE` | Live mode | Process-local Routes circuit breaker |
+| `VIBETRIP_GOOGLE_PLACES_MAX_PER_MINUTE` | Live mode | Process-local Places search circuit breaker |
+| `VIBETRIP_GOOGLE_DETAILS_MAX_PER_MINUTE` | Live mode | Process-local Place Details circuit breaker |
 
 `VITE_*` values are bundled into the browser and are not secret. The server
 variables must remain backend-only.
