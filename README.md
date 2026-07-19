@@ -2,7 +2,7 @@
   <img src="./public/vibetrip-readme-logo.png" alt="VibeTrip" width="487" />
 </p>
 
-Codex Hackathon Project
+## Codex Hackathon Project
 
 VibeTrip is a working MVP for an agentic road-trip planner designed around Singaporean exchange students. It reduces the cognitive load of planning a road trip by combining route geometry, practical breaks, personal preferences, and route-aware place recommendations:
 
