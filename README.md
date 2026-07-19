@@ -465,6 +465,45 @@ backend, LangGraph workflow, persistence layer, and README.
   checks, frontend production builds, syntax checks, and maintained a bug
   journal to prevent regressions during rapid iteration.
 
+### Codex repository navigation with Graphify
+
+Graphify was added to make Codex more efficient when navigating VibeTrip's
+frontend, FastAPI backend, route graph, and SQL schema. It converts the
+repository into a local, queryable knowledge graph with file and line
+references, so Codex can trace relationships before opening large groups of
+files.
+
+Install the CLI package once, register its Codex skill, and build the project
+graph:
+
+```bash
+pip install "graphifyy[sql]"
+graphify install --platform codex
+```
+
+From a Codex task opened in the VibeTrip repository, run:
+
+```text
+/graphify .
+```
+
+This creates a local `graphify-out/` directory containing the machine-readable
+graph, an interactive HTML graph, and an architecture report. The directory is
+ignored by Git because it is a generated local index. After code changes,
+refresh it with:
+
+```text
+/graphify . --update
+```
+
+The most effective workflow is to refresh Graphify first, then ask Codex for a
+focused task such as “trace the route replacement flow from the chatbot to the
+reroute endpoint and fix the checkpoint handling.” Codex can use the graph to
+locate the relevant path, inspect the smallest necessary set of files, make
+the change, and run the project verification checklist. Graphify improves
+navigation and context selection; deterministic route, waypoint, opening-hour,
+budget, and provider-safety checks remain the source of truth.
+
 ### Key decisions made with Codex
 
 1. Route geometry, waypoint order, opening hours, budget, and safety constraints
