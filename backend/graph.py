@@ -51,6 +51,11 @@ def _is_refuel_or_convenience(place: dict[str, Any]) -> bool:
     return any(term in category for term in ("gas", "fuel", "convenience", "store"))
 
 
+def _is_fuel_stop(place: dict[str, Any]) -> bool:
+    category = place.get("category", "").lower()
+    return any(term in category for term in ("gas", "fuel", "petrol"))
+
+
 def _is_practical_stop(place: dict[str, Any]) -> bool:
     category = place.get("category", "").lower()
     return _is_refuel_or_convenience(place) or any(term in category for term in ("cafe", "coffee"))
@@ -182,6 +187,7 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
     ranked = sorted(candidates, key=recommendation_score, reverse=True)
     available = [item for item in ranked if _candidate_is_plannable(item)]
     along_route = [item for item in available if item.get("recommendation_scope", "along_route") == "along_route"]
+    fuel = next((item for item in along_route if _is_fuel_stop(item)), None)
     meal = next((item for item in along_route if "restaurant" in item.get("category", "").lower()), None)
     scenic = next((item for item in along_route if item.get("recommendation_kind") == "scenic"), None)
     practical = next((item for item in along_route if _is_practical_stop(item)), None)
@@ -192,7 +198,7 @@ def detour_reviewer(state: PlannerState) -> PlannerState:
             selected.append(place)
 
     if route_mode == "fastest":
-        add_unique(meal or practical or (available[0] if available else None))
+        add_unique(fuel or meal or practical or (available[0] if available else None))
     elif route_mode == "scenic":
         add_unique(scenic)
         add_unique(meal)
@@ -227,6 +233,15 @@ def day_builder(state: PlannerState) -> PlannerState:
     meal_stop = meal_stop or next((item for item in all_candidates if "restaurant" in item.get("category", "").lower() and _candidate_is_plannable(item)), None)
     meal_name = meal_stop.get("name", "Lunch with a view") if meal_stop else "Lunch with a view"
     coffee_stop = next((item for item in all_candidates if item.get("recommendation_scope", "along_route") == "along_route" and any(term in item.get("category", "").lower() for term in ("cafe", "coffee")) and _candidate_is_plannable(item)), None)
+    fuel_stops = sorted(
+        (
+            item for item in all_candidates
+            if item.get("recommendation_scope", "along_route") == "along_route"
+            and _is_fuel_stop(item)
+            and _candidate_is_plannable(item)
+        ),
+        key=lambda item: (item.get("detour_minutes", 999), -item.get("enjoyment_score", 0)),
+    )
     practical_stops = sorted(
         (
             item for item in all_candidates
@@ -236,8 +251,8 @@ def day_builder(state: PlannerState) -> PlannerState:
         ),
         key=lambda item: (item.get("detour_minutes", 999), -item.get("enjoyment_score", 0)),
     )
-    fuel_stop = practical_stops[0] if practical_stops else None
-    additional_fuel_stop = practical_stops[1] if len(practical_stops) > 1 else None
+    fuel_stop = fuel_stops[0] if fuel_stops else practical_stops[0] if route_mode != "fastest" and practical_stops else None
+    additional_fuel_stop = fuel_stops[1] if len(fuel_stops) > 1 else None
     scenic_stop = next((item for item in selected_candidates if item.get("recommendation_kind") == "scenic" and item.get("recommendation_scope") == "along_route"), None)
     scenic_stop = scenic_stop or next((item for item in all_candidates if item.get("recommendation_kind") == "scenic" and item.get("recommendation_scope") == "along_route" and _candidate_is_plannable(item)), None)
     route = dict(state.get("route") or {})
@@ -262,7 +277,7 @@ def day_builder(state: PlannerState) -> PlannerState:
         if candidate and "restaurant" in candidate.get("category", "").lower() and candidate not in meal_options and _candidate_is_plannable(candidate):
             meal_options.append(candidate)
 
-    def build_planned_stops(selected_meal: dict[str, Any] | None) -> list[tuple[dict[str, Any], str, int]]:
+    def build_planned_stops(selected_meal: dict[str, Any] | None, selected_fuel: dict[str, Any] | None) -> list[tuple[dict[str, Any], str, int]]:
         planned_stops: list[tuple[dict[str, Any], str, int]] = []
         seen_stop_ids: set[str] = set()
 
@@ -275,8 +290,8 @@ def day_builder(state: PlannerState) -> PlannerState:
             seen_stop_ids.add(place_id)
             planned_stops.append((place, kind, duration))
 
-        add_planned_stop(coffee_stop, "coffee", 25)
-        add_planned_stop(fuel_stop, "fuel", 15)
+        add_planned_stop(coffee_stop if route_mode != "fastest" else None, "coffee", 25)
+        add_planned_stop(selected_fuel, "fuel", 15)
         if route_mode in {"balanced", "scenic"} and drive_minutes >= 180:
             add_planned_stop(scenic_stop, "attraction", 60 if route_mode == "scenic" else 45)
         if drive_minutes >= 360:
@@ -290,12 +305,13 @@ def day_builder(state: PlannerState) -> PlannerState:
         progress = item[0].get("route_progress_km")
         return float(progress) if isinstance(progress, (int, float)) else float("inf")
 
-    def schedule_stops(planned_stops: list[tuple[dict[str, Any], str, int]]) -> tuple[list[dict[str, Any]], bool]:
+    def schedule_stops(planned_stops: list[tuple[dict[str, Any], str, int]]) -> tuple[list[dict[str, Any]], bool, bool]:
         itinerary: list[dict[str, Any]] = []
         elapsed = 0
         previous_drive_offset = 0
         planned_stop_minutes = 0
         meal_was_open = True
+        fuel_was_scheduled = False
         for index, (place, kind, duration) in enumerate(planned_stops):
             progress = place.get("route_progress_km")
             if isinstance(progress, (int, float)):
@@ -316,14 +332,23 @@ def day_builder(state: PlannerState) -> PlannerState:
             elapsed = stop_offset + duration
             previous_drive_offset = driving_offset
             planned_stop_minutes += duration
-        return itinerary, meal_was_open
+            if kind == "fuel":
+                fuel_was_scheduled = True
+        return itinerary, meal_was_open, fuel_was_scheduled
 
     itinerary = []
-    for option in [*meal_options, None]:
-        candidate_itinerary, meal_was_open = schedule_stops(build_planned_stops(option))
-        if option is None or meal_was_open:
-            itinerary = candidate_itinerary
-            meal_stop = option
+    scheduled_fuel_stop = None
+    fuel_options = [*fuel_stops, None] if route_mode == "fastest" else [fuel_stop]
+    for fuel_option in fuel_options:
+        for option in [*meal_options, None]:
+            candidate_itinerary, meal_was_open, fuel_was_scheduled = schedule_stops(build_planned_stops(option, fuel_option))
+            fuel_requirement_met = route_mode != "fastest" or fuel_was_scheduled
+            if fuel_requirement_met and (option is None or meal_was_open):
+                itinerary = candidate_itinerary
+                meal_stop = option
+                scheduled_fuel_stop = fuel_option if fuel_was_scheduled else None
+                break
+        if itinerary:
             break
     buffer_minutes = max(20, round(drive_minutes * 0.2))
     planned_stop_minutes = sum(int(item.get("duration_min") or 0) for item in itinerary)
@@ -335,18 +360,23 @@ def day_builder(state: PlannerState) -> PlannerState:
         "stop_count": len(itinerary),
         "route_mode": route_mode,
         "route_mode_summary": {
-            "fastest": "Essential breaks only; recommendations stay close to the route.",
+            "fastest": "Essential breaks only, including at least one fuel stop; optional coffee and scenic detours are excluded.",
             "balanced": "One worthwhile intermediate stop can break up the drive.",
             "scenic": "Scenic places and intermediate-city detours are allowed to shape the day.",
         }.get(route_mode, "Balanced route recommendations."),
         "profile_influence_note": f"Route shape: {route_mode.title()}. Stop ranking: {int(state.get('adventure_level') or 50)}% adventurous.",
     })
     try:
-        end_time = datetime.strptime(state.get("end_time", "18:00"), "%H:%M")
-        schedule_warning = None if start + timedelta(minutes=arrival_offset) <= end_time else f"Arrival estimate {time_after(arrival_offset)} is later than your target end time of {state.get('end_time', '18:00')}."
+        target_end = datetime.combine(start.date(), datetime.strptime(state.get("end_time", "18:00"), "%H:%M").time())
+        schedule_warning = None if start + timedelta(minutes=arrival_offset) <= target_end else f"Arrival estimate {time_after(arrival_offset)} is later than your target end time of {state.get('end_time', '18:00')}."
     except ValueError:
         schedule_warning = None
-    route["schedule_warning"] = schedule_warning
+    warnings = []
+    if route_mode == "fastest" and not scheduled_fuel_stop:
+        warnings.append("Fastest routes require at least one fuel station, but no usable fuel stop could be scheduled. Try generating again or choose Balanced.")
+    if schedule_warning:
+        warnings.append(schedule_warning)
+    route["schedule_warning"] = " ".join(warnings) or None
 
     return {
         **state,

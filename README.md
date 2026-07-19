@@ -283,7 +283,7 @@ the deterministic recommendation result.
      enjoyment, opening hours, detour time, route style, adventure level, and
      the traveller's learned soft preferences.
    - Selects the best along-route candidates for the current route mode:
-     `fastest` keeps only essentials, `balanced` allows worthwhile detours,
+     `fastest` keeps only essentials and at least one fuel stop, `balanced` allows worthwhile detours,
      and `scenic` allows more intermediate experiences.
 
 4. **LLM recommendation reviewer (`llm_reviewer`)**

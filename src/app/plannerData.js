@@ -31,7 +31,7 @@ export const profileOptions = [
 export const tripProfileOptions = profileOptions.filter((option) => option.id !== 'student-budget');
 
 export const routeModeOptions = [
-  { id: 'fastest', label: 'Fastest', description: 'Bare essentials', detail: 'Keeps the route tight and limits recommendations.' },
+  { id: 'fastest', label: 'Fastest', description: 'Bare essentials + fuel', detail: 'Keeps the route tight while preserving at least one fuel stop.' },
   { id: 'balanced', label: 'Balanced', description: 'Worthwhile detours', detail: 'Adds one or two stops that earn the time.' },
   { id: 'scenic', label: 'Scenic', description: 'Intermediate gems', detail: 'Lets memorable places shape the way there.' },
 ];
