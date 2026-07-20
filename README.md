@@ -12,6 +12,98 @@ VibeTrip is a working MVP for an agentic road-trip planner designed around Singa
 4. Adjust stops and refine the travel profile.
 5. Save, complete, and optionally publish trips with photos or videos to Explore.
 
+## How Codex accelerated development
+
+VibeTrip was developed iteratively in Codex, using GPT-5.6 as the coding and
+reasoning model for product, design, and engineering decisions. Codex turned
+user research observations, screenshots, and bug reports into working changes
+across the React frontend, FastAPI backend, LangGraph workflow, persistence
+layer, and README. The app's optional runtime LLM configuration is separate
+from this development workflow and can be disabled for deterministic demo
+mode.
+
+### Skills and workflow used
+
+- **UI/UX Pro Max:** used to review screenshots and improve information
+  hierarchy, responsive layout, accessibility, focus states, form feedback,
+  loading states, map interactions, timeline affordances, saved-trip actions,
+  media previews, and Explore navigation.
+- **Bug Journal:** maintained a persistent record of non-trivial failures with
+  their symptom, root cause, fix, and one prevention rule. This made recurring
+  issues—such as route waypoint ordering, checkpoint-preserving Explore reuse,
+  missing Fastest fuel stops, map marker interactions, and billable API
+  request limits—available as regression guidance during later changes.
+- **Graphify:** indexed the repository as a local, queryable knowledge graph
+  so Codex could trace relationships across the frontend, FastAPI backend,
+  route graph, providers, storage adapters, and SQL schema before opening the
+  smallest relevant set of files.
+
+For the repository-navigation workflow, install Graphify once, register its
+Codex skill, and build or refresh the local index:
+
+```bash
+pip install "graphifyy[sql]"
+graphify install --platform codex
+```
+
+```text
+/graphify .
+/graphify . --update
+```
+
+The generated `graphify-out/` directory is a local index containing the graph,
+interactive visualization, and architecture report; it is ignored by Git.
+
+### Key product and engineering decisions
+
+- Route geometry, waypoint order, opening hours, budget, and safety constraints
+  remain deterministic.
+- The optional LLM adds subjective ranking and explanation only after hard
+  feasibility filtering; it cannot invent places or route data.
+- OKF is a derived agent-readable context artifact, not a replacement for the
+  database.
+- A vector store is deferred until saved-place discovery or semantic
+  trip-history retrieval actually requires one.
+- Google Maps, Places, and OpenAI remain optional so the project is still
+  demonstrable in deterministic demo mode, while live capabilities can be
+  enabled independently.
+
+## Architecture overview
+
+The high-level flow keeps the browser focused on interaction, the FastAPI
+boundary responsible for validation and orchestration, and deterministic route
+checks authoritative over optional provider and LLM suggestions.
+
+```mermaid
+flowchart LR
+    UI["React + Vite frontend<br/>Planner · Explore · Saved Trips · Profile"]
+    API["FastAPI API"]
+    GRAPH["LangGraph planner<br/>route scout → vibe matcher → detour reviewer → optional LLM reviewer → day builder"]
+    SEARCH["Route-aware search<br/>reroute · simulator"]
+    PROVIDERS["Provider boundary"]
+    MAPS["Google Routes + Places<br/>optional live mode"]
+    LLM["OpenAI reviewer<br/>optional"]
+    AUTH["Local authentication"]
+    STORE["Storage adapters<br/>memory · JSON · optional Postgres"]
+    OKF["OKF context + feedback events"]
+    EXPLORE["Saved trips · Explore · media"]
+    BROWSER["Google Maps JavaScript<br/>optional browser key"]
+
+    UI -->|REST + auth| API
+    UI -->|interactive map| BROWSER
+    API --> GRAPH
+    API --> SEARCH
+    API --> AUTH
+    API --> STORE
+    API --> EXPLORE
+    GRAPH --> PROVIDERS
+    SEARCH --> PROVIDERS
+    PROVIDERS --> MAPS
+    GRAPH -. validated shortlist .-> LLM
+    STORE --> OKF
+    OKF --> GRAPH
+```
+
 ## Run the frontend locally
 
 ```bash
@@ -380,93 +472,3 @@ or another sharable object store before treating the app as production-ready.
 Before publishing a repository or demo, confirm that `.env`, API keys, local
 auth data, OKF artifacts, media, and database volumes are not committed. The
 repository's `.gitignore` excludes these local state files.
-
-## How Codex accelerated development
-
-VibeTrip was developed iteratively in Codex, using GPT-5.6 as the coding and
-reasoning model for product, design, and engineering decisions. Codex turned
-user research observations, screenshots, and bug reports into working changes
-across the React frontend, FastAPI backend, LangGraph workflow, persistence
-layer, and README. This was a development workflow choice: the app's optional
-runtime LLM configuration is separate and can be disabled for deterministic
-demo mode.
-
-### Where Codex contributed
-
-- **Product framing:** translated the planning problem for Singaporean
-  exchange students into a focused journey: generate a route, validate the
-  stops, save and edit it, then learn from completed trips.
-- **UX iteration:** reviewed screenshots and corrected unclear affordances,
-  timeline ordering, stop replacement behaviour, map focus, accessibility of
-  text and controls, saved-trip actions, media previews, and Explore navigation.
-- **Agentic workflow:** modularized the planner into route scouting, profile
-  matching, detour review, optional LLM review, and day building. Deterministic
-  routing and feasibility checks remain authoritative; the LLM only ranks a
-  validated shortlist.
-- **Reliability debugging:** diagnosed and fixed route waypoint omissions,
-  incorrect geographic ordering, unrealistic arrival times, opening-hour
-  mismatches, map fallback regressions, replacement-vs-append media bugs, and
-  Explore routes opening in stale editing state.
-- **Personalization architecture:** evaluated whether a vector store was
-  necessary, then implemented a simpler MVP boundary: saved trips and feedback
-  events are captured through local repository adapters, while a derived OKF
-  context gives the agents a compact, human-readable memory of saved trips and
-  learned preferences.
-- **Cost and safety decisions:** kept Google Maps and Places optional, added a
-  deterministic demo fallback, separated browser and server keys, and kept
-  provider calls behind the backend so usage can be monitored and limited.
-- **Validation and handoff:** ran focused backend context tests, persistence
-  checks, frontend production builds, syntax checks, and maintained a bug
-  journal to prevent regressions during rapid iteration.
-
-### Codex repository navigation with Graphify
-
-Graphify was added to make Codex more efficient when navigating VibeTrip's
-frontend, FastAPI backend, route graph, and SQL schema. It converts the
-repository into a local, queryable knowledge graph with file and line
-references, so Codex can trace relationships before opening large groups of
-files.
-
-Install the CLI package once, register its Codex skill, and build the project
-graph:
-
-```bash
-pip install "graphifyy[sql]"
-graphify install --platform codex
-```
-
-From a Codex task opened in the VibeTrip repository, run:
-
-```text
-/graphify .
-```
-
-This creates a local `graphify-out/` directory containing the machine-readable
-graph, an interactive HTML graph, and an architecture report. The directory is
-ignored by Git because it is a generated local index. After code changes,
-refresh it with:
-
-```text
-/graphify . --update
-```
-
-The most effective workflow is to refresh Graphify first, then ask Codex for a
-focused task such as “trace the route replacement flow from the chatbot to the
-reroute endpoint and fix the checkpoint handling.” Codex can use the graph to
-locate the relevant path, inspect the smallest necessary set of files, make
-the change, and run the project verification checklist. Graphify improves
-navigation and context selection; deterministic route, waypoint, opening-hour,
-budget, and provider-safety checks remain the source of truth.
-
-### Key decisions made with Codex
-
-1. Route geometry, waypoint order, opening hours, budget, and safety constraints
-   are deterministic.
-2. The optional LLM adds subjective ranking and explanation only after the hard
-   feasibility filter.
-3. OKF is a derived agent-readable context artifact, not a replacement for
-   the database.
-4. A vector store is deferred until saved-place discovery or semantic trip
-   retrieval actually requires one.
-5. The product remains demonstrable without paid API keys, while live Maps,
-   Places, and LLM capabilities can be enabled independently.
