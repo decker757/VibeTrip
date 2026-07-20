@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/decker757/VibeTrip/main/public/vibetrip-readme-logo.png" alt="VibeTrip" width="487" />
+  <img src="https://cdn.jsdelivr.net/gh/decker757/VibeTrip@main/public/vibetrip-readme-logo.png" alt="VibeTrip" width="487" />
 </p>
 
 ## Codex Hackathon Project
