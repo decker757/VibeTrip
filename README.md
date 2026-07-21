@@ -22,6 +22,11 @@ layer, and README. The app's optional runtime LLM configuration is separate
 from this development workflow and can be disabled for deterministic demo
 mode.
 
+The collaboration loop was conversational: I supplied product intent,
+screenshots, and observed failures; Codex traced them to the relevant code,
+proposed implementation choices, applied the changes, and helped verify the
+result against the running app and regression checks.
+
 ### Skills and workflow used
 
 - **UI/UX Pro Max:** used to review screenshots and improve information
