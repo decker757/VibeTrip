@@ -188,6 +188,7 @@ function App() {
     const defaults = readProfileDefaults(user.id);
     setProfilePreferences(defaults.preferences);
     setProfileAdventureLevel(defaults.adventureLevel);
+    syncTripPreferencesFromProfile(defaults);
     try {
       setSavedTrips(JSON.parse(window.localStorage.getItem(savedTripsKey(user.id)) || '[]'));
     } catch {
@@ -561,6 +562,11 @@ function App() {
   function updateAdventureLevel(event) {
     const nextLevel = Number(event.target.value);
     setAdventureLevel(nextLevel);
+  }
+
+  function syncTripPreferencesFromProfile(defaults) {
+    setPreferences((defaults.preferences || []).filter((preference) => preference !== 'student-budget'));
+    setAdventureLevel(defaults.adventureLevel);
   }
 
   function updateProfileAdventureLevel(event) {
@@ -968,8 +974,7 @@ function App() {
   }
 
   function goToPlanner() {
-    setPreferences(profilePreferences.filter((preference) => preference !== 'student-budget'));
-    setAdventureLevel(profileAdventureLevel);
+    syncTripPreferencesFromProfile({ preferences: profilePreferences, adventureLevel: profileAdventureLevel });
     setStartDate(getLocalTodayISO());
     setEndDate(getLocalTodayISO());
     setStartTime(getLocalTimeISO());
@@ -1031,6 +1036,7 @@ function App() {
 
   function completeOnboarding() {
     if (authUser) window.localStorage.setItem(onboardingKey(authUser.id), 'true');
+    syncTripPreferencesFromProfile({ preferences: profilePreferences, adventureLevel: profileAdventureLevel });
     setIsOnboarding(false);
     navigateTo('Plan a trip', { replace: true });
   }
@@ -1107,7 +1113,7 @@ function App() {
         <div className="sidebar-section-label">Workspace</div>
         <nav className="main-nav" aria-label="Main navigation">
           {navItems.map((item) => (
-            <button key={item.label} className={`nav-item ${activeNav === item.label ? 'active' : ''}`} onClick={() => navigateTo(item.label)}>
+            <button key={item.label} className={`nav-item ${activeNav === item.label ? 'active' : ''}`} onClick={() => item.label === 'Plan a trip' && activeNav === 'Travel profile' ? goToPlanner() : navigateTo(item.label)}>
               <Icon name={item.icon} size={17} /><span>{item.label}</span>{item.label === 'Saved trips' && savedTrips.length > 0 && <span className="nav-count">{savedTrips.length}</span>}
             </button>
           ))}
