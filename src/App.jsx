@@ -5,7 +5,7 @@ import AuthView from './components/AuthView';
 import ProfileOnboarding from './components/ProfileOnboarding';
 import { ExploreView, SavedTripsView } from './components/TripCollections';
 import ProfileView from './components/ProfileView';
-import { addMinutesToTime, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, itineraryToStops } from './app/formatters';
+import { addMinutesToSchedule, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, itineraryToStops } from './app/formatters';
 import { estimateTripEndDate, getLocalTimeISO, getLocalTodayISO } from './app/dateUtils';
 import { MAX_TRIP_MEDIA } from './app/media';
 import { defaultCostBreakdown, exploreFallbackTrips, initialCandidates, initialStops, navItems, PLANNER_API_URL, profileOptions, routeModeOptions, tripProfileOptions } from './app/plannerData';
@@ -287,7 +287,7 @@ function App() {
         distanceKm: result.route?.distance_km || 348,
         confidence: result.confidence || 94,
       });
-      setEndDate(estimateTripEndDate(requestStartDate, result.route, result.itinerary || []));
+      setEndDate(result.route?.estimated_arrival_date || estimateTripEndDate(requestStartDate, result.route, result.itinerary || []));
       setCostBreakdown(result.cost_breakdown || buildClientCostBreakdown(result.route, candidates[0], requestTravellers));
       setPlannerSource('api');
       setRecommendationSource(result.recommendation_source || 'deterministic');
@@ -365,8 +365,8 @@ function App() {
     }
     const checkInIndex = stops.findIndex((stop) => stop.type === 'stay');
     const previousStop = stops[Math.max(0, checkInIndex - 1)] || stops[stops.length - 1];
-    const time = previousStop?.time ? addMinutesToTime(previousStop.time, (previousStop.duration_minutes || 45) + 30) : startTime;
-    const next = candidateToStop(candidate, time);
+    const schedule = previousStop?.time ? addMinutesToSchedule(previousStop, (previousStop.duration_minutes || 45) + 30, startDate) : { time: startTime, date: startDate, day_number: 1 };
+    const next = candidateToStop(candidate, schedule.time, schedule);
     const destinationIndex = stops.findIndex((stop) => stop.type === 'stay');
     const nextStops = destinationIndex < 0
       ? [...stops, next]
@@ -379,7 +379,7 @@ function App() {
   function selectCandidate(candidate) {
     const targetIndex = replacementStopIndex;
     const previousStop = stops[targetIndex];
-    const nextStops = stops.map((stop, index) => index === targetIndex ? candidateToStop(candidate, stop.time) : stop);
+    const nextStops = stops.map((stop, index) => index === targetIndex ? candidateToStop(candidate, stop.time, stop) : stop);
     setSelectedPlaceId(candidate.id);
     setStops(nextStops);
     setFocusedStopIndex(targetIndex);
@@ -415,8 +415,8 @@ function App() {
     const destinationIndex = stops.findIndex((stop) => stop.type === 'stay');
     const insertionIndex = destinationIndex >= 0 ? destinationIndex : stops.length;
     const previousStop = stops[insertionIndex - 1] || stops[stops.length - 1];
-    const time = previousStop?.time ? addMinutesToTime(previousStop.time, (previousStop.duration_minutes || 45) + 30) : startTime;
-    const nextStop = candidateToStop(candidate, time);
+    const schedule = previousStop?.time ? addMinutesToSchedule(previousStop, (previousStop.duration_minutes || 45) + 30, startDate) : { time: startTime, date: startDate, day_number: 1 };
+    const nextStop = candidateToStop(candidate, schedule.time, schedule);
     const nextStops = [...stops.slice(0, insertionIndex), nextStop, ...stops.slice(insertionIndex)];
     setCandidatePlaces((current) => current.map((item) => item.id === candidate.id ? { ...item, recommendation_scope: 'along_route' } : item));
     setSelectedPlaceId(candidate.id);
@@ -606,7 +606,7 @@ function App() {
       setSimulationResult(result);
       setMessage(result.message);
       if (result.replacement) {
-        const nextStops = stops.map((stop, index) => index === currentStopIndex ? candidateToStop(result.replacement, stop.time) : stop);
+        const nextStops = stops.map((stop, index) => index === currentStopIndex ? candidateToStop(result.replacement, stop.time, stop) : stop);
         setStops(nextStops);
         setSelectedPlaceId(result.replacement.id);
         void rerouteDraft(nextStops, `${result.replacement.name} is now in the route.`);
@@ -623,7 +623,7 @@ function App() {
       setSimulationResult(result);
       setMessage(result.message);
       if (backup) {
-        const nextStops = stops.map((stop, index) => index === currentStopIndex ? candidateToStop(backup, stop.time) : stop);
+        const nextStops = stops.map((stop, index) => index === currentStopIndex ? candidateToStop(backup, stop.time, stop) : stop);
         setStops(nextStops);
         setSelectedPlaceId(backup.id);
         void rerouteDraft(nextStops, `${backup.name} is now in the route.`);

@@ -270,6 +270,15 @@ def day_builder(state: PlannerState) -> PlannerState:
     def time_after(minutes: int) -> str:
         return (start + timedelta(minutes=minutes)).strftime("%H:%M")
 
+    def schedule_metadata(minutes: int) -> dict[str, Any]:
+        scheduled_at = start + timedelta(minutes=minutes)
+        return {
+            "time": scheduled_at.strftime("%H:%M"),
+            "date": scheduled_at.date().isoformat(),
+            "day_number": (scheduled_at.date() - trip_date).days + 1,
+            "schedule_offset_minutes": minutes,
+        }
+
     distance_km = max(1.0, float(route.get("distance_km") or 348))
 
     meal_options = []
@@ -328,7 +337,7 @@ def day_builder(state: PlannerState) -> PlannerState:
                     meal_was_open = False
                 continue
             title = "Coffee stop" if kind == "coffee" else _practical_stop_title(place) if kind == "fuel" else place.get("name", "Lunch with a view") if kind == "meal" else place.get("name", "Scenic stop")
-            itinerary.append({"time": time_after(stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": progress, "opening_hours_verified": opening_status is not None})
+            itinerary.append({**schedule_metadata(stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": progress, "opening_hours_verified": opening_status is not None})
             elapsed = stop_offset + duration
             previous_drive_offset = driving_offset
             planned_stop_minutes += duration
@@ -353,9 +362,12 @@ def day_builder(state: PlannerState) -> PlannerState:
     buffer_minutes = max(20, round(drive_minutes * 0.2))
     planned_stop_minutes = sum(int(item.get("duration_min") or 0) for item in itinerary)
     arrival_offset = drive_minutes + planned_stop_minutes + buffer_minutes
+    arrival_metadata = schedule_metadata(arrival_offset)
     route.update({
         "buffer_minutes": buffer_minutes,
         "estimated_arrival_time": time_after(arrival_offset),
+        "estimated_arrival_date": arrival_metadata["date"],
+        "estimated_trip_days": arrival_metadata["day_number"],
         "timeline_note": f"Includes a {buffer_minutes}-minute driving buffer plus planned breaks.",
         "stop_count": len(itinerary),
         "route_mode": route_mode,
@@ -382,7 +394,7 @@ def day_builder(state: PlannerState) -> PlannerState:
         **state,
         "route": route,
         "confidence": 94,
-        "itinerary": itinerary + [{"time": time_after(arrival_offset), "title": "Check-in", "kind": "stay", "duration_min": 0}],
+        "itinerary": itinerary + [{**arrival_metadata, "title": "Check-in", "kind": "stay", "duration_min": 0}],
     }
 
 

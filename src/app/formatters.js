@@ -9,6 +9,13 @@ export function formatDateLabel(value) {
   return new Intl.DateTimeFormat('en-SG', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`));
 }
 
+function addDaysToISO(value, days) {
+  if (!value) return value;
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 export function formatMoney(amount) {
   return `SGD ${Number(amount || 0).toFixed(0)}`;
 }
@@ -77,14 +84,14 @@ export function itineraryToStops(itinerary, detours, destination) {
           : item.kind === 'attraction'
             ? { place: associatedPlace?.name || item.title, detail: associatedPlace?.address || 'Scenic stop along the route', type: 'attraction' }
             : details[item.kind] || details.coffee;
-    return { time: item.time, title: item.title, place_id: item.place_id, location: associatedPlace?.location, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
+    return { time: item.time, date: item.date, day_number: item.day_number, schedule_offset_minutes: item.schedule_offset_minutes, title: item.title, place_id: item.place_id, location: associatedPlace?.location, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
   });
 }
 
-export function candidateToStop(candidate, time = '12:30') {
+export function candidateToStop(candidate, time = '12:30', schedule = {}) {
   const category = candidate.category?.toLowerCase() || '';
   return {
-    time, title: candidate.name, place: candidate.name, detail: candidate.address || 'Along the route',
+    time, date: schedule.date, day_number: schedule.day_number, schedule_offset_minutes: schedule.schedule_offset_minutes, title: candidate.name, place: candidate.name, detail: candidate.address || 'Along the route',
     type: category.includes('cafe') || category.includes('coffee') ? 'coffee' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : category.includes('attraction') ? 'attraction' : 'lunch',
     duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location, route_progress_km: candidate.route_progress_km,
   };
@@ -100,9 +107,37 @@ export function addMinutesToTime(value, minutes) {
   return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
+export function addMinutesToSchedule(stop, minutes, fallbackDate) {
+  const currentMinutes = timeToMinutes(stop?.time);
+  if (currentMinutes == null) return { time: addMinutesToTime('', minutes), date: fallbackDate };
+  const total = currentMinutes + minutes;
+  const dayOffset = Math.floor(total / 1440);
+  return {
+    time: `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`,
+    date: addDaysToISO(stop?.date || fallbackDate, dayOffset),
+    day_number: Number.isFinite(stop?.day_number) ? stop.day_number + dayOffset : undefined,
+    schedule_offset_minutes: Number.isFinite(stop?.schedule_offset_minutes) ? stop.schedule_offset_minutes + minutes : undefined,
+  };
+}
+
+export function groupStopsByDay(stops, startDate) {
+  const groups = new Map();
+  stops.forEach((stop, index) => {
+    const dayNumber = Number.isFinite(stop.day_number)
+      ? stop.day_number
+      : stop.date && startDate
+        ? Math.round((Date.parse(`${stop.date}T00:00:00`) - Date.parse(`${startDate}T00:00:00`)) / 86400000) + 1
+        : 1;
+    const key = `${dayNumber}:${stop.date || addDaysToISO(startDate, dayNumber - 1) || ''}`;
+    if (!groups.has(key)) groups.set(key, { dayNumber, date: stop.date || addDaysToISO(startDate, dayNumber - 1), stops: [] });
+    groups.get(key).stops.push({ stop, index });
+  });
+  return [...groups.values()].sort((left, right) => left.dayNumber - right.dayNumber);
+}
+
 export function formatTravelGap(currentStop, nextStop) {
-  const current = timeToMinutes(currentStop.time);
-  const next = timeToMinutes(nextStop.time);
+  const current = Number.isFinite(currentStop.schedule_offset_minutes) ? currentStop.schedule_offset_minutes : timeToMinutes(currentStop.time);
+  const next = Number.isFinite(nextStop.schedule_offset_minutes) ? nextStop.schedule_offset_minutes : timeToMinutes(nextStop.time);
   if (current == null || next == null) return 'Flexible drive';
   const drivingMinutes = Math.max(0, next - current - (currentStop.duration_minutes || 0));
   if (drivingMinutes < 1) return 'Continue to next stop';
