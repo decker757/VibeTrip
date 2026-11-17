@@ -46,7 +46,8 @@ SYSTEM_PROMPT = f"""You help a road-tripper replace one stop on a single leg of 
 - Choose only place ids returned by your tools. Never invent places, ids, prices or opening hours.
 - The route segment, opening hours and budget are enforced by code: places outside this leg never
   appear in results, and places closed at arrival are removed from your shortlist.
-- Use CheckOpenAtArrival and CheckBudget when they matter to the request.
+- Use CheckOpenAtArrival and CheckBudget when they matter to the request. Each check's answer is
+  final: missing hours or prices will not appear on a second call, so never repeat a check.
 - If nothing fits, broaden the query or change the category and search again (at most {MAX_SEARCHES} searches).
 - Finish by calling SubmitShortlist with at most {MAX_SHORTLIST} ids, best first, and one sentence of rationale."""
 
@@ -190,19 +191,21 @@ def _per_place_outcome(
 
 def _open_status(place: dict[str, Any], arrival: datetime | None) -> str:
     status = opening_status_at(place, arrival) if arrival else None
-    return {True: "open", False: "closed", None: "unknown"}[status]
+    return {True: "open", False: "closed", None: "no opening hours on record (not excluded)"}[status]
 
 
 def _budget_status(place: dict[str, Any], current_cost: float | None, remaining: float | None) -> str:
     cost = place.get("estimated_cost_sgd")
-    if cost is None or current_cost is None:
-        versus_current = "unknown vs current stop"
+    if cost is None:
+        return "no price on record, so budget can't be checked"
+    if current_cost is None:
+        versus_current = "current stop's cost is unknown"
     elif cost == current_cost:
         versus_current = "same cost as current stop"
     else:
         versus_current = f"SGD {abs(cost - current_cost):.0f} {'cheaper' if cost < current_cost else 'more'} than current stop"
-    if cost is None or remaining is None:
-        versus_budget = "unknown vs remaining budget"
+    if remaining is None:
+        versus_budget = "no remaining budget given"
     else:
         # The remaining budget already pays for the current stop, so only the extra cost counts.
         extra_cost = cost - current_cost if current_cost is not None else cost
@@ -235,6 +238,9 @@ def _valid_submission(message: AIMessage) -> SubmitShortlist | None:
 async def agent_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
     """Ask the model for its next move; record the shortlist if it submits one."""
     model, _ = _runtime(config)
+    if state["step_count"] == MAX_STEPS - 1:
+        # Last step: only SubmitShortlist is offered, so the run always ends with a decision.
+        model = config["configurable"]["final_model"]
     response = await model.ainvoke(state["messages"])
     update: dict[str, Any] = {"messages": [response], "step_count": state["step_count"] + 1}
     shortlist = _valid_submission(response)
@@ -346,8 +352,12 @@ def _agent_timeout_seconds() -> float:
 async def run_route_agent(context: RouteAgentContext, provider: Any, model: Any = None) -> RouteAgentResult | None:
     """Run the agent; None means the caller should fall back to the deterministic search."""
     try:
-        bound_model = (model if model is not None else get_chat_model()).bind_tools(list(TOOL_SCHEMAS.values()))
-        config = {"configurable": {"model": bound_model, "tools": RouteAgentTools(context, provider)}}
+        chat_model = model if model is not None else get_chat_model()
+        config = {"configurable": {
+            "model": chat_model.bind_tools(list(TOOL_SCHEMAS.values())),
+            "final_model": chat_model.bind_tools([SubmitShortlist], tool_choice="SubmitShortlist"),
+            "tools": RouteAgentTools(context, provider),
+        }}
         final = await asyncio.wait_for(ROUTE_AGENT_GRAPH.ainvoke(_initial_state(context), config), _agent_timeout_seconds())
     except Exception:
         logger.warning("Route agent failed; falling back to deterministic search", exc_info=True)

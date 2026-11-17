@@ -113,10 +113,45 @@ async def test_search_cap():
     assert "limit" in r.trace[3]["summary"].lower()
 
 
-async def test_step_cap_returns_none():
-    model = ScriptedChatModel([ai_tool("CheckBudget", {"place_ids": []}, str(i)) for i in range(10)])
+async def test_step_cap_with_empty_forced_submit_returns_none():
+    model = ScriptedChatModel(
+        [ai_tool("CheckBudget", {"place_ids": []}, str(i)) for i in range(10)],
+        forced_responses=[ai_tool("SubmitShortlist", {"place_ids": [], "rationale": "Nothing fits."}, "last")],
+    )
     assert await run_route_agent(ctx(), DemoMapsProvider(), model) is None
-    assert len(model.calls) == MAX_STEPS == 8
+    assert len(model.calls) + len(model.forced_model.calls) == MAX_STEPS == 8
+
+
+async def test_last_step_forces_a_submission_instead_of_looping():
+    # Reproduces a live run: the model kept re-checking a place with no hours or price on
+    # record until the step cap, never submitted, and the search silently fell back.
+    looping = [ai_tool("SearchPlaces", {"query": "quiet cafe", "category": "cafe"}, "s")]
+    looping += [ai_tool("CheckOpenAtArrival", {"place_ids": ["demo-coffee"]}, str(i)) for i in range(10)]
+    model = ScriptedChatModel(
+        looping,
+        forced_responses=[ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"], "rationale": "Quiet and close."}, "last")],
+    )
+    result = await run_route_agent(ctx(), DemoMapsProvider(), model)
+    assert result is not None
+    assert [c["id"] for c in result.candidates][:1] == ["demo-coffee"]
+    assert model.forced_tool_choice == "SubmitShortlist"
+    assert len(model.calls) == MAX_STEPS - 1
+    assert len(model.forced_model.calls) == 1
+
+
+async def test_unknown_hours_and_price_say_what_they_mean():
+    model = ScriptedChatModel([
+        ai_tool("SearchPlaces", {"query": "quiet cafe", "category": "cafe"}, "1"),
+        AIMessage(content="", tool_calls=[
+            {"name": "CheckOpenAtArrival", "args": {"place_ids": ["demo-coffee"]}, "id": "2"},
+            {"name": "CheckBudget", "args": {"place_ids": ["demo-coffee"]}, "id": "3"},
+        ]),
+        ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"], "rationale": "Close by."}, "4"),
+    ])
+    await run_route_agent(ctx(current_cost=None, remaining=None), DemoMapsProvider(), model)
+    tool_texts = [m.content for m in model.calls[-1] if m.type == "tool"]
+    assert any("no opening hours on record" in t and "not excluded" in t for t in tool_texts)
+    assert any("current stop's cost is unknown" in t for t in tool_texts)
 
 
 async def test_no_tool_call_ends_without_shortlist():
@@ -153,7 +188,7 @@ async def test_missing_arrival_and_progress_still_runs():
                                ai_tool("CheckOpenAtArrival", {"place_ids": ["demo-coffee"]}, "2"),
                                ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"], "rationale": "x"}, "3")])
     r = await run_route_agent(ctx(segment=(None, None), arrival=None, target=None), DemoMapsProvider(), model)
-    assert r is not None and "unknown" in r.trace[1]["summary"]
+    assert r is not None and "no opening hours on record" in r.trace[1]["summary"]
 
 
 async def test_budget_summary():
@@ -169,7 +204,7 @@ async def test_budget_summary_unknown_without_budget_inputs():
                                ai_tool("CheckBudget", {"place_ids": ["demo-lunch"]}, "2"),
                                ai_tool("SubmitShortlist", {"place_ids": ["demo-lunch"], "rationale": "x"}, "3")])
     r = await run_route_agent(ctx(segment=(200, 250)), DemoMapsProvider(), model)
-    assert r.trace[1]["summary"] == "The Lobster Shack: unknown vs current stop; unknown vs remaining budget"
+    assert r.trace[1]["summary"] == "The Lobster Shack: current stop's cost is unknown; no remaining budget given"
 
 
 # Remaining budget already includes the stop being replaced, so only the extra cost counts.
@@ -182,7 +217,7 @@ def test_budget_over_remaining_uses_extra_cost_over_current_stop():
 
 
 def test_budget_without_current_cost_compares_full_cost():
-    assert _budget_status({"estimated_cost_sgd": 70}, None, 60) == "unknown vs current stop; over remaining SGD 60"
+    assert _budget_status({"estimated_cost_sgd": 70}, None, 60) == "current stop's cost is unknown; over remaining SGD 60"
 
 
 async def test_malformed_submit_gets_a_retry():
