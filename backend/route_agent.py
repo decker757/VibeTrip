@@ -323,7 +323,9 @@ def _initial_state(ctx: RouteAgentContext) -> AgentState:
 
 
 def _validated_candidates(shortlist_ids: list[str], seen: dict[str, dict[str, Any]], arrival: datetime | None) -> list[dict[str, Any]]:
-    """Agent's picks first (seen and not closed), then other seen places that pass the same checks."""
+    """Agent's picks first (seen and not closed), then other seen places that pass the same checks.
+
+    Each entry carries ``agent_pick`` so the UI can tell the shortlist from the extras."""
     def allowed(place_id: str) -> bool:
         return place_id in seen and not (arrival and opening_status_at(seen[place_id], arrival) is False)
 
@@ -331,7 +333,7 @@ def _validated_candidates(shortlist_ids: list[str], seen: dict[str, dict[str, An
     if not shortlist:
         return []
     others = [place_id for place_id in seen if place_id not in shortlist and allowed(place_id)]
-    return [seen[place_id] for place_id in shortlist + others]
+    return [{**seen[place_id], "agent_pick": place_id in shortlist} for place_id in shortlist + others]
 
 
 def _agent_timeout_seconds() -> float:

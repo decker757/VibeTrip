@@ -65,3 +65,14 @@ def test_agent_not_run_when_slot_unavailable_or_disabled(auth_client, monkeypatc
     monkeypatch.setenv("VIBETRIP_ROUTE_AGENT_ENABLED", "false")
     assert auth_client.post("/trips/search", json=BODY).json()["agent_source"] == "deterministic"
     agent.assert_not_called()
+
+
+def test_agent_path_reserves_one_slot_and_skips_the_llm_parser(auth_client, monkeypatch):
+    slots, parser = [], []
+    monkeypatch.setattr("backend.main._llm_search_enabled", lambda: True)
+    monkeypatch.setattr("backend.main.reserve_llm_search_slot", lambda: slots.append(1) or True)
+    monkeypatch.setattr("backend.main.parse_place_search_intent", lambda *a, **k: parser.append(1))
+    monkeypatch.setattr("backend.main.run_route_agent", _agent_returning([{"id": "demo-coffee", "name": "Demo Coffee"}]))
+    j = auth_client.post("/trips/search", json=BODY).json()
+    assert j["agent_source"] == "agent" and j["parsed_intent"]["maps_query"]
+    assert len(slots) == 1 and parser == []

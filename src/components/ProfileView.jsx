@@ -70,7 +70,8 @@ function LearnedSignalsCard({ signals, onDismiss }) {
               <span className="learned-signal-label">{item.label}</span>
               <span className="learned-signal-source">{SOURCE_LABELS[item.source] || SOURCE_LABELS.profile}</span>
               {item.evidence_count > 0 && <small>based on {item.evidence_count} {item.evidence_count === 1 ? 'action' : 'actions'}</small>}
-              {item.source !== 'profile' && onDismiss && <button type="button" className="learned-signal-dismiss" onClick={() => onDismiss(item.signal)}>Not me</button>}
+              {item.source === 'behaviour' && onDismiss && <button type="button" className="learned-signal-dismiss" onClick={() => onDismiss(item.signal)}>Not me</button>}
+              {item.source === 'both' && <small className="learned-signal-hint">Remove it from your preferences above to turn it off</small>}
             </li>
           ))}
         </ul>

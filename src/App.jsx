@@ -14,6 +14,10 @@ function apiFetch(input, options = {}) {
   return fetch(input, { ...options, credentials: 'include' });
 }
 
+function crowdToleranceFor(preferences) {
+  return preferences.includes('student-budget') ? 'low' : 'medium';
+}
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -519,7 +523,7 @@ function App() {
       const response = await apiFetch(`${PLANNER_API_URL}/trips/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress, selected_stop_title: currentStop?.title || '', previous_stop_title: previousStop?.title || '', next_stop_title: nextStop?.title || '', arrival_time: currentStop?.time, arrival_date: currentStop?.date, current_stop_cost_sgd: currentStopCost, remaining_budget_per_person_sgd: remainingBudget }),
+        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: crowdToleranceFor(preferences), route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress, selected_stop_title: currentStop?.title || '', previous_stop_title: previousStop?.title || '', next_stop_title: nextStop?.title || '', arrival_time: currentStop?.time, arrival_date: currentStop?.date, current_stop_cost_sgd: currentStopCost, remaining_budget_per_person_sgd: remainingBudget }),
       });
       if (!response.ok) throw new Error(`Search returned ${response.status}`);
       const result = await response.json();
@@ -991,7 +995,7 @@ function App() {
       const response = await apiFetch(`${PLANNER_API_URL}/profiles/okf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preferences: profilePreferences, adventure_level: profileAdventureLevel }),
+        body: JSON.stringify({ preferences: profilePreferences, adventure_level: profileAdventureLevel, budget_per_person_sgd: budgetPerPerson, crowd_tolerance: crowdToleranceFor(profilePreferences) }),
       });
       if (!response.ok) throw new Error(`Profile context returned ${response.status}`);
       const result = await response.json();

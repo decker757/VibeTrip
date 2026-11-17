@@ -169,8 +169,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
 .request-results-heading { display: flex; justify-content: space-between; gap: 12px; color: #4f5e52; font-size: 10px; }
 .request-results-heading span { color: #929992; font-size: 9px; }
 .agent-rationale { margin: 0; color: #4f5e52; font-size: 10px; line-height: 1.5; }
-.agent-trace { padding: 7px 0; color: #89928b; font-size: 9px; }
-.agent-trace summary { color: #47734f; cursor: pointer; font-size: 10px; }
+.agent-trace { padding: 7px 0; color: #4f5e52; font-size: 11px; }
+.agent-trace summary { color: #47734f; cursor: pointer; font-size: 11px; }
+.agent-also-found { margin: 4px 0 0; color: #5f6d62; font-size: 11px; font-weight: 600; }
 .agent-trace ol { display: grid; gap: 4px; margin: 7px 0 0; padding-left: 18px; }
 .request-result { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #eef0ea; }
 .request-result > div { display: grid; gap: 3px; min-width: 0; }
@@ -632,5 +633,6 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
 .learned-signal-label { font-weight: 600; font-size: 13px; text-transform: capitalize; }
 .learned-signal-source { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .04em; color: #5e6c62; background: #e3e8df; border-radius: 4px; padding: 3px 6px; }
 .learned-signal small { color: #7a8178; font-size: 11px; }
+.learned-signal-hint { margin-left: auto; }
 .learned-signal-dismiss { margin-left: auto; background: transparent; border: 1px solid #c9c4b6; border-radius: 4px; padding: 5px 9px; font-size: 11px; color: #5f655e; }
 .learned-signal-dismiss:hover, .learned-signal-dismiss:focus-visible { border-color: #8e9a8f; color: #2f3a31; }

@@ -18,7 +18,7 @@ from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
 from .providers import DemoMapsProvider, get_maps_provider, place_details, suggest_cities
 from .route_agent import RouteAgentContext, run_route_agent
-from .search_intent import _llm_search_enabled, parse_place_search_intent, reserve_llm_search_slot
+from .search_intent import _deterministic_intent, _llm_search_enabled, parse_place_search_intent, reserve_llm_search_slot
 from .simulation import SimulationEvent, recalibrate_trip
 from .storage import OWNER_ID, context_event_repository, trip_repository
 
@@ -230,6 +230,20 @@ def health() -> dict[str, str]:
 @app.post("/trips/search")
 async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
     """Find a free-form place request near several points on the route."""
+    provider = get_maps_provider()
+    agent_result = await _try_route_agent(request, provider)
+    if agent_result is not None:
+        return {
+            "query": request.query,
+            # The agent interprets the request itself; skip the LLM parser (and its limiter slot).
+            "parsed_intent": _deterministic_intent(request.query).model_dump(),
+            "candidate_places": agent_result.candidates,
+            "provider": "demo" if isinstance(provider, DemoMapsProvider) else "google",
+            "warning": None,
+            "agent_source": "agent",
+            "agent_rationale": agent_result.rationale,
+            "agent_trace": agent_result.trace,
+        }
     parsed_intent = parse_place_search_intent(
         request.query,
         {
@@ -243,19 +257,6 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
             "target_progress_km": request.target_progress_km,
         },
     )
-    provider = get_maps_provider()
-    agent_result = await _try_route_agent(request, provider)
-    if agent_result is not None:
-        return {
-            "query": request.query,
-            "parsed_intent": parsed_intent.model_dump(),
-            "candidate_places": agent_result.candidates,
-            "provider": "demo" if isinstance(provider, DemoMapsProvider) else "google",
-            "warning": None,
-            "agent_source": "agent",
-            "agent_rationale": agent_result.rationale,
-            "agent_trace": agent_result.trace,
-        }
     try:
         result = await provider.search_route_places(
             parsed_intent.maps_query,

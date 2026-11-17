@@ -87,6 +87,7 @@ async def test_other_seen_candidates_follow_the_shortlist():
                                ai_tool("SubmitShortlist", {"place_ids": ["demo-lunch", "demo-lunch"], "rationale": "x"}, "2")])
     r = await run_route_agent(ctx(segment=(100, 210), target=None), DemoMapsProvider(), model)
     assert [c["id"] for c in r.candidates] == ["demo-lunch", "demo-fuel", "demo-attraction"]
+    assert [c["agent_pick"] for c in r.candidates] == [True, False, False]
 
 
 async def test_closed_at_arrival_dropped_even_without_check():
