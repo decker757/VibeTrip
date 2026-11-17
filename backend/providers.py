@@ -181,6 +181,23 @@ def _place_matches_search_intent(candidate: dict[str, Any], query: str) -> bool:
     return True
 
 
+CATEGORY_FILTER_PHRASES = {
+    "restaurant": "restaurant",
+    "cafe": "cafe coffee",
+    "fuel": "gas station convenience store",
+    "scenic": "scenic attraction",
+    "other": "",
+}
+
+
+@dataclass
+class RouteGeometry:
+    """A fetched route that several place searches can share."""
+    route: dict[str, Any]
+    points: list[tuple[float, float]]
+    distance_km: float
+
+
 @dataclass
 class ProviderResult:
     route: dict[str, Any]
@@ -447,6 +464,34 @@ class DemoMapsProvider:
             "waypoint_note": f"Demo route reserves {len(waypoint_ids)} planned stop(s); connect Google Maps for live waypoint geometry.",
         }
 
+    async def route_geometry(self, start: str, destination: str, route_mode: str) -> RouteGeometry:
+        result = await self.plan_trip(start, destination, 0, "medium", route_mode=route_mode)
+        return RouteGeometry(route=result.route, points=[], distance_km=float(result.route.get("distance_km") or 0))
+
+    async def search_places_text(
+        self,
+        geometry: RouteGeometry,
+        text_query: str,
+        filter_query: str,
+        location_hint: str | None,
+        budget_per_person: int,
+        crowd_tolerance: str,
+        route_mode: str,
+        segment_start_progress_km: float | None,
+        segment_end_progress_km: float | None,
+        target_progress_km: float | None,
+    ) -> list[dict[str, Any]]:
+        """Filter demo candidates by segment, category and locality; free text is not required to match."""
+        result = await self.plan_trip(geometry.route.get("summary", ""), "", budget_per_person, crowd_tolerance, route_mode=route_mode)
+        matches = [
+            candidate
+            for candidate in result.candidates
+            if _candidate_in_route_segment(candidate, geometry.distance_km, segment_start_progress_km, segment_end_progress_km)
+            and _place_matches_search_intent(candidate, filter_query)
+            and _place_matches_location_hint(candidate, location_hint)
+        ]
+        return _sort_route_matches(matches, target_progress_km)
+
     async def search_route_places(
         self,
         query: str,
@@ -642,51 +687,82 @@ class GoogleMapsProvider:
         normalized_query = _normalize_place_search_query(query)
         location_hint = _extract_location_hint(query)
         maps_query = f"{normalized_query} near {location_hint}" if location_hint else normalized_query
-        mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
+        geometry = await self.route_geometry(start, destination, route_mode)
+        results = await self.search_places_text(
+            geometry, maps_query, normalized_query, location_hint, budget_per_person, crowd_tolerance, route_mode,
+            segment_start_progress_km, segment_end_progress_km, target_progress_km,
+        )
+        location_message = f" near {location_hint}" if location_hint else ""
+        warning = None if results else f"No route places matched “{query}”{location_message}. Try a broader request or choose a checkpoint closer to that area."
+        return ProviderResult(route=geometry.route, candidates=results, provider="google", warning=warning)
+
+    async def route_geometry(self, start: str, destination: str, route_mode: str) -> RouteGeometry:
+        """Fetch the live route once (a single Routes call) for reuse across place searches."""
         route_headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
             "X-Goog-FieldMask": GOOGLE_ROUTE_FIELD_MASK,
         }
+        async with httpx.AsyncClient(timeout=18) as client:
+            _reserve_google_request("routes")
+            route_response = await client.post(GOOGLE_ROUTES_URL, headers=route_headers, json=self._route_payload(start, destination))
+            route_response.raise_for_status()
+            raw_route = (route_response.json().get("routes") or [{}])[0]
+        if not raw_route:
+            raise RuntimeError("Google Routes returned no route for place search")
+        route_result = self._parse_route(raw_route, start, destination, route_mode)
+        return RouteGeometry(
+            route=route_result,
+            points=_decode_polyline(route_result.get("polyline") or ""),
+            distance_km=float(route_result.get("distance_km") or 0),
+        )
+
+    async def search_places_text(
+        self,
+        geometry: RouteGeometry,
+        text_query: str,
+        filter_query: str,
+        location_hint: str | None,
+        budget_per_person: int,
+        crowd_tolerance: str,
+        route_mode: str,
+        segment_start_progress_km: float | None,
+        segment_end_progress_km: float | None,
+        target_progress_km: float | None,
+    ) -> list[dict[str, Any]]:
+        """Run Places text searches along a fetched route, filtered by segment, intent and locality."""
+        mode_config = ROUTE_MODE_CONFIG.get(route_mode, ROUTE_MODE_CONFIG["balanced"])
         places_headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
             "X-Goog-FieldMask": GOOGLE_PLACE_FIELD_MASK,
         }
+        route_geometry = geometry.points
+        route_distance_km = geometry.distance_km
+        route_points = _sample_polyline(route_geometry, count=min(5, mode_config["corridor_sample_count"]))
+        if segment_start_progress_km is not None or segment_end_progress_km is not None:
+            lower, upper = _route_segment_bounds(route_distance_km, segment_start_progress_km, segment_end_progress_km)
+            segment_points = [
+                point for point in route_points
+                if lower <= float(_route_progress_km(point, route_geometry) or 0) < upper
+            ]
+            if segment_points:
+                route_points = segment_points
+            elif route_points:
+                target = target_progress_km if target_progress_km is not None else lower
+                route_points = [min(route_points, key=lambda point: abs(float(_route_progress_km(point, route_geometry) or 0) - target))]
+        candidates: dict[str, dict[str, Any]] = {}
+        # When the user names a locality, let Places resolve that locality
+        # directly. A sparse route-point bias can otherwise anchor the
+        # search near the selected checkpoint (for example Yong Peng) and
+        # miss an earlier but still valid locality such as Johor Bahru.
+        # Actual route geometry and segment bounds below remain the source
+        # of truth for whether a result can replace this stop.
+        search_points = [route_points[0] if route_points else (0.0, 0.0)] if location_hint else (route_points[1:-1] or route_points)
         async with httpx.AsyncClient(timeout=18) as client:
-            _reserve_google_request("routes")
-            route_response = await client.post(GOOGLE_ROUTES_URL, headers=route_headers, json=self._route_payload(start, destination))
-            route_response.raise_for_status()
-            route_data = route_response.json()
-            raw_route = (route_data.get("routes") or [{}])[0]
-            if not raw_route:
-                raise RuntimeError("Google Routes returned no route for place search")
-            route_result = self._parse_route(raw_route, start, destination, route_mode)
-            route_geometry = _decode_polyline(route_result.get("polyline") or "")
-            route_distance_km = float(route_result.get("distance_km") or 0)
-            route_points = _sample_polyline(route_geometry, count=min(5, mode_config["corridor_sample_count"]))
-            if segment_start_progress_km is not None or segment_end_progress_km is not None:
-                lower, upper = _route_segment_bounds(route_distance_km, segment_start_progress_km, segment_end_progress_km)
-                segment_points = [
-                    point for point in route_points
-                    if lower <= float(_route_progress_km(point, route_geometry) or 0) < upper
-                ]
-                if segment_points:
-                    route_points = segment_points
-                elif route_points:
-                    target = target_progress_km if target_progress_km is not None else lower
-                    route_points = [min(route_points, key=lambda point: abs(float(_route_progress_km(point, route_geometry) or 0) - target))]
-            candidates: dict[str, dict[str, Any]] = {}
-            # When the user names a locality, let Places resolve that locality
-            # directly. A sparse route-point bias can otherwise anchor the
-            # search near the selected checkpoint (for example Yong Peng) and
-            # miss an earlier but still valid locality such as Johor Bahru.
-            # Actual route geometry and segment bounds below remain the source
-            # of truth for whether a result can replace this stop.
-            search_points = [route_points[0] if route_points else (0.0, 0.0)] if location_hint else (route_points[1:-1] or route_points)
             for route_point in search_points:
                 payload = {
-                    "textQuery": maps_query,
+                    "textQuery": text_query,
                     "maxResultCount": 5,
                     "rankPreference": "RELEVANCE",
                 }
@@ -708,12 +784,9 @@ class GoogleMapsProvider:
                     )
                     if normalized:
                         normalized["types"] = place.get("types") or []
-                    if normalized and _candidate_in_route_segment(normalized, route_distance_km, segment_start_progress_km, segment_end_progress_km) and _place_matches_search_intent(normalized, normalized_query) and _place_matches_location_hint(normalized, location_hint) and normalized["id"] not in candidates:
+                    if normalized and _candidate_in_route_segment(normalized, route_distance_km, segment_start_progress_km, segment_end_progress_km) and _place_matches_search_intent(normalized, filter_query) and _place_matches_location_hint(normalized, location_hint) and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
-        results = _sort_route_matches(list(candidates.values()), target_progress_km)
-        location_message = f" near {location_hint}" if location_hint else ""
-        warning = None if results else f"No route places matched “{query}”{location_message}. Try a broader request or choose a checkpoint closer to that area."
-        return ProviderResult(route=route_result, candidates=results, provider="google", warning=warning)
+        return _sort_route_matches(list(candidates.values()), target_progress_km)
 
     async def reroute_with_stops(self, start: str, destination: str, route: dict[str, Any], stops: list[dict[str, Any]], start_time: str = "08:10") -> dict[str, Any]:
         """Recompute the route so selected places are actual navigation waypoints."""
