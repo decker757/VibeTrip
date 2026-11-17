@@ -12,9 +12,10 @@ import json
 import os
 from copy import deepcopy
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 from uuid import uuid4
+
+from .db import PostgresConnector
 
 
 OWNER_ID = "demo-user"
@@ -134,7 +135,7 @@ class TripRepository:
 
     def __init__(self) -> None:
         self._memory: dict[str, dict[str, Any]] = {}
-        self._postgres_disabled = False
+        self._db = PostgresConnector()
         self._seed_memory()
 
     @property
@@ -145,27 +146,6 @@ class TripRepository:
         for trip in EXPLORE_SEED_TRIPS:
             self._memory[trip["id"]] = _copy_trip(trip)
 
-    def _connect(self):
-        if not self.database_url or self._postgres_disabled:
-            return None
-        try:
-            import psycopg
-        except ImportError:
-            self._postgres_disabled = True
-            return None
-        try:
-            connection = psycopg.connect(self.database_url, connect_timeout=2)
-            self._ensure_schema(connection)
-            return connection
-        except Exception:
-            self._postgres_disabled = True
-            return None
-
-    @staticmethod
-    def _ensure_schema(connection) -> None:
-        with connection.cursor() as cursor:
-            cursor.execute(Path(__file__).with_name("schema.sql").read_text())
-        connection.commit()
 
     @staticmethod
     def _row_to_trip(row: tuple[Any, ...]) -> dict[str, Any]:
@@ -191,7 +171,7 @@ class TripRepository:
         trip.setdefault("post_caption", "")
         trip.setdefault("created_at", _now())
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -226,15 +206,15 @@ class TripRepository:
                         ),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip["id"]] = _copy_trip(trip)
         return _copy_trip(trip)
 
     def list_saved(self, owner_id: str = OWNER_ID) -> list[dict[str, Any]]:
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -248,8 +228,8 @@ class TripRepository:
                     rows = [self._row_to_trip(row) for row in cursor.fetchall()]
                 connection.close()
                 return rows
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
                 connection.close()
         return [_copy_trip(trip) for trip in self._memory.values() if trip.get("owner_id") == owner_id]
 
@@ -262,14 +242,14 @@ class TripRepository:
         if not trip or trip.get("owner_id") != owner_id:
             return False
         self._memory.pop(trip_id, None)
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("DELETE FROM trips WHERE id = %s AND owner_id = %s", (trip_id, owner_id))
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         return True
@@ -280,7 +260,7 @@ class TripRepository:
             return None
         trip["is_completed"] = True
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -289,8 +269,8 @@ class TripRepository:
                         (trip_id, owner_id),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip_id] = _copy_trip(trip)
@@ -302,7 +282,7 @@ class TripRepository:
             return None
         trip["is_public"] = is_public
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -311,8 +291,8 @@ class TripRepository:
                         (is_public, trip_id, owner_id),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip_id] = _copy_trip(trip)
@@ -330,7 +310,7 @@ class TripRepository:
                 media["caption"] = str(media_captions[media_id]).strip()[:240]
         trip["is_public"] = True
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -341,8 +321,8 @@ class TripRepository:
                         (trip["title"], trip["post_caption"], json.dumps(trip["media"]), trip_id, owner_id),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip_id] = _copy_trip(trip)
@@ -354,7 +334,7 @@ class TripRepository:
             return None
         trip.setdefault("media", []).append(_copy_trip(media))
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -363,8 +343,8 @@ class TripRepository:
                         (json.dumps(trip["media"]), trip_id, owner_id),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip_id] = _copy_trip(trip)
@@ -380,7 +360,7 @@ class TripRepository:
             return None
         media_items[replacement_index] = _copy_trip(media)
         trip["updated_at"] = _now()
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -389,8 +369,8 @@ class TripRepository:
                         (json.dumps(trip["media"]), trip_id, owner_id),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory[trip_id] = _copy_trip(trip)
@@ -398,7 +378,7 @@ class TripRepository:
 
     def list_explore(self, preferences: list[str] | None = None, adventure_level: int = 70, limit: int = 20) -> list[dict[str, Any]]:
         trips_by_id = {trip["id"]: _copy_trip(trip) for trip in self._memory.values() if trip.get("is_public") and trip.get("is_completed")}
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -412,8 +392,8 @@ class TripRepository:
                         trip = self._row_to_trip(row)
                         trips_by_id[trip["id"]] = trip
                 connection.close()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
                 connection.close()
         trips = list(trips_by_id.values())
         ranked = sorted(
@@ -432,25 +412,11 @@ class ContextEventRepository:
 
     def __init__(self) -> None:
         self._memory: list[dict[str, Any]] = []
-        self._postgres_disabled = False
+        self._db = PostgresConnector()
 
     @property
     def database_url(self) -> str | None:
         return os.getenv("DATABASE_URL") or None
-
-    def _connect(self):
-        if not self.database_url or self._postgres_disabled:
-            return None
-        try:
-            import psycopg
-            connection = psycopg.connect(self.database_url, connect_timeout=2)
-            with connection.cursor() as cursor:
-                cursor.execute(Path(__file__).with_name("schema.sql").read_text())
-            connection.commit()
-            return connection
-        except Exception:
-            self._postgres_disabled = True
-            return None
 
     def record(self, owner_id: str, event_type: str, data: dict[str, Any] | None = None, trip_id: str | None = None) -> dict[str, Any]:
         event = {
@@ -461,7 +427,7 @@ class ContextEventRepository:
             "data": deepcopy(data or {}),
             "created_at": _now(),
         }
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -470,8 +436,8 @@ class ContextEventRepository:
                         (event["id"], owner_id, trip_id, event_type, json.dumps(event["data"]), event["created_at"]),
                     )
                 connection.commit()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
             finally:
                 connection.close()
         self._memory.append(deepcopy(event))
@@ -479,7 +445,7 @@ class ContextEventRepository:
 
     def list_for_owner(self, owner_id: str) -> list[dict[str, Any]]:
         events_by_id = {event["id"]: deepcopy(event) for event in self._memory if event.get("owner_id") == owner_id}
-        connection = self._connect()
+        connection = self._db.connect()
         if connection:
             try:
                 with connection.cursor() as cursor:
@@ -490,8 +456,8 @@ class ContextEventRepository:
                             event["created_at"] = event["created_at"].isoformat()
                         events_by_id[event["id"]] = event
                 connection.close()
-            except Exception:
-                self._postgres_disabled = True
+            except Exception as error:
+                self._db.mark_failed(error)
                 connection.close()
         return list(events_by_id.values())
 
