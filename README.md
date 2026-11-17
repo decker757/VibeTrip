@@ -236,7 +236,7 @@ Copy `.env.example` to `.env` and configure only what the chosen mode needs:
 | `VITE_GOOGLE_MAPS_BROWSER_KEY` | Live mode | Interactive browser map |
 | `VITE_GOOGLE_MAPS_BROWSER_ENABLED` | Live mode | Explicitly enables billable browser map loads |
 | `OPENAI_API_KEY` | Optional | LLM recommendation reviewer |
-| `VIBETRIP_LLM_SEARCH_ENABLED` | Optional | LLM parser for route assistant requests |
+| `VIBETRIP_LLM_SEARCH_ENABLED` | Optional | LLM parser for route assistant requests; also gates the route agent |
 | `VIBETRIP_LLM_SEARCH_MAX_PER_MINUTE` | Optional | Process-local route assistant LLM limit |
 | `VIBETRIP_ROUTE_AGENT_ENABLED` | Optional | Set `false` to use the single-call search instead of the route agent |
 | `VIBETRIP_AGENT_TIMEOUT_SECONDS` | Optional | Wall-clock limit for one route agent run (default `20`) |
@@ -291,8 +291,10 @@ profile context; the manual journey above still checks the UI end to end.
 Saved drafts use a small repository boundary in `backend/storage.py`. For the
 judged local MVP, the API can fall back to process memory and the browser also
 keeps local-preview saves in `localStorage`, so Postgres is not required to run
-or demonstrate the core flow. A Postgres adapter exists as future persistence
-work, and the local Compose service can be started with:
+or demonstrate the core flow. When `DATABASE_URL` is set and Postgres is
+reachable, saved trips are also written there and read back; if it is
+unavailable the API falls back to memory. The local Compose service can be
+started with:
 
 ```bash
 docker compose up -d postgres
@@ -434,7 +436,7 @@ route_scout → vibe_matcher → detour_reviewer → llm_reviewer → day_builde
   best attempt (fewest warnings, then earliest arrival) is kept. Without an LLM
   a rule picks coffee → extra fuel → attraction. If the trip would still be
   late with every optional stop skipped, nothing is stripped and the warning
-  suggests Fastest. The same repair step runs again after the stops are added
+  suggests starting earlier, allowing a later end time, or trying Fastest. The same repair step runs again after the stops are added
   as real waypoints, so `repair_log` matches the warning the user sees.
 
 ### Route request agent (`POST /trips/search`)
@@ -455,16 +457,22 @@ Caps: 3 searches and 8 steps per run, a wall-clock timeout
 per-minute limiter. On any failure, timeout, or empty validated shortlist the
 endpoint returns today's deterministic search instead. The response adds
 `agent_source`, `agent_rationale`, and `agent_trace`; the assistant card shows
-the rationale and a collapsible "How the agent got here" list.
+the rationale and a collapsible "How the agent got here" list. Results carry
+`agent_pick`: the agent's shortlist comes first, and other places it saw on the
+same leg follow under an "Also found along this leg" label, so extras are not
+presented as the agent's choices.
 
 ### Learned preferences (OKF)
 
-Feedback events (`POST /profiles/events`) and saved trips are summarised into
-learned signals (`local_food`, `quiet_low_crowd_stops`, `scenic_views`,
-`budget_conscious`). Each signal records its source (`profile`, `behaviour`, or
+Profile preferences and feedback events (`POST /profiles/events`) become
+learned signals; saved trips appear as trip history in the OKF document
+(they are not used to derive signals). The signals are `local_food`,
+`quiet_low_crowd_stops`, `scenic_views`, and `budget_conscious`. Each signal records its source (`profile`, `behaviour`, or
 both) and evidence count. The Travel profile page shows them under "What
-VibeTrip has learned about you"; "Not me" records a `signal_dismissed` event,
-and the signal stays off until new behaviour evidence arrives. The OKF Markdown
+VibeTrip has learned about you"; "Not me" (shown for behaviour-only signals) records a
+`signal_dismissed` event, and the signal stays off until new behaviour evidence
+arrives; signals that also come from the profile are removed by editing the
+preferences. The OKF Markdown
 document handed to the LLM is rebuilt from the database and cached until its
 inputs change.
 
