@@ -34,7 +34,8 @@ def _llm_search_enabled() -> bool:
     return llm_enabled() and os.getenv("VIBETRIP_LLM_SEARCH_ENABLED", "true").lower() not in {"0", "false", "no"}
 
 
-def _search_request_available() -> bool:
+def reserve_llm_search_slot() -> bool:
+    """Take one slot of the per-minute LLM search budget; False when it is used up."""
     now = time.monotonic()
     while _intent_request_window and now - _intent_request_window[0] >= 60:
         _intent_request_window.popleft()
@@ -97,7 +98,7 @@ def _safe_llm_intent(decision: PlaceSearchIntent, fallback: PlaceSearchIntent, q
 def parse_place_search_intent(query: str, route_context: dict[str, Any] | None = None) -> PlaceSearchIntent:
     """Parse a request with an LLM when enabled, otherwise use safe rules."""
     fallback = _deterministic_intent(query)
-    if not _llm_search_enabled() or not _search_request_available():
+    if not _llm_search_enabled() or not reserve_llm_search_slot():
         return fallback
 
     cache_key = json.dumps({"query": query.strip().lower(), "context": route_context or {}}, sort_keys=True)
