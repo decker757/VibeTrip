@@ -51,6 +51,16 @@ def test_late_arrival_warning(demo_state):
     assert "later than your target end time of 12:00" in route["schedule_warning"]
 
 
+def test_structured_late_warning(demo_state):
+    route = run_deterministic_planner(demo_state("balanced", "12:00"))["route"]
+    assert [w["code"] for w in route["warnings"]] == ["late_arrival"]
+    assert route["arrival_offset_minutes"] == 415  # 08:10 -> 15:05
+
+
+def test_no_warnings_list_empty(demo_state):
+    assert run_deterministic_planner(demo_state("balanced"))["route"]["warnings"] == []
+
+
 def test_multi_day_metadata(demo_state):
     state = demo_state("balanced")
     state["route"] = {**state["route"], "drive_minutes": 1500, "distance_km": 2000}
