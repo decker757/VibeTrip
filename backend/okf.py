@@ -8,6 +8,7 @@ catalog writer without changing the planner contract.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -107,8 +108,25 @@ timestamp: {_yaml_string(timestamp)}
 """
 
 
+def fingerprint(profile: dict[str, Any], trips: list[dict[str, Any]], events: list[dict[str, Any]]) -> str:
+    """Identify the inputs an OKF document is derived from."""
+    payload = {
+        "profile": profile,
+        "trips": [(trip.get("id"), trip.get("updated_at")) for trip in trips],
+        "events": [event.get("id") for event in events],
+    }
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+
 class OKFProfileExporter:
-    """Write and return a private OKF profile artifact for agent consumption."""
+    """Write and return a private OKF profile artifact for agent consumption.
+
+    The document is derived data, so it is rebuilt only when its inputs change.
+    The cache is per process; a restart simply rebuilds on the next export.
+    """
+
+    def __init__(self) -> None:
+        self._cache: dict[str, tuple[str, dict[str, Any]]] = {}
 
     def export(
         self,
@@ -118,18 +136,25 @@ class OKFProfileExporter:
         events: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         safe_owner_id = _safe_owner_id(owner_id)
+        trips, events = trips or [], events or []
+        key = fingerprint(profile, trips, events)
+        cached = self._cache.get(safe_owner_id)
+        if cached and cached[0] == key:
+            return cached[1]
         context = build_user_context(profile, trips=trips, events=events)
         document = render_profile_okf(context, owner_id=safe_owner_id)
         destination = OKF_ROOT / safe_owner_id / "profile.md"
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(document, encoding="utf-8")
-        return {
+        result = {
             "format": "okf",
             "resource": f"vibetrip://profiles/{safe_owner_id}",
             "path": str(destination),
             "document": document,
             "context": context,
         }
+        self._cache[safe_owner_id] = (key, result)
+        return result
 
 
 okf_profile_exporter = OKFProfileExporter()
