@@ -65,6 +65,8 @@ interactive visualization, and architecture report; it is ignored by Git.
   remain deterministic.
 - The optional LLM adds subjective ranking and explanation only after hard
   feasibility filtering; it cannot invent places or route data.
+- Agency is bounded to two places where judgement helps and output can be
+  checked: the route request agent and the late-arrival repair loop.
 - OKF is a derived agent-readable context artifact, not a replacement for the
   database.
 - A vector store is deferred until saved-place discovery or semantic
@@ -83,7 +85,8 @@ checks authoritative over optional provider and LLM suggestions.
 flowchart LR
     UI["React + Vite frontend<br/>Planner · Explore · Saved Trips · Profile"]
     API["FastAPI API"]
-    GRAPH["LangGraph planner<br/>route scout → vibe matcher → detour reviewer → optional LLM reviewer → day builder"]
+    GRAPH["LangGraph planner<br/>route scout → vibe matcher → detour reviewer → optional LLM reviewer → day builder ⇄ repair loop"]
+    AGENT["Route request agent<br/>LLM ⇄ search / hours / budget tools"]
     SEARCH["Route-aware search<br/>reroute · simulator"]
     PROVIDERS["Provider boundary"]
     MAPS["Google Routes + Places<br/>optional live mode"]
@@ -98,6 +101,8 @@ flowchart LR
     UI -->|interactive map| BROWSER
     API --> GRAPH
     API --> SEARCH
+    SEARCH --> AGENT
+    AGENT -. bounded tool calls .-> LLM
     API --> AUTH
     API --> STORE
     API --> EXPLORE
@@ -233,6 +238,9 @@ Copy `.env.example` to `.env` and configure only what the chosen mode needs:
 | `OPENAI_API_KEY` | Optional | LLM recommendation reviewer |
 | `VIBETRIP_LLM_SEARCH_ENABLED` | Optional | LLM parser for route assistant requests |
 | `VIBETRIP_LLM_SEARCH_MAX_PER_MINUTE` | Optional | Process-local route assistant LLM limit |
+| `VIBETRIP_ROUTE_AGENT_ENABLED` | Optional | Set `false` to use the single-call search instead of the route agent |
+| `VIBETRIP_AGENT_TIMEOUT_SECONDS` | Optional | Wall-clock limit for one route agent run (default `20`) |
+| `LANGSMITH_TRACING` / `LANGSMITH_API_KEY` | Optional | LangSmith tracing; off by default and sends prompts to LangSmith |
 | `VITE_API_URL` | Deployment | Public backend URL used by the frontend |
 | `VIBETRIP_AUTH_SECRET` | Deployment | Secret used to sign session cookies |
 | `DATABASE_URL` | Optional | Postgres adapter connection string |
@@ -251,10 +259,15 @@ variables must remain backend-only.
 Run these checks before opening a pull request or recording the demo:
 
 ```bash
+pip install -r requirements-dev.txt
+python3 -m pytest -q
 npm run build
 python3 -m compileall -q backend
 git diff --check
 ```
+
+The pytest suite runs offline: it clears the Google and OpenAI keys, uses the
+demo provider, and scripts LLM responses with fake chat models.
 
 Then manually verify the primary journey:
 
@@ -270,8 +283,8 @@ Then manually verify the primary journey:
 7. Test logout/login, a second account, keyboard focus, mobile layout, and the
    no-API-key demo fallback.
 
-The current repository has no automated test suite yet, so the manual journey
-above is an important pre-submission check.
+Automated tests cover the planner, repair loop, route agent, storage, and
+profile context; the manual journey above still checks the UI end to end.
 
 ## Saved trips and Explore
 
@@ -376,89 +389,104 @@ public endpoints without following their usage and attribution policies.
 
 ## Product / agent direction
 
-The planner is a small, typed LangGraph workflow supported by route, Places,
-simulation, and persistence services. The current graph has five nodes; the
-route-request assistant is a separate route-aware search capability. The fifth
-node is optional: it calls an LLM only when configured and otherwise preserves
-the deterministic recommendation result.
+VibeTrip is a **LangGraph workflow with two bounded agentic parts**. The split
+is deliberate: deterministic code owns every fact the trip depends on (route
+geometry, waypoint order, opening hours, budget, safety), and an LLM is used
+only where judgement helps and its output can be checked.
 
-### What each planner agent does
+| Part | Who decides what happens next | Where |
+|---|---|---|
+| Planner pipeline (route → profile → ranking → schedule) | Code | `backend/graph.py` |
+| Recommendation reviewer (optional) | LLM ranks a pre-validated shortlist; code keeps only known ids | `backend/recommender.py` |
+| **Repair loop** | **LLM chooses which optional stop to give up when a trip runs late** | `backend/repair.py` |
+| **Route request agent** | **LLM chooses which tool to call, reads the result, and decides whether to keep searching** | `backend/route_agent.py` |
 
-1. **Route scout (`route_scout`)**
-   - Establishes the baseline driving route between the origin and destination.
-   - Supplies distance, drive time, traffic-aware estimates, route geometry, and
-     the corridor used to discover nearby places.
-   - Keeps destination-area recommendations separate from places that are
-     genuinely along the route.
+Every LLM path has a deterministic fallback, so the app runs end to end with no
+OpenAI key.
 
-2. **Vibe matcher (`vibe_matcher`)**
-   - Converts the travel profile into a lightweight archetype such as
-     “Curious, not rushed” or “Easygoing explorer.”
-   - Combines explicit preferences, adventure-slider level, group size,
-     saved-trip history, and learned feedback signals from the OKF context.
-   - Sets planning defaults such as the buffer allowance and recommendation
-     balance; it does not change the road geometry.
-
-3. **Detour reviewer (`detour_reviewer`)**
-   - Scores candidate attractions, eateries, cafes, fuel stations, and
-     convenience stores.
-   - Weighs rating quality, review volume, price, estimated crowd risk,
-     enjoyment, opening hours, detour time, route style, adventure level, and
-     the traveller's learned soft preferences.
-   - Selects the best along-route candidates for the current route mode:
-     `fastest` keeps only essentials and at least one fuel stop, `balanced` allows worthwhile detours,
-     and `scenic` allows more intermediate experiences.
-
-4. **LLM recommendation reviewer (`llm_reviewer`)**
-   - Receives only a shortlist that has already passed deterministic route and
-     availability checks.
-   - Interprets the user's structured profile and route context, ranks
-     subjective fit, and returns candidate IDs plus a short rationale using
-     structured output.
-   - Cannot invent places, coordinates, prices, reviews, opening hours, or
-     route geometry. If the key is missing or the call fails, the graph keeps
-     the deterministic reviewer result.
-
-5. **Day builder (`day_builder`)**
-   - Converts selected places into an ordered, time-aware itinerary.
-   - Adds practical fuel, bathroom, snack, and convenience stops where the
-     drive length warrants them; it does not invent “stop anywhere” breaks.
-   - Uses route progress as the ordering key, checks regular opening hours at
-     the estimated arrival time, and reserves driving, stop, and contingency
-     buffers before check-in.
-
-### Supporting route agents and services
-
-- **Route-request assistant (`POST /trips/search`)** translates a natural-
-  language request such as “quiet Chinese food under my budget” into a focused
-  Places search along the current route. It returns replacement candidates for
-  the selected timeline stop; it does not replace every stop at once.
-- **Reroute service (`POST /trips/reroute`)** turns a user’s add, change, or
-  remove action into ordered waypoint coordinates and asks the route provider
-  to recompute the geometry through those actual places.
-- **Trip simulator (`POST /trips/simulate`)** applies a closure, crowd spike,
-  or late-running event to one current stop, then chooses a feasible backup or
-  sends the group directly onward.
-- **Destination explorer** keeps post-arrival ideas optional until the user
-  selects “Add to route.” That action promotes the place into the active
-  itinerary before check-in and triggers the same reroute service.
-
-The end-to-end graph is:
+### Planner graph
 
 ```text
 route_scout → vibe_matcher → detour_reviewer → llm_reviewer → day_builder
-                                                   ↓
-                                      ordered itinerary + route constraints
+                                                                   │
+                                        late arrival & fixable? ───┤
+                                                  yes ↓            │ no
+                                               repair ─→ day_builder   → finalize
 ```
 
-Route style and travel profile are intentionally separate inputs. `fastest`,
-`balanced`, and `scenic` control route geometry and how many detours the day
-builder may add. The adventure slider only changes recommendation scoring and
-the inferred archetype within that route strategy.
+- **`route_scout`** calls the maps provider (Google Routes + Places, or the
+  demo provider) and falls back to demo data if the provider fails.
+- **`vibe_matcher`** turns the profile, adventure level, and learned signals
+  into an archetype; it never changes geometry.
+- **`detour_reviewer`** scores candidates (rating, reviews, price, crowd risk,
+  detour time, route mode, learned preferences) and drops closed places.
+- **`llm_reviewer`** (optional) lets the LLM rank at most 10 feasible
+  candidates with structured output; unknown ids are dropped.
+- **`day_builder`** orders stops by route progress, checks opening hours at the
+  estimated arrival, adds a 20% driving buffer, handles multi-day trips, and
+  returns structured `route.warnings`.
+- **`repair`** runs only when the trip arrives after the target end time and
+  skipping optional stops could fix it. The LLM picks one of
+  `skip_coffee`, `skip_attraction`, `skip_extra_fuel`, `accept_warning`, using
+  the traveller's profile (an adventurous traveller keeps the lookout and drops
+  coffee). Code applies the skip and rebuilds. At most 2 attempts; the meal and
+  the only fuel stop are never skipped; the route mode is never changed; the
+  best attempt (fewest warnings, then earliest arrival) is kept. Without an LLM
+  a rule picks coffee → extra fuel → attraction. If the trip would still be
+  late with every optional stop skipped, nothing is stripped and the warning
+  suggests Fastest. The same repair step runs again after the stops are added
+  as real waypoints, so `repair_log` matches the warning the user sees.
 
-The current FastAPI boundary exposes a synchronous `POST /trips/plan` endpoint
-and keeps planner state typed and serializable so drafts can be saved and
-resumed. Streaming agent progress remains a future enhancement.
+### Route request agent (`POST /trips/search`)
+
+The user picks a timeline stop and describes what they want ("a quiet cafe with
+a view"). When an LLM is configured, a small hand-written LangGraph agent
+(`agent` node ↔ `tools` node, with a conditional "continue?" edge) handles it:
+
+| Tool | The LLM supplies | Code enforces |
+|---|---|---|
+| `SearchPlaces` | free-text query + category | segment between the neighbouring stops, budget, crowd tolerance, route mode; route geometry fetched once per run |
+| `CheckOpenAtArrival` | place ids | opening hours at the stop's arrival time |
+| `CheckBudget` | place ids | cost vs the stop being replaced and the remaining budget |
+| `SubmitShortlist` | ids + one-sentence rationale | ids must come from a search; closed places are dropped even if the agent never checked |
+
+Caps: 3 searches and 8 steps per run, a wall-clock timeout
+(`VIBETRIP_AGENT_TIMEOUT_SECONDS`, default 20), and one slot of the LLM search
+per-minute limiter. On any failure, timeout, or empty validated shortlist the
+endpoint returns today's deterministic search instead. The response adds
+`agent_source`, `agent_rationale`, and `agent_trace`; the assistant card shows
+the rationale and a collapsible "How the agent got here" list.
+
+### Learned preferences (OKF)
+
+Feedback events (`POST /profiles/events`) and saved trips are summarised into
+learned signals (`local_food`, `quiet_low_crowd_stops`, `scenic_views`,
+`budget_conscious`). Each signal records its source (`profile`, `behaviour`, or
+both) and evidence count. The Travel profile page shows them under "What
+VibeTrip has learned about you"; "Not me" records a `signal_dismissed` event,
+and the signal stays off until new behaviour evidence arrives. The OKF Markdown
+document handed to the LLM is rebuilt from the database and cached until its
+inputs change.
+
+### Supporting services
+
+- **Reroute (`POST /trips/reroute`)** recomputes geometry through the edited
+  stops as ordered waypoints.
+- **Trip simulator (`POST /trips/simulate`)** applies a closure, crowd spike,
+  or late-running event and picks a feasible backup.
+- **Storage** uses Postgres when `DATABASE_URL` is set; on a connection failure
+  it logs a warning, uses process memory for a 30-second cool-down, then
+  retries.
+
+New response fields (all additive): `repair_log` on `/trips/plan`;
+`agent_source`, `agent_rationale`, `agent_trace` on `/trips/search`;
+`learned_signals` on `/profiles/okf`.
+
+### Observability (optional)
+
+Set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` to send LangChain and
+LangGraph traces to LangSmith. It is off by default. Enabling it sends prompts,
+including the traveller's OKF profile, to LangSmith's servers.
 
 ## Deploying the MVP
 
