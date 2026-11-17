@@ -107,6 +107,7 @@ function App() {
   const [placeSearchResults, setPlaceSearchResults] = useState([]);
   const [placeSearchHint, setPlaceSearchHint] = useState('');
   const [hasSearchedPlaces, setHasSearchedPlaces] = useState(false);
+  const [agentSearch, setAgentSearch] = useState({ source: 'deterministic', rationale: null, trace: [] });
   const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState(null);
@@ -505,15 +506,20 @@ function App() {
       const progress = Number(candidate.route_progress_km);
       return Number.isFinite(progress) && progress >= (segmentStartProgress ?? 0) && progress < (segmentEndProgress ?? routeDistance);
     };
+    const stopCost = Number(candidateForStop(currentStop)?.estimated_cost_sgd);
+    const currentStopCost = Number.isFinite(stopCost) ? stopCost : null;
+    const planCost = Number(costBreakdown?.estimated_per_person_sgd);
+    const remainingBudget = Number.isFinite(Number(budgetPerPerson)) && Number.isFinite(planCost) && costBreakdown?.estimated_per_person_sgd != null ? Number(budgetPerPerson) - planCost : null;
     setIsSearchingPlaces(true);
     setPlaceSearchResults([]);
     setPlaceSearchHint('');
     setHasSearchedPlaces(false);
+    setAgentSearch({ source: 'deterministic', rationale: null, trace: [] });
     try {
       const response = await apiFetch(`${PLANNER_API_URL}/trips/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress, selected_stop_title: currentStop?.title || '', previous_stop_title: previousStop?.title || '', next_stop_title: nextStop?.title || '' }),
+        body: JSON.stringify({ start: from, destination: to, query, budget_per_person: budgetPerPerson, crowd_tolerance: preferences.includes('student-budget') ? 'low' : 'medium', route_mode: routeMode, segment_start_progress_km: segmentStartProgress, segment_end_progress_km: segmentEndProgress, target_progress_km: currentProgress, selected_stop_title: currentStop?.title || '', previous_stop_title: previousStop?.title || '', next_stop_title: nextStop?.title || '', arrival_time: currentStop?.time, arrival_date: currentStop?.date, current_stop_cost_sgd: currentStopCost, remaining_budget_per_person_sgd: remainingBudget }),
       });
       if (!response.ok) throw new Error(`Search returned ${response.status}`);
       const result = await response.json();
@@ -531,6 +537,7 @@ function App() {
         ? `${result.warning} ${searchHint}`
         : searchHint);
       setPlaceSearchResults(contextualResults);
+      setAgentSearch({ source: result.agent_source || 'deterministic', rationale: result.agent_rationale || null, trace: result.agent_trace || [] });
       setHasSearchedPlaces(true);
       setCandidatePlaces((current) => [...contextualResults, ...current.filter((candidate) => !contextualResults.some((match) => match.id === candidate.id))]);
       if (contextualResults.length > 0) {
@@ -1123,7 +1130,7 @@ function App() {
       onRouteMode: (nextMode) => { setRouteMode(nextMode); setMessage(`${routeModeOptions.find((option) => option.id === nextMode)?.label} route selected. Generate the route to update recommendations.`); },
     },
     itinerary: { stops, focusedStopIndex, editingStopIndex, isManagingStops, onToggleManager: toggleStopManager, onFocusStop: focusTimelineStop, onBeginChange: beginStopChange, onRemove: removeStop, onAddStop: addStop },
-    assistant: { replacementStopIndex, onChooseReplacement: chooseReplacementStop, placeQuery, onPlaceQuery: setPlaceQuery, onSearch: searchRoutePlaces, isSearching: isSearchingPlaces, placeSearchResults, placeSearchHint, hasSearched: hasSearchedPlaces },
+    assistant: { replacementStopIndex, onChooseReplacement: chooseReplacementStop, placeQuery, onPlaceQuery: setPlaceQuery, onSearch: searchRoutePlaces, isSearching: isSearchingPlaces, placeSearchResults, placeSearchHint, hasSearched: hasSearchedPlaces, agentSearch },
     budget: { costBreakdown, travellers },
     agentContextSummary: contextSummary,
   };

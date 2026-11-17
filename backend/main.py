@@ -1,7 +1,7 @@
 """FastAPI entrypoint for the VibeTrip planning workflow."""
 
 from collections import defaultdict, deque
-from datetime import date
+from datetime import date, datetime
 import os
 import time
 from typing import Literal
@@ -17,7 +17,8 @@ from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_sessi
 from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
 from .providers import DemoMapsProvider, get_maps_provider, place_details, suggest_cities
-from .search_intent import parse_place_search_intent
+from .route_agent import RouteAgentContext, run_route_agent
+from .search_intent import _llm_search_enabled, parse_place_search_intent, reserve_llm_search_slot
 from .simulation import SimulationEvent, recalibrate_trip
 from .storage import OWNER_ID, context_event_repository, trip_repository
 
@@ -68,6 +69,10 @@ class RoutePlaceSearchRequest(BaseModel):
     selected_stop_title: str = ""
     previous_stop_title: str = ""
     next_stop_title: str = ""
+    arrival_time: str | None = None
+    arrival_date: str | None = None
+    current_stop_cost_sgd: float | None = None
+    remaining_budget_per_person_sgd: float | None = None
 
 
 class RerouteRequest(BaseModel):
@@ -239,6 +244,18 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
         },
     )
     provider = get_maps_provider()
+    agent_result = await _try_route_agent(request, provider)
+    if agent_result is not None:
+        return {
+            "query": request.query,
+            "parsed_intent": parsed_intent.model_dump(),
+            "candidate_places": agent_result.candidates,
+            "provider": "demo" if isinstance(provider, DemoMapsProvider) else "google",
+            "warning": None,
+            "agent_source": "agent",
+            "agent_rationale": agent_result.rationale,
+            "agent_trace": agent_result.trace,
+        }
     try:
         result = await provider.search_route_places(
             parsed_intent.maps_query,
@@ -271,7 +288,45 @@ async def search_route_places(request: RoutePlaceSearchRequest) -> dict:
         "candidate_places": result.candidates,
         "provider": result.provider,
         "warning": result.warning,
+        "agent_source": "deterministic",
+        "agent_rationale": None,
+        "agent_trace": [],
     }
+
+
+def _arrival_from(request: RoutePlaceSearchRequest) -> datetime | None:
+    try:
+        return datetime.strptime(f"{request.arrival_date} {request.arrival_time}", "%Y-%m-%d %H:%M")
+    except (TypeError, ValueError):
+        return None
+
+
+async def _try_route_agent(request: RoutePlaceSearchRequest, provider):
+    """Run the tool-calling agent when enabled; None means use the deterministic path."""
+    if not _llm_search_enabled():
+        return None
+    if os.getenv("VIBETRIP_ROUTE_AGENT_ENABLED", "true").lower() in {"0", "false", "no"}:
+        return None
+    if not reserve_llm_search_slot():
+        return None
+    context = RouteAgentContext(
+        start=request.start,
+        destination=request.destination,
+        budget_per_person=request.budget_per_person,
+        crowd_tolerance=request.crowd_tolerance,
+        route_mode=request.route_mode,
+        segment_start_progress_km=request.segment_start_progress_km,
+        segment_end_progress_km=request.segment_end_progress_km,
+        target_progress_km=request.target_progress_km,
+        arrival=_arrival_from(request),
+        current_stop_cost_sgd=request.current_stop_cost_sgd,
+        remaining_budget_per_person_sgd=request.remaining_budget_per_person_sgd,
+        selected_stop_title=request.selected_stop_title,
+        previous_stop_title=request.previous_stop_title,
+        next_stop_title=request.next_stop_title,
+        query=request.query,
+    )
+    return await run_route_agent(context, provider)
 
 
 def _build_cost_breakdown(route: dict, selected_places: list[dict], travellers: int) -> dict:
