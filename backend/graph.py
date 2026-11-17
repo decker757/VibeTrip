@@ -9,8 +9,10 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Any, TypedDict
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
+from .providers import DemoMapsProvider
 from .opening_hours import candidate_is_plannable, opening_status_at
 from .recommender import refine_recommendations
 
@@ -28,6 +30,9 @@ class PlannerState(TypedDict, total=False):
     preferences: list[str]
     adventure_level: int
     route_mode: str
+    crowd_tolerance: str
+    provider_name: str
+    provider_warning: str | None
     route: dict[str, Any]
     vibe_profile: dict[str, Any]
     candidate_places: list[dict[str, Any]]
@@ -70,8 +75,36 @@ def _practical_stop_title(place: dict[str, Any] | None) -> str:
     return "Fuel + bathroom"
 
 
-def route_scout(state: PlannerState) -> PlannerState:
-    """Find a practical baseline route and leave room for future map APIs."""
+async def route_scout(state: PlannerState, config: RunnableConfig | None = None) -> PlannerState:
+    """Fetch the baseline route and candidate places from the injected maps provider.
+
+    The provider arrives through ``config["configurable"]["maps_provider"]`` so
+    tests can inject one. Without a provider the node keeps any route already in
+    state (used by node-level tests and resumed drafts).
+    """
+    provider = ((config or {}).get("configurable") or {}).get("maps_provider")
+    if provider is not None:
+        args = (
+            state["start"],
+            state["destination"],
+            int(state.get("budget_per_person") or 400),
+            state.get("crowd_tolerance", "medium"),
+            state.get("start_time", "08:10"),
+            state.get("route_mode", "balanced"),
+        )
+        fallback_warning = None
+        try:
+            result = await provider.plan_trip(*args)
+        except Exception as error:
+            result = await DemoMapsProvider().plan_trip(*args)
+            fallback_warning = f"Maps provider unavailable ({type(error).__name__}); showing demo candidates."
+        return {
+            **state,
+            "route": result.route,
+            "candidate_places": result.candidates,
+            "provider_name": result.provider,
+            "provider_warning": fallback_warning or result.warning,
+        }
     route = state.get("route") or {
         "distance_km": 348,
         "drive_minutes": 229,

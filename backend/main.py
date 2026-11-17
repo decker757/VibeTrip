@@ -319,13 +319,6 @@ def _waypoint_places(result: dict) -> list[dict]:
 async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)) -> dict:
     """Run the planner and return a resumable draft plan."""
     provider = get_maps_provider()
-    try:
-        provider_result = await provider.plan_trip(request.start, request.destination, request.budget_per_person, request.crowd_tolerance, request.start_time, request.route_mode)
-    except Exception as error:
-        fallback = DemoMapsProvider()
-        provider = fallback
-        provider_result = await fallback.plan_trip(request.start, request.destination, request.budget_per_person, request.crowd_tolerance, request.start_time, request.route_mode)
-        provider_result.warning = f"Maps provider unavailable ({type(error).__name__}); showing demo candidates."
     profile = request.profile.model_dump() | {
             "preferences": request.preferences,
             "adventure_level": request.adventure_level,
@@ -340,13 +333,13 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         events=context_event_repository.list_for_owner(user["id"]),
     )
     state = request.model_dump() | {
-        "route": provider_result.route,
-        "candidate_places": provider_result.candidates,
         "profile_okf": profile_context["document"],
         "agent_context": profile_context["context"],
         "context_summary": profile_context["context"].get("summary", {}),
     }
-    result = planner_graph.invoke(state)
+    result = await planner_graph.ainvoke(state, config={"configurable": {"maps_provider": provider}})
+    if result.get("provider_name") == "demo" and not isinstance(provider, DemoMapsProvider):
+        provider = DemoMapsProvider()
     reroute_warning = None
     for _ in range(3):
         waypoint_places = _waypoint_places(result)
@@ -371,7 +364,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
     warnings = [
         warning
         for warning in (
-            provider_result.warning,
+            result.get("provider_warning"),
             result.get("route", {}).get("schedule_warning"),
             reroute_warning,
         )
@@ -397,7 +390,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         },
         "context_summary": result.get("context_summary", profile_context["context"].get("summary", {})),
         "cost_breakdown": _build_cost_breakdown(result["route"], result.get("selected_places", []), request.travellers),
-        "provider": provider_result.provider,
+        "provider": result.get("provider_name", "demo"),
         "warning": " ".join(warnings) or None,
     }
 
