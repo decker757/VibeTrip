@@ -22,6 +22,9 @@ OKF_ROOT = Path(os.getenv("VIBETRIP_OKF_DIR", Path(__file__).with_name("okf_prof
 OKF_ROOT.mkdir(parents=True, exist_ok=True)
 
 
+SOURCE_LABELS = {"profile": "profile", "behaviour": "behaviour", "both": "profile + behaviour"}
+
+
 def _safe_owner_id(owner_id: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_-]", "_", owner_id)[:80] or "demo-user"
 
@@ -53,7 +56,7 @@ def render_profile_okf(context: dict[str, Any], owner_id: str = "demo-user", tim
         for item in context.get("trip_history", [])
     ) or "- No saved trip history yet"
     signal_lines = "\n".join(
-        f"- {item.get('signal')} (confidence {item.get('confidence', 0):.2f}; evidence {item.get('evidence_count', 0)})"
+        f"- {item.get('signal')} (from {SOURCE_LABELS.get(item.get('source'), 'profile')}; confidence {item.get('confidence', 0):.2f}; evidence {item.get('evidence_count', 0)})"
         for item in context.get("learned_signals", [])
     ) or "- No learned signals yet"
     feedback_lines = "\n".join(
