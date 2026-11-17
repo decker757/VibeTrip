@@ -622,3 +622,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
   .publish-modal-actions { flex-direction: column-reverse; }
   .publish-modal-actions .secondary-action, .publish-modal-actions .primary-inline-action { width: 100%; }
 }
+.learned-signals-card { margin-top: 16px; }
+.learned-signal-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.learned-signal { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border: 1px solid #d7d3c7; background: rgba(255,255,255,.34); border-radius: 6px; }
+.learned-signal-label { font-weight: 600; font-size: 13px; text-transform: capitalize; }
+.learned-signal-source { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .04em; color: #5e6c62; background: #e3e8df; border-radius: 4px; padding: 3px 6px; }
+.learned-signal small { color: #7a8178; font-size: 11px; }
+.learned-signal-dismiss { margin-left: auto; background: transparent; border: 1px solid #c9c4b6; border-radius: 4px; padding: 5px 9px; font-size: 11px; color: #5f655e; }
+.learned-signal-dismiss:hover, .learned-signal-dismiss:focus-visible { border-color: #8e9a8f; color: #2f3a31; }

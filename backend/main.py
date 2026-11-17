@@ -475,6 +475,7 @@ def export_okf_profile(request: UserProfileRequest, user: dict = Depends(get_cur
         "resource": artifact["resource"],
         "document": artifact["document"],
         "summary": artifact["context"].get("summary", {}),
+        "learned_signals": artifact["context"].get("learned_signals", []),
     }
 
 

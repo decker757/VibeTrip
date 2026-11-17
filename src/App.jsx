@@ -83,6 +83,7 @@ function App() {
   const [plannerSource, setPlannerSource] = useState('demo');
   const [recommendationSource, setRecommendationSource] = useState('deterministic');
   const [contextSummary, setContextSummary] = useState(null);
+  const [learnedSignals, setLearnedSignals] = useState([]);
   const [repairLog, setRepairLog] = useState([]);
   const [routeStats, setRouteStats] = useState({ driveMinutes: 229, distanceKm: 348, confidence: 94 });
   const [route, setRoute] = useState({});
@@ -977,6 +978,32 @@ function App() {
     setMessage(`Opened ${trip.title}. Its saved checkpoints and route are ready to edit.`);
   }
 
+  async function loadLearnedSignals() {
+    if (!authUser) return;
+    try {
+      const response = await apiFetch(`${PLANNER_API_URL}/profiles/okf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferences: profilePreferences, adventure_level: profileAdventureLevel }),
+      });
+      if (!response.ok) throw new Error(`Profile context returned ${response.status}`);
+      const result = await response.json();
+      setLearnedSignals(result.learned_signals || []);
+    } catch {
+      // The learned-signals card is informational; keep the profile page usable offline.
+      setLearnedSignals([]);
+    }
+  }
+
+  async function dismissLearnedSignal(signal) {
+    await recordAgentEvent('signal_dismissed', { signal });
+    await loadLearnedSignals();
+  }
+
+  useEffect(() => {
+    if (activeNav === 'Travel profile') loadLearnedSignals();
+  }, [activeNav, authUser, profilePreferences]);
+
   function goToPlanner() {
     syncTripPreferencesFromProfile({ preferences: profilePreferences, adventureLevel: profileAdventureLevel });
     setStartDate(getLocalTodayISO());
@@ -1142,7 +1169,7 @@ function App() {
         </header>
 
         <div className="content-wrap">
-          {activeNav === 'Plan a trip' ? <PlannerPage {...plannerPageProps} /> : activeNav === 'Saved trips' ? <SavedTripsView trips={savedTrips} isLoading={isLoadingCollection} onOpen={openSavedTrip} onDelete={deleteTrip} onComplete={completeTrip} onUploadMedia={uploadTripMedia} onPublish={publishTrip} onToggleVisibility={toggleTripVisibility} onRefresh={loadSavedTrips} /> : activeNav === 'Travel profile' ? <ProfileView profile={profilePageProps} userProfile={userProfile} onUpdateProfile={updateUserProfile} onSaveProfile={saveUserProfile} onGoPlan={goToPlanner} /> : <ExploreView trips={exploreTrips} isLoading={isLoadingCollection} onUseTrip={(trip) => openSavedTrip(trip, { clone: true })} onRefresh={loadExploreTrips} />}
+          {activeNav === 'Plan a trip' ? <PlannerPage {...plannerPageProps} /> : activeNav === 'Saved trips' ? <SavedTripsView trips={savedTrips} isLoading={isLoadingCollection} onOpen={openSavedTrip} onDelete={deleteTrip} onComplete={completeTrip} onUploadMedia={uploadTripMedia} onPublish={publishTrip} onToggleVisibility={toggleTripVisibility} onRefresh={loadSavedTrips} /> : activeNav === 'Travel profile' ? <ProfileView profile={profilePageProps} userProfile={userProfile} onUpdateProfile={updateUserProfile} onSaveProfile={saveUserProfile} onGoPlan={goToPlanner} learnedSignals={learnedSignals} onDismissSignal={dismissLearnedSignal} /> : <ExploreView trips={exploreTrips} isLoading={isLoadingCollection} onUseTrip={(trip) => openSavedTrip(trip, { clone: true })} onRefresh={loadExploreTrips} />}
         </div>
       </main>
     </div>

@@ -7,6 +7,8 @@ export default function ProfileView({
   onUpdateProfile,
   onSaveProfile,
   onGoPlan,
+  learnedSignals = [],
+  onDismissSignal,
 }) {
   const { profileSummary, profileBalance, profileOptions, preferences, adventureLevel, onTogglePreference, onAdventureInput } = profile;
 
@@ -42,7 +44,37 @@ export default function ProfileView({
         </section>
       </div>
 
+      <LearnedSignalsCard signals={learnedSignals} onDismiss={onDismissSignal} />
+
       <section className="profile-privacy-card"><Icon name="bookmark" size={17} /><div><h2>Your trips stay yours first.</h2><p>New trips are private drafts. After the road trip, mark one completed, add memories, and publish it to Explore when you are comfortable sharing.</p></div></section>
     </div>
+  );
+}
+
+const SOURCE_LABELS = {
+  profile: 'From your profile',
+  behaviour: 'Learned from your trips',
+  both: 'Profile + trips',
+};
+
+function LearnedSignalsCard({ signals, onDismiss }) {
+  return (
+    <section className="profile-card learned-signals-card">
+      <div className="card-heading"><div><p className="eyebrow">AGENT MEMORY</p><h2>What VibeTrip has learned about you</h2></div></div>
+      {signals.length === 0 ? (
+        <p className="account-copy">Nothing learned yet. Plan a few trips and swap some stops.</p>
+      ) : (
+        <ul className="learned-signal-list">
+          {signals.map((item) => (
+            <li className="learned-signal" key={item.signal}>
+              <span className="learned-signal-label">{item.label}</span>
+              <span className="learned-signal-source">{SOURCE_LABELS[item.source] || SOURCE_LABELS.profile}</span>
+              {item.evidence_count > 0 && <small>based on {item.evidence_count} {item.evidence_count === 1 ? 'action' : 'actions'}</small>}
+              {item.source !== 'profile' && onDismiss && <button type="button" className="learned-signal-dismiss" onClick={() => onDismiss(item.signal)}>Not me</button>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
