@@ -1,0 +1,476 @@
+{
+  "balanced@12:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 25,
+        "kind": "coffee",
+        "opening_hours_verified": false,
+        "place_id": "demo-coffee",
+        "route_progress_km": 65,
+        "schedule_offset_minutes": 60,
+        "time": "09:10",
+        "title": "Coffee stop"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 110,
+        "time": "10:00",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 45,
+        "kind": "attraction",
+        "opening_hours_verified": false,
+        "place_id": "demo-attraction",
+        "route_progress_km": 180,
+        "schedule_offset_minutes": 158,
+        "time": "10:48",
+        "title": "Mystic Seaport Museum"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 228,
+        "time": "11:58",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 415,
+        "time": "15:05",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "15:05",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 70% adventurous.",
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "schedule_warning": "Arrival estimate 15:05 is later than your target end time of 12:00.",
+      "static_drive_minutes": 218,
+      "stop_count": 4,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  },
+  "balanced@18:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 25,
+        "kind": "coffee",
+        "opening_hours_verified": false,
+        "place_id": "demo-coffee",
+        "route_progress_km": 65,
+        "schedule_offset_minutes": 60,
+        "time": "09:10",
+        "title": "Coffee stop"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 110,
+        "time": "10:00",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 45,
+        "kind": "attraction",
+        "opening_hours_verified": false,
+        "place_id": "demo-attraction",
+        "route_progress_km": 180,
+        "schedule_offset_minutes": 158,
+        "time": "10:48",
+        "title": "Mystic Seaport Museum"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 228,
+        "time": "11:58",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 415,
+        "time": "15:05",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "15:05",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 70% adventurous.",
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "schedule_warning": null,
+      "static_drive_minutes": 218,
+      "stop_count": 4,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  },
+  "fastest@12:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 82,
+        "time": "09:32",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 150,
+        "time": "10:40",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 345,
+        "time": "13:55",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "13:55",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Fastest. Stop ranking: 70% adventurous.",
+      "route_mode": "fastest",
+      "route_mode_label": "Fastest",
+      "route_mode_summary": "Essential breaks only, including at least one fuel stop; optional coffee and scenic detours are excluded.",
+      "schedule_warning": "Arrival estimate 13:55 is later than your target end time of 12:00.",
+      "static_drive_minutes": 218,
+      "stop_count": 2,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  },
+  "fastest@18:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 82,
+        "time": "09:32",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 150,
+        "time": "10:40",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 345,
+        "time": "13:55",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "13:55",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Fastest. Stop ranking: 70% adventurous.",
+      "route_mode": "fastest",
+      "route_mode_label": "Fastest",
+      "route_mode_summary": "Essential breaks only, including at least one fuel stop; optional coffee and scenic detours are excluded.",
+      "schedule_warning": null,
+      "static_drive_minutes": 218,
+      "stop_count": 2,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  },
+  "scenic@12:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 25,
+        "kind": "coffee",
+        "opening_hours_verified": false,
+        "place_id": "demo-coffee",
+        "route_progress_km": 65,
+        "schedule_offset_minutes": 60,
+        "time": "09:10",
+        "title": "Coffee stop"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 110,
+        "time": "10:00",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 60,
+        "kind": "attraction",
+        "opening_hours_verified": false,
+        "place_id": "demo-attraction",
+        "route_progress_km": 180,
+        "schedule_offset_minutes": 158,
+        "time": "10:48",
+        "title": "Mystic Seaport Museum"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 243,
+        "time": "12:13",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 430,
+        "time": "15:20",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "15:20",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 70% adventurous.",
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "schedule_warning": "Arrival estimate 15:20 is later than your target end time of 12:00.",
+      "static_drive_minutes": 218,
+      "stop_count": 4,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  },
+  "scenic@18:00": {
+    "itinerary": [
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 25,
+        "kind": "coffee",
+        "opening_hours_verified": false,
+        "place_id": "demo-coffee",
+        "route_progress_km": 65,
+        "schedule_offset_minutes": 60,
+        "time": "09:10",
+        "title": "Coffee stop"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 15,
+        "kind": "fuel",
+        "opening_hours_verified": false,
+        "place_id": "demo-fuel",
+        "route_progress_km": 125,
+        "schedule_offset_minutes": 110,
+        "time": "10:00",
+        "title": "Fuel + bathroom"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 60,
+        "kind": "attraction",
+        "opening_hours_verified": false,
+        "place_id": "demo-attraction",
+        "route_progress_km": 180,
+        "schedule_offset_minutes": 158,
+        "time": "10:48",
+        "title": "Mystic Seaport Museum"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 55,
+        "kind": "meal",
+        "opening_hours_verified": false,
+        "place_id": "demo-lunch",
+        "route_progress_km": 205,
+        "schedule_offset_minutes": 243,
+        "time": "12:13",
+        "title": "The Lobster Shack"
+      },
+      {
+        "date": "2026-11-20",
+        "day_number": 1,
+        "duration_min": 0,
+        "kind": "stay",
+        "schedule_offset_minutes": 430,
+        "time": "15:20",
+        "title": "Check-in"
+      }
+    ],
+    "route": {
+      "buffer_minutes": 46,
+      "construction_status": "not_available",
+      "distance_km": 348,
+      "drive_minutes": 229,
+      "estimated_arrival_date": "2026-11-20",
+      "estimated_arrival_time": "15:20",
+      "estimated_trip_days": 1,
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 70% adventurous.",
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "schedule_warning": null,
+      "static_drive_minutes": 218,
+      "stop_count": 4,
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "summary": "A to B",
+      "timeline_note": "Includes a 46-minute driving buffer plus planned breaks.",
+      "traffic_delay_minutes": 11,
+      "traffic_note": "Live traffic estimate from the route provider.",
+      "traffic_status": "slow"
+    }
+  }
+}
