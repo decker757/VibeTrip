@@ -32,7 +32,7 @@ class RepairDecision(BaseModel):
 
 MAX_REPAIR_ATTEMPTS = 2
 UNFIXABLE_REASON = "Unfixable without changing route mode"
-MODE_SUGGESTION = "Try Fastest to arrive earlier."
+MODE_SUGGESTION = "Start earlier, allow a later end time, or try Fastest."
 # Rule order when no LLM answer is usable: cheapest experience loss first.
 RULE_ORDER: list[RepairAction] = ["skip_coffee", "skip_extra_fuel", "skip_attraction"]
 SKIP_KINDS: dict[RepairAction, str] = {"skip_coffee": "coffee", "skip_attraction": "attraction", "skip_extra_fuel": "extra_fuel"}
@@ -105,7 +105,8 @@ def _llm_decision(state: dict[str, Any], warning: dict[str, str], actions: list[
     except Exception:
         # A failed model call must never block the deterministic repair.
         return None
-    return decision if decision.action in actions else None
+    # Structured-output parsers can return None; anything but an on-offer RepairDecision means no LLM choice.
+    return decision if isinstance(decision, RepairDecision) and decision.action in actions else None
 
 
 def repair_step(state: dict[str, Any], rebuild: Callable[[dict], dict]) -> dict[str, Any]:

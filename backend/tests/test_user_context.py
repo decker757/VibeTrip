@@ -60,3 +60,14 @@ def test_dismissal_event_is_not_evidence():
 def test_okf_renders_source():
     doc = render_profile_okf(build_user_context({"preferences": ["local-gems"]}), timestamp="t")
     assert "local_food (from profile; confidence 0.55; evidence 0)" in doc
+
+
+def test_dismissal_compares_real_instants_not_strings():
+    # 10:00+08:00 is 02:00Z; the event at 03:00Z is later in real time but sorts earlier as a string.
+    events = [
+        _event("1", "chatbot_search", {"query": "quiet cafe"}, "2026-11-17T01:00:00+00:00"),
+        _event("2", "signal_dismissed", {"signal": "quiet_low_crowd_stops"}, "2026-11-17T10:00:00+08:00"),
+        _event("3", "chatbot_search", {"query": "quiet cafe"}, "2026-11-17T03:00:00+00:00"),
+    ]
+    s = _signal(build_user_context({}, events=events), "quiet_low_crowd_stops")
+    assert s["evidence_count"] == 1

@@ -8,6 +8,7 @@ a vector store for the MVP.
 from __future__ import annotations
 
 from collections import Counter
+from datetime import datetime, timezone
 from typing import Any
 
 
@@ -68,18 +69,29 @@ def _feedback_signals(event: dict[str, Any]) -> list[str]:
     return signals
 
 
+def _event_time(event: dict[str, Any]) -> datetime:
+    """Timezone-aware event time; naive values are UTC, unparseable ones sort first."""
+    value = event.get("created_at")
+    if not isinstance(value, datetime):
+        try:
+            value = datetime.fromisoformat(str(value))
+        except ValueError:
+            return datetime.min.replace(tzinfo=timezone.utc)
+    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
 def _behaviour_evidence(events: list[dict[str, Any]]) -> Counter:
     """Count feedback per signal, ignoring evidence from before the latest dismissal."""
-    dismissed_at: dict[str, str] = {}
+    dismissed_at: dict[str, datetime] = {}
     for event in events:
         if event.get("event_type") == DISMISS_EVENT:
             signal = str((event.get("data") or {}).get("signal") or "")
-            dismissed_at[signal] = max(dismissed_at.get(signal, ""), str(event.get("created_at") or ""))
+            dismissed_at[signal] = max(dismissed_at.get(signal, _event_time(event)), _event_time(event))
     return Counter(
         signal
         for event in events
         for signal in _feedback_signals(event)
-        if str(event.get("created_at") or "") > dismissed_at.get(signal, "")
+        if signal not in dismissed_at or _event_time(event) > dismissed_at[signal]
     )
 
 

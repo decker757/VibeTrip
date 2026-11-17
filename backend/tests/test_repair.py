@@ -45,8 +45,8 @@ def test_unfixable_trip_is_not_stripped(demo_state):
     out = run_graph(demo_state("balanced", "12:00"))
     assert [i["kind"] for i in out["itinerary"]] == ["coffee", "fuel", "attraction", "meal", "stay"]
     assert out["repair_log"] == [{"attempt": 1, "warning": ANY, "action": "accept_warning", "reason": "Unfixable without changing route mode", "source": "rule"}]
-    assert out["route"]["schedule_warning"].endswith("Try Fastest to arrive earlier.")
-    assert out["route"]["schedule_warning"].count("Try Fastest") == 1
+    assert out["route"]["schedule_warning"].endswith("Start earlier, allow a later end time, or try Fastest.")
+    assert out["route"]["schedule_warning"].count("or try Fastest") == 1
 
 
 def test_no_optional_stops_means_no_repair(demo_state):
@@ -92,6 +92,13 @@ def test_invalid_llm_action_falls_back_to_rule(demo_state, monkeypatch):
     assert first["action"] == "skip_coffee" and first["source"] == "rule"
 
 
+def test_none_llm_result_falls_back_to_rule(demo_state, monkeypatch):
+    monkeypatch.setattr("backend.repair.llm_enabled", lambda: True)
+    monkeypatch.setattr("backend.repair.get_chat_model", lambda: FakeStructuredModel(None))
+    out = run_graph(demo_state("balanced", "14:30"))
+    assert out["repair_log"][0]["action"] == "skip_coffee" and out["repair_log"][0]["source"] == "rule"
+
+
 def test_failed_llm_call_falls_back_to_rule(demo_state, monkeypatch):
     monkeypatch.setattr("backend.repair.llm_enabled", lambda: True)
     monkeypatch.setattr("backend.repair.get_chat_model", lambda: FakeStructuredModel(RuntimeError("down")))
@@ -133,3 +140,4 @@ def test_plan_returns_repair_log(auth_client):
     r = auth_client.post("/trips/plan", json={"start": "Singapore", "destination": "KL", "start_date": "2026-11-20", "end_time": "12:00"})
     assert r.status_code == 200
     assert r.json()["repair_log"][0]["action"] == "accept_warning"
+    assert "Start earlier, allow a later end time, or try Fastest." in r.json()["warning"]

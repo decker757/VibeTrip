@@ -153,11 +153,12 @@ class TripRepository:
             "id", "owner_id", "author_name", "title", "post_caption", "start", "destination", "route_mode",
             "adventure_level", "budget_per_person", "travellers", "start_date", "end_date",
             "start_time", "end_time", "preferences", "route", "itinerary", "candidate_places",
-            "cost_breakdown", "media", "is_public", "is_completed", "created_at",
+            "cost_breakdown", "media", "is_public", "is_completed", "created_at", "updated_at",
         ]
         trip = dict(zip(keys, row))
-        if hasattr(trip.get("created_at"), "isoformat"):
-            trip["created_at"] = trip["created_at"].isoformat()
+        for field in ("created_at", "updated_at"):
+            if hasattr(trip.get(field), "isoformat"):
+                trip[field] = trip[field].isoformat()
         return trip
 
     def save(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -223,7 +224,7 @@ class TripRepository:
                     cursor.execute(
                         """SELECT id, owner_id, author_name, title, post_caption, start_location, destination, route_mode,
                         adventure_level, budget_per_person, travellers, start_date, end_date, start_time, end_time,
-                        preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at
+                        preferences, route, itinerary, candidate_places, cost_breakdown, media, is_public, is_completed, created_at, updated_at
                         FROM trips WHERE owner_id = %s ORDER BY updated_at DESC""",
                         (owner_id,),
                     )
