@@ -178,6 +178,11 @@ app.add_middleware(
 )
 
 
+def _session_cookie_secure() -> bool:
+    # Local development runs over plain http; deployments behind https set this.
+    return os.getenv("VIBETRIP_COOKIE_SECURE", "false").lower() in {"1", "true", "yes", "on"}
+
+
 def _set_session(response: Response, user: dict) -> None:
     response.set_cookie(
         SESSION_COOKIE,
@@ -185,7 +190,7 @@ def _set_session(response: Response, user: dict) -> None:
         max_age=60 * 60 * 24 * 7,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=_session_cookie_secure(),
     )
 
 
@@ -205,7 +210,7 @@ def login(request: AuthRequest, response: Response) -> dict:
 
 @app.post("/auth/logout")
 def logout(response: Response) -> dict[str, bool]:
-    response.delete_cookie(SESSION_COOKIE)
+    response.delete_cookie(SESSION_COOKIE, httponly=True, samesite="lax", secure=_session_cookie_secure())
     return {"ok": True}
 
 

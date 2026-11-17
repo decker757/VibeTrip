@@ -1,0 +1,17 @@
+# The Vercel deploy is the static frontend only; never upload secrets or the backend.
+.env
+.env.*
+!.env.example
+.venv
+.git
+.superpowers
+backend
+docs
+node_modules
+dist
+Dockerfile
+constraints.txt
+requirements*.txt
+pytest.ini
+docker-compose.yml
+graphify-out

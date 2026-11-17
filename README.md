@@ -498,12 +498,39 @@ including the traveller's OKF profile, to LangSmith's servers.
 
 ## Deploying the MVP
 
-For a hosted demo, deploy the Vite frontend and FastAPI backend separately. Set
-`VITE_API_URL` to the public backend URL before building the frontend, and set
-the backend's `VIBETRIP_AUTH_SECRET` to a long random value. A hosted Postgres
-instance is recommended for saved trips; the default local JSON, memory, and
-filesystem adapters are intended for judging and local development, not
-durable production storage.
+The hosted demo runs the FastAPI backend on Railway and the Vite frontend on
+Vercel. Vercel forwards `/api/*` to the backend (`vercel.json`), so the browser
+talks to one origin: the session cookie stays first-party (Safari blocks
+cross-site cookies) and no CORS change is needed.
+
+**Backend (Railway)** builds from `Dockerfile`. Dependencies install with
+`constraints.txt`, the exact versions the test suite passes with, so transitive
+packages cannot drift in the image. The project has a Postgres service and a
+volume mounted at `/data`. Backend variables:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+| `VIBETRIP_AUTH_SECRET` | long random value |
+| `VIBETRIP_COOKIE_SECURE` | `true` (HTTPS only) |
+| `VIBETRIP_AUTH_FILE` / `VIBETRIP_MEDIA_DIR` / `VIBETRIP_OKF_DIR` | `/data/auth_users.json`, `/data/media`, `/data/okf` |
+| `OPENAI_API_KEY`, `GOOGLE_MAPS_API_KEY`, `VIBETRIP_LIVE_MAPS_ENABLED`, other `VIBETRIP_*` | as in `.env.example` |
+
+```bash
+railway up --service backend --ci
+```
+
+**Frontend (Vercel)** needs `VITE_API_URL=/api` plus the `VITE_GOOGLE_MAPS_*`
+values, then:
+
+```bash
+vercel deploy --prod
+```
+
+The server Maps key cannot be IP-restricted on Railway (no static outbound IP),
+so restrict it to the Routes and Places APIs, keep the browser key separate and
+referrer-restricted, and set spending caps on both Google Cloud and OpenAI: the
+in-process rate limits are per minute, not a budget.
 
 Uploaded memories also need persistent object storage or a persistent volume in
 deployment. The current media adapter writes to `backend/media/`, so ephemeral

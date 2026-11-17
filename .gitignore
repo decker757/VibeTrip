@@ -226,3 +226,4 @@ graphify-out/
 __pycache__/
 .venv/
 .env
+.vercel

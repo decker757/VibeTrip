@@ -1,0 +1,16 @@
+# Only requirements.txt and backend/ are copied, but keep local state and
+# secrets out of the build context entirely.
+.env
+.env.*
+!.env.example
+.git
+.venv
+node_modules
+dist
+.superpowers
+backend/auth_users.json
+backend/media
+backend/okf_profiles
+backend/tests
+**/__pycache__
+**/*.pyc
