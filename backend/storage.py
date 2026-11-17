@@ -214,6 +214,8 @@ class TripRepository:
         return _copy_trip(trip)
 
     def list_saved(self, owner_id: str = OWNER_ID) -> list[dict[str, Any]]:
+        memory_trips = [_copy_trip(trip) for trip in self._memory.values() if trip.get("owner_id") == owner_id]
+        memory_trips.sort(key=lambda trip: trip.get("updated_at") or trip.get("created_at") or "", reverse=True)
         connection = self._db.connect()
         if connection:
             try:
@@ -227,11 +229,13 @@ class TripRepository:
                     )
                     rows = [self._row_to_trip(row) for row in cursor.fetchall()]
                 connection.close()
-                return rows
+                row_ids = {row["id"] for row in rows}
+                # Trips saved while Postgres was down exist only in memory; list them first (newest writes).
+                return [trip for trip in memory_trips if trip["id"] not in row_ids] + rows
             except Exception as error:
                 self._db.mark_failed(error)
                 connection.close()
-        return [_copy_trip(trip) for trip in self._memory.values() if trip.get("owner_id") == owner_id]
+        return memory_trips
 
     def get(self, trip_id: str) -> dict[str, Any] | None:
         trip = self._memory.get(trip_id)
