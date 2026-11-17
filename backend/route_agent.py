@@ -204,7 +204,9 @@ def _budget_status(place: dict[str, Any], current_cost: float | None, remaining:
     if cost is None or remaining is None:
         versus_budget = "unknown vs remaining budget"
     else:
-        versus_budget = f"{'within' if cost <= remaining else 'over'} remaining SGD {remaining:.0f}"
+        # The remaining budget already pays for the current stop, so only the extra cost counts.
+        extra_cost = cost - current_cost if current_cost is not None else cost
+        versus_budget = f"{'within' if extra_cost <= remaining else 'over'} remaining SGD {remaining:.0f}"
     return f"{versus_current}; {versus_budget}"
 
 
@@ -219,8 +221,15 @@ def _with_trace_entry(trace: list[dict[str, Any]], tool: str, summary: str) -> l
     return [*trace, {"step": len(trace) + 1, "tool": tool, "summary": summary}]
 
 
-def _submit_call(message: AIMessage) -> dict[str, Any] | None:
-    return next((call for call in message.tool_calls if call["name"] == "SubmitShortlist"), None)
+def _valid_submission(message: AIMessage) -> SubmitShortlist | None:
+    """The shortlist from a well-formed SubmitShortlist call; malformed ones go to tools for a retry."""
+    for call in message.tool_calls:
+        if call["name"] == "SubmitShortlist":
+            try:
+                return SubmitShortlist.model_validate(call["args"])
+            except ValidationError:
+                continue
+    return None
 
 
 async def agent_node(state: AgentState, config: RunnableConfig) -> dict[str, Any]:
@@ -228,9 +237,8 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> dict[str, Any
     model, _ = _runtime(config)
     response = await model.ainvoke(state["messages"])
     update: dict[str, Any] = {"messages": [response], "step_count": state["step_count"] + 1}
-    submit = _submit_call(response)
-    if submit:
-        shortlist = SubmitShortlist.model_validate(submit["args"])
+    shortlist = _valid_submission(response)
+    if shortlist:
         update["shortlist_ids"] = shortlist.place_ids
         update["rationale"] = shortlist.rationale
         update["trace"] = _with_trace_entry(state["trace"], "SubmitShortlist", f"Shortlisted {len(shortlist.place_ids)} place(s)")
@@ -239,7 +247,7 @@ async def agent_node(state: AgentState, config: RunnableConfig) -> dict[str, Any
 
 def route_after_agent(state: AgentState) -> Literal["tools", "__end__"]:
     last = state["messages"][-1]
-    if not last.tool_calls or _submit_call(last) or state["step_count"] >= MAX_STEPS:
+    if not last.tool_calls or _valid_submission(last) or state["step_count"] >= MAX_STEPS:
         return END
     return "tools"
 
@@ -268,7 +276,7 @@ async def tools_node(state: AgentState, config: RunnableConfig) -> dict[str, Any
                 outcome = await tools.search_places(args)
             elif name == "CheckOpenAtArrival":
                 outcome = tools.check_open_at_arrival(args, seen)
-            else:  # CheckBudget; SubmitShortlist ends the graph before reaching this node
+            else:  # CheckBudget; a valid SubmitShortlist ends the graph before reaching this node
                 outcome = tools.check_budget(args, seen)
         for place in outcome.found:
             seen.setdefault(place["id"], place)

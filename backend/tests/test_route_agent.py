@@ -4,7 +4,7 @@ from datetime import datetime
 from langchain_core.messages import AIMessage, ToolMessage
 
 from backend.providers import DemoMapsProvider
-from backend.route_agent import MAX_SEARCHES, MAX_STEPS, RouteAgentContext, run_route_agent
+from backend.route_agent import MAX_SEARCHES, MAX_STEPS, RouteAgentContext, _budget_status, run_route_agent
 from backend.tests.fakes import ScriptedChatModel
 
 ARRIVAL = datetime(2026, 11, 20, 10, 0)  # a Friday; Google weekday 5
@@ -147,7 +147,7 @@ async def test_invalid_tool_arguments_are_reported_to_the_model():
     assert [c["id"] for c in r.candidates] == ["demo-coffee"]
 
 
-async def test_missing_arrival_and_progress_still_runs():      # Review Focus 2
+async def test_missing_arrival_and_progress_still_runs():
     model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "cafe", "category": "cafe"}),
                                ai_tool("CheckOpenAtArrival", {"place_ids": ["demo-coffee"]}, "2"),
                                ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"], "rationale": "x"}, "3")])
@@ -169,3 +169,26 @@ async def test_budget_summary_unknown_without_budget_inputs():
                                ai_tool("SubmitShortlist", {"place_ids": ["demo-lunch"], "rationale": "x"}, "3")])
     r = await run_route_agent(ctx(segment=(200, 250)), DemoMapsProvider(), model)
     assert r.trace[1]["summary"] == "The Lobster Shack: unknown vs current stop; unknown vs remaining budget"
+
+
+# Remaining budget already includes the stop being replaced, so only the extra cost counts.
+def test_budget_within_remaining_uses_extra_cost_over_current_stop():
+    assert _budget_status({"estimated_cost_sgd": 150}, 100, 60) == "SGD 50 more than current stop; within remaining SGD 60"
+
+
+def test_budget_over_remaining_uses_extra_cost_over_current_stop():
+    assert _budget_status({"estimated_cost_sgd": 200}, 100, 60) == "SGD 100 more than current stop; over remaining SGD 60"
+
+
+def test_budget_without_current_cost_compares_full_cost():
+    assert _budget_status({"estimated_cost_sgd": 70}, None, 60) == "unknown vs current stop; over remaining SGD 60"
+
+
+async def test_malformed_submit_gets_a_retry():
+    model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "cafe", "category": "cafe"}),
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"]}, "2"),
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-coffee"], "rationale": "Calm stop."}, "3")])
+    r = await run_route_agent(ctx(segment=(0, 100)), DemoMapsProvider(), model)
+    assert r is not None and r.rationale == "Calm stop." and [c["id"] for c in r.candidates] == ["demo-coffee"]
+    retry_prompt = model.calls[2][-1]
+    assert isinstance(retry_prompt, ToolMessage) and retry_prompt.tool_call_id == "2" and "invalid" in retry_prompt.content.lower()
