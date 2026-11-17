@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .graph import day_builder, planner_graph
+from .repair import repair_until_settled
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
 from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
@@ -354,7 +355,9 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
                 request.start_time,
             )
             previous_waypoint_ids = [place.get("id") for place in waypoint_places]
-            result = day_builder({**result, "route": updated_route})
+            # Real detour times can make the plan late again; repair with the
+            # attempts and skipped kinds already carried in state.
+            result = repair_until_settled(day_builder({**result, "route": updated_route}), day_builder)
             final_waypoint_ids = [place.get("id") for place in _waypoint_places(result)]
             if final_waypoint_ids == previous_waypoint_ids:
                 break
@@ -392,6 +395,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         "cost_breakdown": _build_cost_breakdown(result["route"], result.get("selected_places", []), request.travellers),
         "provider": result.get("provider_name", "demo"),
         "warning": " ".join(warnings) or None,
+        "repair_log": result.get("repair_log", []),
     }
 
 

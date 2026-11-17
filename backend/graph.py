@@ -15,6 +15,7 @@ from langgraph.graph import END, START, StateGraph
 from .providers import DemoMapsProvider
 from .opening_hours import candidate_is_plannable, opening_status_at
 from .recommender import refine_recommendations
+from .repair import finalize_best, repair_step, should_repair
 
 
 class PlannerState(TypedDict, total=False):
@@ -47,6 +48,13 @@ class PlannerState(TypedDict, total=False):
     agent_context: dict[str, Any]
     context_summary: dict[str, Any]
     learned_preferences: list[str]
+    # Repair loop (see repair.py). Undeclared keys are dropped between nodes.
+    skipped_stop_kinds: list[str]
+    repair_attempts: int
+    repair_settled: bool
+    repair_unfixable: bool
+    repair_snapshots: list[dict[str, Any]]
+    repair_log: list[dict[str, Any]]
 
 
 def _normalise_category(place: dict[str, Any]) -> str:
@@ -301,8 +309,12 @@ def _route_position(item: PlannedStop) -> float:
     return float(progress) if isinstance(progress, (int, float)) else float("inf")
 
 
-def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel: dict[str, Any] | None, route_mode: str, drive_minutes: int) -> list[PlannedStop]:
-    """Assemble stops for one meal/fuel choice, ordered along the route."""
+def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel: dict[str, Any] | None, route_mode: str, drive_minutes: int, skipped_kinds: frozenset[str] = frozenset()) -> list[PlannedStop]:
+    """Assemble stops for one meal/fuel choice, ordered along the route.
+
+    ``skipped_kinds`` may contain ``coffee``, ``attraction`` and ``extra_fuel``;
+    the meal and the first fuel stop are never skippable.
+    """
     planned_stops: list[PlannedStop] = []
     seen_stop_ids: set[str] = set()
 
@@ -315,11 +327,12 @@ def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel
         seen_stop_ids.add(place_id)
         planned_stops.append((place, kind, duration))
 
-    add(options.coffee_stop if route_mode != "fastest" else None, "coffee", COFFEE_MINUTES)
+    if route_mode != "fastest" and "coffee" not in skipped_kinds:
+        add(options.coffee_stop, "coffee", COFFEE_MINUTES)
     add(fuel, "fuel", FUEL_MINUTES)
-    if route_mode in {"balanced", "scenic"} and drive_minutes >= ATTRACTION_MIN_DRIVE:
+    if route_mode in {"balanced", "scenic"} and drive_minutes >= ATTRACTION_MIN_DRIVE and "attraction" not in skipped_kinds:
         add(options.scenic_stop, "attraction", ATTRACTION_MINUTES[route_mode])
-    if drive_minutes >= SECOND_FUEL_MIN_DRIVE:
+    if drive_minutes >= SECOND_FUEL_MIN_DRIVE and "extra_fuel" not in skipped_kinds:
         add(options.additional_fuel_stop, "fuel", FUEL_MINUTES)
     if drive_minutes >= MEAL_MIN_DRIVE:
         add(meal, "meal", MEAL_MINUTES)
@@ -408,13 +421,14 @@ def day_builder(state: PlannerState) -> PlannerState:
     drive_minutes = max(0, int(route.get("drive_minutes") or 229))
     distance_km = max(1.0, float(route.get("distance_km") or 348))
     start = _parse_start(state)
+    skipped_kinds = frozenset(state.get("skipped_stop_kinds", []))
 
     itinerary: list[dict[str, Any]] = []
     scheduled_fuel_stop = None
     fuel_options = [*options.fuel_stops, None] if route_mode == "fastest" else [options.fuel_stop]
     for fuel_option in fuel_options:
         for meal_option in [*options.meal_options, None]:
-            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes), start, drive_minutes, distance_km)
+            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds), start, drive_minutes, distance_km)
             fuel_requirement_met = route_mode != "fastest" or result.fuel_was_scheduled
             if fuel_requirement_met and (meal_option is None or result.meal_was_open):
                 itinerary = result.itinerary
@@ -460,12 +474,16 @@ def build_planner_graph():
     workflow.add_node("detour_reviewer", detour_reviewer)
     workflow.add_node("llm_reviewer", refine_recommendations)
     workflow.add_node("day_builder", day_builder)
+    workflow.add_node("repair", lambda s: repair_step(s, day_builder))
+    workflow.add_node("finalize", finalize_best)
     workflow.add_edge(START, "route_scout")
     workflow.add_edge("route_scout", "vibe_matcher")
     workflow.add_edge("vibe_matcher", "detour_reviewer")
     workflow.add_edge("detour_reviewer", "llm_reviewer")
     workflow.add_edge("llm_reviewer", "day_builder")
-    workflow.add_edge("day_builder", END)
+    workflow.add_conditional_edges("day_builder", should_repair, {"repair": "repair", "finalize": "finalize"})
+    workflow.add_edge("repair", "day_builder")
+    workflow.add_edge("finalize", END)
     return workflow.compile()
 
 

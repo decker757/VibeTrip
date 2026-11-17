@@ -83,6 +83,7 @@ function App() {
   const [plannerSource, setPlannerSource] = useState('demo');
   const [recommendationSource, setRecommendationSource] = useState('deterministic');
   const [contextSummary, setContextSummary] = useState(null);
+  const [repairLog, setRepairLog] = useState([]);
   const [routeStats, setRouteStats] = useState({ driveMinutes: 229, distanceKm: 348, confidence: 94 });
   const [route, setRoute] = useState({});
   const [startDate, setStartDate] = useState(() => getLocalTodayISO());
@@ -292,6 +293,7 @@ function App() {
       setPlannerSource('api');
       setRecommendationSource(result.recommendation_source || 'deterministic');
       setContextSummary(result.context_summary || result.profile_context?.summary || null);
+      setRepairLog(result.repair_log || []);
       setIsGenerated(true);
       const contextMessage = result.context_summary?.label ? ` ${result.context_summary.label}.` : '';
       setMessage(result.warning || `${routeModeOptions.find((option) => option.id === requestRouteMode)?.label} route ready — ${result.recommendation_source === 'llm' ? 'the LLM reviewer ranked the feasible candidates' : 'deterministic scoring ranked the feasible candidates'}.${contextMessage}`);
@@ -300,6 +302,7 @@ function App() {
       setPlannerSource('demo');
       setRecommendationSource('deterministic');
       setContextSummary(null);
+      setRepairLog([]);
       setCandidatePlaces(initialCandidates);
       setSelectedPlaceId('demo-lunch');
       setRoute({});
@@ -940,6 +943,7 @@ function App() {
     setCostBreakdown(trip.cost_breakdown || defaultCostBreakdown);
     setRecommendationSource(trip.recommendation_source || 'deterministic');
     setContextSummary(null);
+    setRepairLog([]);
     setEditingStopIndex(null);
     setFocusedStopIndex(null);
     setIsManagingStops(false);
@@ -1081,7 +1085,7 @@ function App() {
     },
     form: {
       from, to, routeTitle, routeModeOptions, isGenerating, plannerSource, routeStats, startDate, startTime, endTime,
-      travellers, budgetPerPerson, isGenerated, message, fromLocation, toLocation, onFrom: updateFrom, onTo: updateTo, onSwap: swapLocations,
+      travellers, budgetPerPerson, isGenerated, message, repairLog, fromLocation, toLocation, onFrom: updateFrom, onTo: updateTo, onSwap: swapLocations,
       onStartDate: (value) => { setStartDate(value); setEndDate(value); }, onStartTime: setStartTime, onEndTime: setEndTime,
       onTravellers: setTravellers, onBudget: setBudgetPerPerson, onGenerate: generateTrip,
     },
