@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "@googlemaps/js-api-loader": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@vitejs/plugin-react": "6.0.3",
+    "@googlemaps/js-api-loader": "2.1.1",
+    "vite": "8.1.4",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {}
 }
