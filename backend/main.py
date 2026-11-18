@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .graph import day_builder, planner_graph
+from .make_room import build_make_room, destination_deadline, parse_day_time
 from .repair import repair_until_settled
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
 from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
@@ -44,6 +45,10 @@ class TripRequest(BaseModel):
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
     profile: ProfileContext = Field(default_factory=ProfileContext)
+    # Make room for the destination: the place the traveller wants to visit on arrival
+    # (as returned in candidate_places) and the current plan's arrival time ("HH:MM").
+    destination_activity: dict | None = None
+    current_arrival_time: str | None = None
 
 
 class SimulationRequest(BaseModel):
@@ -307,13 +312,18 @@ def _arrival_from(request: RoutePlaceSearchRequest) -> datetime | None:
         return None
 
 
+def _route_agent_allowed() -> bool:
+    """True when the agent is enabled and an LLM rate-limit slot was reserved for this call."""
+    if not _llm_search_enabled():
+        return False
+    if os.getenv("VIBETRIP_ROUTE_AGENT_ENABLED", "true").lower() in {"0", "false", "no"}:
+        return False
+    return reserve_llm_search_slot()
+
+
 async def _try_route_agent(request: RoutePlaceSearchRequest, provider):
     """Run the tool-calling agent when enabled; None means use the deterministic path."""
-    if not _llm_search_enabled():
-        return None
-    if os.getenv("VIBETRIP_ROUTE_AGENT_ENABLED", "true").lower() in {"0", "false", "no"}:
-        return None
-    if not reserve_llm_search_slot():
+    if not _route_agent_allowed():
         return None
     context = RouteAgentContext(
         start=request.start,
@@ -399,6 +409,12 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         "agent_context": profile_context["context"],
         "context_summary": profile_context["context"].get("summary", {}),
     }
+    deadline = None
+    if request.destination_activity:
+        current_arrival = parse_day_time(request.start_date, request.current_arrival_time)
+        deadline = destination_deadline(request.destination_activity, date.fromisoformat(request.start_date), current_arrival)
+        if deadline:
+            state |= {"end_time": deadline.deadline.strftime("%H:%M"), "make_room_mode": True}
     result = await planner_graph.ainvoke(state, config={"configurable": {"maps_provider": provider}})
     if result.get("provider_name") == "demo" and not isinstance(provider, DemoMapsProvider):
         provider = DemoMapsProvider()
@@ -434,7 +450,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         )
         if warning
     ]
-    return {
+    response = {
         "start": result["start"],
         "destination": result["destination"],
         "route": result["route"],
@@ -458,6 +474,10 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         "warning": " ".join(warnings) or None,
         "repair_log": result.get("repair_log", []),
     }
+    if request.destination_activity:
+        # Looked up at call time so the agent gate (and its rate-limit slot) is only used when fill runs.
+        response["make_room"] = await build_make_room(result, request, deadline, provider, lambda: _route_agent_allowed())
+    return response
 
 
 @app.post("/trips/reroute")
