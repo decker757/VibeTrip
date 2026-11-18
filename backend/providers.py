@@ -93,6 +93,10 @@ ROUTE_MODE_CONFIG = {
     },
 }
 
+# Long routes get about one corridor search every CORRIDOR_SPACING_KM, up to MAX_CORRIDOR_SAMPLES points.
+CORRIDOR_SPACING_KM = 120
+MAX_CORRIDOR_SAMPLES = 8
+
 # Wider single-type search used when the corridor search found no fuel or no restaurant.
 BACKFILL_RADIUS_M = 15000
 
@@ -240,6 +244,13 @@ def _decode_polyline(encoded: str) -> list[tuple[float, float]]:
         longitude += ~(result >> 1) if result & 1 else result >> 1
         points.append((latitude / 1e5, longitude / 1e5))
     return points
+
+
+def _corridor_sample_count(mode_count: int, distance_km: float) -> int:
+    """Sample points (endpoints included) for corridor search: the mode's count, or about one per
+    CORRIDOR_SPACING_KM on long routes so towns between samples aren't skipped, capped for cost."""
+    by_distance = math.ceil(distance_km / CORRIDOR_SPACING_KM) + 1 if distance_km > 0 else 0
+    return min(MAX_CORRIDOR_SAMPLES, max(mode_count, by_distance))
 
 
 def _sample_polyline(points: list[tuple[float, float]], count: int = 4) -> list[tuple[float, float]]:
@@ -620,7 +631,10 @@ class GoogleMapsProvider:
                 raise RuntimeError("Google Routes returned no route")
             route_result = self._parse_route(route, start, destination, route_mode)
             route_geometry = _decode_polyline(route_result.get("polyline") or "")
-            route_points = _sample_polyline(route_geometry, count=mode_config["corridor_sample_count"])
+            route_points = _sample_polyline(
+                route_geometry,
+                count=_corridor_sample_count(mode_config["corridor_sample_count"], float(route_result.get("distance_km") or 0)),
+            )
             candidates: dict[str, dict[str, Any]] = {}
             places_headers = {
                 "Content-Type": "application/json",

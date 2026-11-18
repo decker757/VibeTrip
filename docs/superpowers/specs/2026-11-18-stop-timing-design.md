@@ -38,3 +38,13 @@ An interviewer typing their own route should get a day that reads like a real ro
   LLM's pick, near the target.
 - **Rejected: a minimum gap between fuel stops only.** Fixes the duplicate, but not
   late lunches or long first legs.
+
+## Addendum (after live check)
+Distance spacing alone left gaps: on Phoenix → LA, three samples over 600 km fell either side of
+Blythe. Long routes now get about one corridor search every 120 km (`CORRIDOR_SPACING_KM`), never
+fewer than the mode's count, capped at 8 points (`MAX_CORRIDOR_SAMPLES`). Measured live:
+- LA → Santa Barbara: 8 place requests.
+- Phoenix → LA: 11.
+- Arizona → Las Vegas: 16.
+
+So the Places cap on Railway goes from 30 to 60 a minute.

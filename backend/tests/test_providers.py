@@ -174,3 +174,36 @@ async def test_backfill_runs_only_for_points_missing_fuel_or_food(monkeypatch):
     empty_points = set(corridor_points[1:])
     assert {lat for kind, lat in backfills if kind == "gas_station"} == empty_points
     assert {lat for kind, lat in backfills if kind == "restaurant"} == empty_points
+
+
+async def _corridor_search_count(monkeypatch, distance_m: int) -> int:
+    polyline = _encode_polyline([(1.30 + i * 0.05, 103.80) for i in range(40)])
+    corridor = []
+
+    async def fake_post(self, url, **kwargs):
+        if url == providers.GOOGLE_ROUTES_URL:
+            body = {"routes": [{"distanceMeters": distance_m, "duration": "21600s", "staticDuration": "21000s", "polyline": {"encodedPolyline": polyline}}]}
+            return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+        payload = kwargs["json"]
+        if len(payload["includedTypes"]) > 1 and payload["locationRestriction"]["circle"]["radius"] == providers.ROUTE_MODE_CONFIG["balanced"]["corridor_radius"]:
+            corridor.append(payload)
+        lat = payload["locationRestriction"]["circle"]["center"]["latitude"]
+        return httpx.Response(200, json={"places": [_place(f"gas-{lat}", "gas_station", lat), _place(f"food-{lat}", "restaurant", lat)]}, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post)
+    monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
+    await GoogleMapsProvider("test-key").plan_trip("A", "B", 400, "medium", "08:10", "balanced")
+    return len(corridor)
+
+
+async def test_long_routes_search_more_corridor_points(monkeypatch):
+    # About one point every 120 km: 600 km gets 4 along-route searches instead of the mode's 3.
+    assert await _corridor_search_count(monkeypatch, 600_000) == 4
+
+
+async def test_short_routes_keep_the_mode_sample_count(monkeypatch):
+    assert await _corridor_search_count(monkeypatch, 167_000) == 3
+
+
+async def test_corridor_points_are_capped(monkeypatch):
+    assert await _corridor_search_count(monkeypatch, 3_000_000) == providers.MAX_CORRIDOR_SAMPLES - 2
