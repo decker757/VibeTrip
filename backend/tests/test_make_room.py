@@ -99,7 +99,9 @@ def test_spare_time_runs_agent_fill(auth_client, monkeypatch):
     assert room["suggestion"] == {"candidates": [{"id": "demo-coffee", "name": "C", "detour_minutes": 3}], "rationale": "fits", "trace": [{"step": 1}], "source": "agent"}
     context = seen["context"]
     assert context.mode == "fill" and context.spare_minutes == 265
-    assert (context.segment_start_progress_km, context.segment_end_progress_km) == (205, 348)
+    # The longest gap is 205-348 km; the search skips its outer 10% so the stop isn't next to an existing one.
+    assert (round(context.segment_start_progress_km, 1), round(context.segment_end_progress_km, 1)) == (219.3, 333.7)
+    assert context.target_progress_km == 276.5
 
 
 def test_spare_time_without_agent_falls_back_to_deterministic(auth_client):
@@ -123,7 +125,7 @@ def test_longest_gap_and_fill_query():
     assert longest_gap(items, 340) == (125, 300)
     assert fill_query(["local_food", "scenic_views"]) == "scenic viewpoint or nature stop"
     assert fill_query(["local_food"]) == "local food spot"
-    assert fill_query([]) == "worthwhile stop"
+    assert fill_query([]) == "scenic stop or local attraction"
 
 
 def test_deterministic_fill_picks_best_unused_place_that_fits():

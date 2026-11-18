@@ -482,7 +482,8 @@ function App() {
       const result = await fetchPlan(plan.request);
       const room = result.make_room || { status: 'no_hours' };
       if (room.status === 'wont_fit') {
-        setMessage(`You'd arrive ${room.arrival}, after ${candidate.name} closes at ${room.closes_at}. Start earlier or pick another place.`);
+        // Quote the arrival the traveller is looking at, not the replanned one with every stop kept.
+        setMessage(`Your trip arrives around ${route.estimated_arrival_time || room.arrival} — too late to visit ${candidate.name} before it closes at ${room.closes_at}. Start earlier or pick another place.`);
         return;
       }
       const plannedStops = applyPlanResult(result, plan);

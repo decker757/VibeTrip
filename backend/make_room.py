@@ -26,7 +26,9 @@ FILL_QUERIES = (
     ("local_food", "local food spot"),
     ("quiet_low_crowd_stops", "quiet low-crowd stop"),
 )
-DEFAULT_FILL_QUERY = "worthwhile stop"
+DEFAULT_FILL_QUERY = "scenic stop or local attraction"
+# Fill searches skip this share of the gap at each end, so the stop doesn't sit next to the start or another stop.
+GAP_EDGE_MARGIN = 0.1
 
 
 @dataclass
@@ -114,6 +116,11 @@ def parse_day_time(day: str, clock: str | None) -> datetime | None:
         return None
 
 
+def _search_segment(gap: tuple[float, float]) -> tuple[float, float]:
+    margin = (gap[1] - gap[0]) * GAP_EDGE_MARGIN
+    return gap[0] + margin, gap[1] - margin
+
+
 def _fill_context(result: dict[str, Any], request: Any, gap: tuple[float, float], spare_minutes: int) -> RouteAgentContext:
     stops = [item for item in result.get("itinerary", []) if item.get("kind") != "stay"]
     previous = next((item for item in reversed(stops) if (_progress(item) or 0) <= gap[0] and _progress(item) is not None), None)
@@ -129,8 +136,8 @@ def _fill_context(result: dict[str, Any], request: Any, gap: tuple[float, float]
         budget_per_person=request.budget_per_person,
         crowd_tolerance=request.crowd_tolerance,
         route_mode=request.route_mode,
-        segment_start_progress_km=gap[0],
-        segment_end_progress_km=gap[1],
+        segment_start_progress_km=_search_segment(gap)[0],
+        segment_end_progress_km=_search_segment(gap)[1],
         target_progress_km=(gap[0] + gap[1]) / 2,
         arrival=arrival,
         current_stop_cost_sgd=None,
@@ -152,7 +159,7 @@ async def _suggest_fill(result: dict[str, Any], request: Any, spare_minutes: int
         if agent is not None:
             return {"candidates": agent.candidates, "rationale": agent.rationale, "trace": agent.trace, "source": "agent"}
     used_ids = {str(item.get("place_id")) for item in result.get("itinerary", []) if item.get("place_id")}
-    pick = deterministic_fill(result.get("candidate_places", []), gap, used_ids, spare_minutes)
+    pick = deterministic_fill(result.get("candidate_places", []), _search_segment(gap), used_ids, spare_minutes)
     if pick is None:
         return None
     rationale = f"{pick.get('name', 'This stop')} sits on the longest open stretch and fits your {spare_minutes} spare minutes."
