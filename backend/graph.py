@@ -55,6 +55,7 @@ class PlannerState(TypedDict, total=False):
     repair_unfixable: bool
     repair_snapshots: list[dict[str, Any]]
     repair_log: list[dict[str, Any]]
+    make_room_mode: bool
 
 
 def _normalise_category(place: dict[str, Any]) -> str:

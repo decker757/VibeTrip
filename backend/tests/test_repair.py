@@ -2,7 +2,7 @@ import asyncio
 from unittest.mock import ANY
 
 from backend.graph import day_builder, planner_graph
-from backend.repair import RepairDecision, available_actions, finalize_best, repair_until_settled
+from backend.repair import RepairDecision, available_actions, finalize_best, repair_until_settled, should_repair
 
 
 def run_graph(state: dict) -> dict:
@@ -141,3 +141,20 @@ def test_plan_returns_repair_log(auth_client):
     assert r.status_code == 200
     assert r.json()["repair_log"][0]["action"] == "accept_warning"
     assert "Start earlier, allow a later end time, or try Fastest." in r.json()["warning"]
+
+
+def test_make_room_mode_never_offers_accept_warning(demo_state, monkeypatch):
+    model = FakeStructuredModel(RepairDecision(action="accept_warning", reason="keep all"))
+    monkeypatch.setattr("backend.repair.llm_enabled", lambda: True)
+    monkeypatch.setattr("backend.repair.get_chat_model", lambda: model)
+    out = run_graph({**demo_state("balanced", "14:30"), "make_room_mode": True})
+    assert model.calls > 0
+    assert out["route"]["warnings"] == []
+    assert all(e["action"] != "accept_warning" for e in out["repair_log"])
+    assert all(e["source"] == "rule" for e in out["repair_log"])
+
+
+def test_make_room_mode_allows_a_third_attempt():
+    late = {"route": {"warnings": [{"code": "late_arrival", "message": "late"}]}, "itinerary": [{"kind": "coffee"}], "repair_attempts": 2}
+    assert should_repair(late) == "finalize"
+    assert should_repair({**late, "make_room_mode": True}) == "repair"

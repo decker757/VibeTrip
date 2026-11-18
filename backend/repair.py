@@ -4,7 +4,8 @@ The LLM may only choose which optional stop kind to skip (or to accept the
 warning). Code applies the skip, rebuilds the day, and re-validates. The route
 mode is never changed, ``meal`` and the only fuel stop are never skipped, and a
 plan gets at most ``MAX_REPAIR_ATTEMPTS`` skips across the graph and the
-post-reroute check.
+post-reroute check. In make-room mode (the traveller chose a destination
+activity) the cap is ``MAX_MAKE_ROOM_ATTEMPTS`` and accept_warning is not offered.
 
 This module must not import ``graph.py`` (the graph imports it); callers pass
 the day builder in as ``rebuild``.
@@ -31,6 +32,8 @@ class RepairDecision(BaseModel):
 
 
 MAX_REPAIR_ATTEMPTS = 2
+# Make-room mode: the traveller chose a destination activity, so every optional kind may go.
+MAX_MAKE_ROOM_ATTEMPTS = 3
 UNFIXABLE_REASON = "Unfixable without changing route mode"
 MODE_SUGGESTION = "Start earlier, allow a later end time, or try Fastest."
 # Rule order when no LLM answer is usable: cheapest experience loss first.
@@ -54,10 +57,14 @@ def _skip_actions(state: dict[str, Any]) -> list[RepairAction]:
     return [action for action in available_actions(state) if action != "accept_warning"]
 
 
+def _attempt_cap(state: dict[str, Any]) -> int:
+    return MAX_MAKE_ROOM_ATTEMPTS if state.get("make_room_mode") else MAX_REPAIR_ATTEMPTS
+
+
 def should_repair(state: dict[str, Any]) -> Literal["repair", "finalize"]:
     if (
         _late_warning(state)
-        and int(state.get("repair_attempts") or 0) < MAX_REPAIR_ATTEMPTS
+        and int(state.get("repair_attempts") or 0) < _attempt_cap(state)
         and not state.get("repair_settled")
         and _skip_actions(state)
     ):
@@ -125,7 +132,9 @@ def repair_step(state: dict[str, Any], rebuild: Callable[[dict], dict]) -> dict[
             "repair_log": _log_entry(state, warning, "accept_warning", UNFIXABLE_REASON, "rule"),
         }
 
-    decision = _llm_decision(state, warning, [*skips, "accept_warning"])
+    # In make-room mode the chosen activity outranks optional stops, so keeping them is not on offer.
+    offered: list[RepairAction] = skips if state.get("make_room_mode") else [*skips, "accept_warning"]
+    decision = _llm_decision(state, warning, offered)
     if decision is None:
         action = next(action for action in RULE_ORDER if action in skips)
         decision, source = RepairDecision(action=action, reason=f"Skipped the {SKIP_KINDS[action].replace('_', ' ')} stop to arrive by {state.get('end_time', '18:00')}."), "rule"
