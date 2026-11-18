@@ -143,3 +143,34 @@ async def test_balanced_plan_skips_backfill_when_corridor_already_has_fuel_and_f
     monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
     await GoogleMapsProvider("test-key").plan_trip("A", "B", 400, "medium", "08:10", "balanced")
     assert ["gas_station"] not in calls and ["restaurant"] not in calls  # no extra billable requests
+
+
+async def test_backfill_runs_only_for_points_missing_fuel_or_food(monkeypatch):
+    # Only the first corridor point has fuel and food; the other two are empty stretches.
+    polyline = _encode_polyline([(1.30 + i * 0.5, 103.80) for i in range(10)])
+    corridor_points: list[float] = []
+    backfills: list[tuple[str, float]] = []
+
+    async def fake_post(self, url, **kwargs):
+        if url == providers.GOOGLE_ROUTES_URL:
+            body = {"routes": [{"distanceMeters": 500000, "duration": "21600s", "staticDuration": "21000s", "polyline": {"encodedPolyline": polyline}}]}
+            return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+        payload = kwargs["json"]
+        circle = payload["locationRestriction"]["circle"]
+        lat = circle["center"]["latitude"]
+        if len(payload["includedTypes"]) == 1:
+            backfills.append((payload["includedTypes"][0], lat))
+            places = []
+        elif circle["radius"] == providers.ROUTE_MODE_CONFIG["balanced"]["corridor_radius"]:
+            corridor_points.append(lat)
+            places = [_place(f"gas-{lat}", "gas_station", lat), _place(f"food-{lat}", "restaurant", lat)] if len(corridor_points) == 1 else []
+        else:
+            places = []  # destination search
+        return httpx.Response(200, json={"places": places}, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post)
+    monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
+    await GoogleMapsProvider("test-key").plan_trip("A", "B", 400, "medium", "08:10", "balanced")
+    empty_points = set(corridor_points[1:])
+    assert {lat for kind, lat in backfills if kind == "gas_station"} == empty_points
+    assert {lat for kind, lat in backfills if kind == "restaurant"} == empty_points

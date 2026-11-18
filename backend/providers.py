@@ -630,6 +630,8 @@ class GoogleMapsProvider:
             search_specs = [(point, "along_route", mode_config["corridor_radius"]) for point in (route_points[1:-1] or route_points)]
             if route_points:
                 search_specs.append((route_points[-1], "destination", mode_config["destination_radius"]))
+            # Which must-have types each corridor point's broad search turned up.
+            found_at_point: dict[tuple[float, float], set[str]] = {}
             for route_point, recommendation_scope, radius in search_specs:
                 search_types = mode_config["destination_types"] if recommendation_scope == "destination" else mode_config["corridor_types"]
                 payload = {
@@ -654,18 +656,24 @@ class GoogleMapsProvider:
                         recommendation_scope,
                         _route_progress_km(location, route_geometry) if location else None,
                     )
+                    if normalized and recommendation_scope == "along_route":
+                        found = found_at_point.setdefault(route_point, set())
+                        if _is_fuel_candidate(normalized):
+                            found.add("gas_station")
+                        if _is_food_candidate(normalized):
+                            found.add("restaurant")
                     if normalized and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
             # Nearby Search returns one shared result set for all included
             # types, and on sparse rural routes a small corridor circle can
             # come back empty. Fuel and a meal are what the day planner can't
-            # do without, so when the broad search found none, run a wider
-            # single-type pass for each. This costs extra requests only then.
+            # do without, so each corridor point whose broad search found none
+            # gets a wider single-type pass. Dense routes pay nothing extra.
             backfill_points = route_points[1:-1] or route_points
-            for place_type, present in (("gas_station", _is_fuel_candidate), ("restaurant", _is_food_candidate)):
-                if any(present(item) for item in candidates.values()):
-                    continue
+            for place_type in ("gas_station", "restaurant"):
                 for route_point in backfill_points:
+                    if place_type in found_at_point.get(route_point, set()):
+                        continue
                     backfill_payload = {
                         "includedTypes": [place_type],
                         "maxResultCount": 5,
