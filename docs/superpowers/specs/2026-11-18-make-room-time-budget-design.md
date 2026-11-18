@@ -51,10 +51,11 @@ Why this matters. It makes the agent's job honest: deciding how to spend a time 
 
 1. **Deadline.** Visit time is 60 min for food (restaurant, cafe, food court) and 90 min for everything else. Take the place's opening periods on the start date (`opening_hours.periods`, matched to the start date's weekday):
    - A closing time after midnight is capped at 23:59 that day.
-   - With split hours (for example 11:00–14:00 and 17:00–22:00), use the **first** period where `close − visit` is no earlier than the trip's current arrival. That's the earliest window you can still make.
+   - With split hours (for example 11:00–14:00 and 17:00–22:00), use the **first** period where `close − visit` is no earlier than the trip's current arrival. That's the earliest window you can still make. The frontend sends that current arrival as `current_arrival_time`.
+   - If no period that day can be made at the current arrival, use the **last** period that day. Trimming may still make it fit; if it doesn't, the outcome is `wont_fit`.
    - The deadline is that period's `close − visit`, and it becomes `end_time`.
    - If arrival falls before the window opens, the wait is simply counted as spare time.
-   - Status `no_hours` (no deadline; the place is added the way it is today, with a note) covers three cases: no periods at all, a period with no `close` (open 24 hours), or no period on that date that can be made.
+   - Status `no_hours` (no deadline; the place is added the way it is today, with a note) covers two cases: no periods on that date, or a period with no `close` (open 24 hours).
 2. **Replan.** Run the existing `/trips/plan` path with that `end_time`. The repair loop runs in a new **make-room mode**:
    - all three optional kinds (coffee, extra fuel, attraction) can be skipped, so the cap is 3 attempts instead of 2;
    - `accept_warning` is not offered to the LLM, because the user explicitly chose this activity, so the planner must not keep optional stops at its expense.
