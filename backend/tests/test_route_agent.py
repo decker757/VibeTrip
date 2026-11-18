@@ -1,10 +1,11 @@
 import asyncio
+from dataclasses import replace
 from datetime import datetime
 
 from langchain_core.messages import AIMessage, ToolMessage
 
 from backend.providers import DemoMapsProvider
-from backend.route_agent import MAX_SEARCHES, MAX_STEPS, RouteAgentContext, _budget_status, run_route_agent
+from backend.route_agent import MAX_SEARCHES, MAX_STEPS, RouteAgentContext, _budget_status, _initial_state, fits_spare, run_route_agent
 from backend.tests.fakes import ScriptedChatModel
 
 ARRIVAL = datetime(2026, 11, 20, 10, 0)  # a Friday; Google weekday 5
@@ -228,3 +229,35 @@ async def test_malformed_submit_gets_a_retry():
     assert r is not None and r.rationale == "Calm stop." and [c["id"] for c in r.candidates] == ["demo-coffee"]
     retry_prompt = model.calls[2][-1]
     assert isinstance(retry_prompt, ToolMessage) and retry_prompt.tool_call_id == "2" and "invalid" in retry_prompt.content.lower()
+
+
+async def test_fill_mode_drops_shortlisted_places_that_do_not_fit():
+    # Demo detours: attraction 14, lunch 12, fuel 2. With 40 spare minutes and a 30-minute stop only fuel fits.
+    fill = replace(ctx(segment=(100, 210), target=None), mode="fill", spare_minutes=40)
+    model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "anything", "category": "other"}),
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-attraction", "demo-fuel"], "rationale": "r"}, "2")])
+    r = await run_route_agent(fill, DemoMapsProvider(), model)
+    assert [c["id"] for c in r.candidates] == ["demo-fuel"]
+
+
+async def test_fill_mode_returns_none_when_nothing_fits():
+    fill = replace(ctx(segment=(100, 210), target=None), mode="fill", spare_minutes=30)
+    model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "anything", "category": "other"}),
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-attraction"], "rationale": "r"}, "2")])
+    assert await run_route_agent(fill, DemoMapsProvider(), model) is None
+
+
+def test_fill_mode_uses_fill_prompt():
+    state = _initial_state(replace(ctx(), mode="fill", spare_minutes=90))
+    assert "add one stop" in state["messages"][0].content and "90 spare minutes" in state["messages"][0].content
+    assert "90 spare minutes" in state["messages"][1].content and "Replacing" not in state["messages"][1].content
+
+
+def test_replace_mode_prompt_is_unchanged():
+    state = _initial_state(ctx())
+    assert "replace one stop" in state["messages"][0].content and "Replacing: Coffee stop" in state["messages"][1].content
+
+
+def test_fits_spare_counts_detour_once():
+    assert fits_spare({"detour_minutes": 15}, 45) and not fits_spare({"detour_minutes": 16}, 45)
+    assert fits_spare({}, 30)

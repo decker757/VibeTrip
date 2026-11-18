@@ -40,6 +40,7 @@ logger = logging.getLogger(__name__)
 MAX_SEARCHES = 3
 MAX_STEPS = 8
 MAX_SHORTLIST = 4
+FILL_STOP_MINUTES = 30  # fill mode: how long a suggested extra stop takes
 DEFAULT_TIMEOUT_SECONDS = 20.0
 
 SYSTEM_PROMPT = f"""You help a road-tripper replace one stop on a single leg of their drive.
@@ -50,6 +51,13 @@ SYSTEM_PROMPT = f"""You help a road-tripper replace one stop on a single leg of 
   final: missing hours or prices will not appear on a second call, so never repeat a check.
 - If nothing fits, broaden the query or change the category and search again (at most {MAX_SEARCHES} searches).
 - Finish by calling SubmitShortlist with at most {MAX_SHORTLIST} ids, best first, and one sentence of rationale."""
+
+_FILL_RULES = SYSTEM_PROMPT.split("\n", 1)[1]
+FILL_SYSTEM_PROMPT = (
+    "You help a road-tripper add one stop to a leg of their drive. They have {spare} spare minutes; "
+    f"the stop takes about {FILL_STOP_MINUTES} minutes plus its detour. Places whose detour does not fit are removed by code.\n"
+    + _FILL_RULES
+)
 
 
 # --- Tool argument schemas: the only things the LLM is allowed to supply ---
@@ -99,6 +107,8 @@ class RouteAgentContext:
     previous_stop_title: str
     next_stop_title: str
     query: str
+    mode: Literal["replace", "fill"] = "replace"
+    spare_minutes: int | None = None  # fill mode only
 
 
 @dataclass
@@ -306,19 +316,33 @@ ROUTE_AGENT_GRAPH = build_route_agent_graph()
 
 # --- Entry point and post-processing ---
 
+def fits_spare(place: dict[str, Any], spare_minutes: int) -> bool:
+    """detour_minutes is already the out-and-back time, so it is counted once."""
+    return float(place.get("detour_minutes") or 0) + FILL_STOP_MINUTES <= spare_minutes
+
+
 def _request_message(ctx: RouteAgentContext) -> HumanMessage:
     arrival = ctx.arrival.strftime("%A %H:%M") if ctx.arrival else "unknown"
+    task = (
+        f"Adding a stop between {ctx.previous_stop_title} and {ctx.next_stop_title}; {ctx.spare_minutes} spare minutes"
+        if ctx.mode == "fill"
+        else f"Replacing: {ctx.selected_stop_title} (between {ctx.previous_stop_title} and {ctx.next_stop_title})"
+    )
     return HumanMessage(content=(
         f'Traveller request: "{ctx.query}"\n'
-        f"Replacing: {ctx.selected_stop_title} (between {ctx.previous_stop_title} and {ctx.next_stop_title})\n"
+        f"{task}\n"
         f"Arrival at this stop: {arrival}\n"
         f"Budget per person: SGD {ctx.budget_per_person}; crowd tolerance: {ctx.crowd_tolerance}; route mode: {ctx.route_mode}"
     ))
 
 
+def _system_prompt(ctx: RouteAgentContext) -> str:
+    return FILL_SYSTEM_PROMPT.format(spare=ctx.spare_minutes) if ctx.mode == "fill" else SYSTEM_PROMPT
+
+
 def _initial_state(ctx: RouteAgentContext) -> AgentState:
     return {
-        "messages": [SystemMessage(content=SYSTEM_PROMPT), _request_message(ctx)],
+        "messages": [SystemMessage(content=_system_prompt(ctx)), _request_message(ctx)],
         "seen_candidates": {},
         "trace": [],
         "step_count": 0,
@@ -328,12 +352,17 @@ def _initial_state(ctx: RouteAgentContext) -> AgentState:
     }
 
 
-def _validated_candidates(shortlist_ids: list[str], seen: dict[str, dict[str, Any]], arrival: datetime | None) -> list[dict[str, Any]]:
-    """Agent's picks first (seen and not closed), then other seen places that pass the same checks.
+def _validated_candidates(shortlist_ids: list[str], seen: dict[str, dict[str, Any]], ctx: RouteAgentContext) -> list[dict[str, Any]]:
+    """Agent's picks first (seen, not closed, and in fill mode fitting the spare time), then other seen places that pass the same checks.
 
     Each entry carries ``agent_pick`` so the UI can tell the shortlist from the extras."""
+    arrival = ctx.arrival
+    must_fit = ctx.mode == "fill" and ctx.spare_minutes is not None
+
     def allowed(place_id: str) -> bool:
-        return place_id in seen and not (arrival and opening_status_at(seen[place_id], arrival) is False)
+        if place_id not in seen or (arrival and opening_status_at(seen[place_id], arrival) is False):
+            return False
+        return not must_fit or fits_spare(seen[place_id], ctx.spare_minutes)
 
     shortlist = [place_id for place_id in dict.fromkeys(shortlist_ids) if allowed(place_id)][:MAX_SHORTLIST]
     if not shortlist:
@@ -362,7 +391,7 @@ async def run_route_agent(context: RouteAgentContext, provider: Any, model: Any 
     except Exception:
         logger.warning("Route agent failed; falling back to deterministic search", exc_info=True)
         return None
-    candidates = _validated_candidates(final["shortlist_ids"], final["seen_candidates"], context.arrival)
+    candidates = _validated_candidates(final["shortlist_ids"], final["seen_candidates"], context)
     if not candidates:
         return None
     return RouteAgentResult(candidates=candidates, rationale=final["rationale"], trace=final["trace"])
