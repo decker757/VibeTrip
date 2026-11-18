@@ -7,6 +7,7 @@ keeps local development and the UI prototype usable without external keys.
 from __future__ import annotations
 
 from collections import defaultdict, deque
+import bisect
 import math
 import os
 import re
@@ -91,6 +92,9 @@ ROUTE_MODE_CONFIG = {
         "max_results": 5,
     },
 }
+
+# Wider single-type search used when the corridor search found no fuel or no restaurant.
+BACKFILL_RADIUS_M = 15000
 
 GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals"
 # Keep broad route searches to the fields needed for ranking and scheduling.
@@ -239,12 +243,27 @@ def _decode_polyline(encoded: str) -> list[tuple[float, float]]:
 
 
 def _sample_polyline(points: list[tuple[float, float]], count: int = 4) -> list[tuple[float, float]]:
+    """``count`` points spaced evenly by distance along the route, endpoints included.
+
+    Twisty roads have far more polyline vertices per km than straight highways, so
+    spacing by vertex index would bunch every sample into the mountains.
+    """
     if not points:
         return []
     if len(points) <= count:
         return points
-    indices = [round(i * (len(points) - 1) / (count - 1)) for i in range(count)]
-    return [points[index] for index in indices]
+    cumulative = [0.0]
+    for first, second in zip(points, points[1:]):
+        cumulative.append(cumulative[-1] + _distance_km(first, second))
+    total = cumulative[-1]
+    samples = []
+    for i in range(count):
+        target = total * i / (count - 1)
+        index = bisect.bisect_left(cumulative, target)
+        if index > 0 and (index == len(cumulative) or target - cumulative[index - 1] <= cumulative[index] - target):
+            index -= 1
+        samples.append(points[index])
+    return samples
 
 
 def _route_progress_km(location: tuple[float, float], route_points: list[tuple[float, float]]) -> float | None:
@@ -368,6 +387,10 @@ def _cost_metadata(category: str, price_level: int) -> dict[str, Any]:
 def _is_fuel_candidate(candidate: dict[str, Any]) -> bool:
     category = str(candidate.get("category") or "").lower()
     return any(term in category for term in ("gas", "fuel", "petrol"))
+
+
+def _is_food_candidate(candidate: dict[str, Any]) -> bool:
+    return "restaurant" in str(candidate.get("category") or "").lower()
 
 
 def _score_place(
@@ -634,29 +657,30 @@ class GoogleMapsProvider:
                     if normalized and normalized["id"] not in candidates:
                         candidates[normalized["id"]] = normalized
             # Nearby Search returns one shared result set for all included
-            # types. Restaurants and cafes can consume every result slot,
-            # leaving a long Fastest route without the safety-critical fuel
-            # stop it needs. Reserve a second pass for gas stations only when
-            # the broad corridor search did not return one.
-            if route_mode == "fastest" and not any(_is_fuel_candidate(item) for item in candidates.values()):
-                fuel_points = route_points[1:-1] or route_points
-                fuel_radius = max(mode_config["corridor_radius"], 5000)
-                for route_point in fuel_points:
-                    fuel_payload = {
-                        "includedTypes": ["gas_station"],
+            # types, and on sparse rural routes a small corridor circle can
+            # come back empty. Fuel and a meal are what the day planner can't
+            # do without, so when the broad search found none, run a wider
+            # single-type pass for each. This costs extra requests only then.
+            backfill_points = route_points[1:-1] or route_points
+            for place_type, present in (("gas_station", _is_fuel_candidate), ("restaurant", _is_food_candidate)):
+                if any(present(item) for item in candidates.values()):
+                    continue
+                for route_point in backfill_points:
+                    backfill_payload = {
+                        "includedTypes": [place_type],
                         "maxResultCount": 5,
                         "rankPreference": "DISTANCE",
                         "locationRestriction": {
                             "circle": {
                                 "center": {"latitude": route_point[0], "longitude": route_point[1]},
-                                "radius": fuel_radius,
+                                "radius": BACKFILL_RADIUS_M,
                             }
                         },
                     }
                     _reserve_google_request("places")
-                    fuel_response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=fuel_payload)
-                    fuel_response.raise_for_status()
-                    for place in fuel_response.json().get("places", []):
+                    backfill_response = await client.post(GOOGLE_PLACES_URL, headers=places_headers, json=backfill_payload)
+                    backfill_response.raise_for_status()
+                    for place in backfill_response.json().get("places", []):
                         location = _place_location(place)
                         normalized = _score_place(
                             place,

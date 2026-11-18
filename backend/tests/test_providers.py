@@ -87,3 +87,59 @@ async def test_google_search_route_places_uses_one_routes_call(monkeypatch):
     assert urls.count(providers.GOOGLE_ROUTES_URL) == 1
     assert urls.count(providers.GOOGLE_TEXT_SEARCH_URL) >= 1
     assert result.provider == "google" and result.candidates
+
+
+def test_sample_polyline_spaces_points_by_distance_not_vertex_count():
+    # 100 vertices packed into the first ~1 km (a twisty mountain road), then two long straight legs.
+    dense = [(0.0, 0.0001 * i) for i in range(100)]
+    points = dense + [(0.0, 1.0), (0.0, 2.0)]
+    samples = providers._sample_polyline(points, count=3)
+    assert samples[0] == points[0] and samples[-1] == points[-1]
+    assert samples[1] == (0.0, 1.0)  # vertex-index sampling would pick a point inside the dense cluster
+
+
+def _place(id, primary_type, lat):
+    return {**_google_place(lat=lat), "id": id, "displayName": {"text": id}, "primaryType": primary_type, "types": [primary_type]}
+
+
+async def test_balanced_plan_backfills_fuel_and_food_when_corridor_search_is_empty(monkeypatch):
+    # A sparse rural route: the broad corridor search finds nothing along the way.
+    polyline = _encode_polyline([(1.30 + i * 0.5, 103.80) for i in range(10)])
+    calls: list[list[str]] = []
+
+    async def fake_post(self, url, **kwargs):
+        if url == providers.GOOGLE_ROUTES_URL:
+            body = {"routes": [{"distanceMeters": 500000, "duration": "21600s", "staticDuration": "21000s", "polyline": {"encodedPolyline": polyline}}]}
+        else:
+            types = kwargs["json"]["includedTypes"]
+            calls.append(types)
+            point = kwargs["json"]["locationRestriction"]["circle"]["center"]["latitude"]
+            body = {"places": [_place(f"gas-{point}", "gas_station", point)] if types == ["gas_station"]
+                    else [_place(f"food-{point}", "restaurant", point)] if types == ["restaurant"] else []}
+        return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post)
+    monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
+    result = await GoogleMapsProvider("test-key").plan_trip("A", "B", 400, "medium", "08:10", "balanced")
+    categories = {c["category"] for c in result.candidates if c["recommendation_scope"] == "along_route"}
+    assert "Gas Station" in categories and "Restaurant" in categories
+    assert ["gas_station"] in calls and ["restaurant"] in calls
+
+
+async def test_balanced_plan_skips_backfill_when_corridor_already_has_fuel_and_food(monkeypatch):
+    polyline = _encode_polyline([(1.30 + i * 0.5, 103.80) for i in range(10)])
+    calls: list[list[str]] = []
+
+    async def fake_post(self, url, **kwargs):
+        if url == providers.GOOGLE_ROUTES_URL:
+            body = {"routes": [{"distanceMeters": 500000, "duration": "21600s", "staticDuration": "21000s", "polyline": {"encodedPolyline": polyline}}]}
+        else:
+            calls.append(kwargs["json"]["includedTypes"])
+            point = kwargs["json"]["locationRestriction"]["circle"]["center"]["latitude"]
+            body = {"places": [_place(f"gas-{point}", "gas_station", point), _place(f"food-{point}", "restaurant", point)]}
+        return httpx.Response(200, json=body, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", fake_post)
+    monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
+    await GoogleMapsProvider("test-key").plan_trip("A", "B", 400, "medium", "08:10", "balanced")
+    assert ["gas_station"] not in calls and ["restaurant"] not in calls  # no extra billable requests
