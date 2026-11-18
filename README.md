@@ -462,6 +462,36 @@ the rationale and a collapsible "How the agent got here" list. Results carry
 same leg follow under an "Also found along this leg" label, so extras are not
 presented as the agent's choices.
 
+### Make room for the destination (`POST /trips/plan` with `destination_activity`)
+
+Travellers rarely know when they want to arrive, but they do know what they
+want to do once they get there. So the deadline comes from the place they pick
+in "Make room for the destination", not from a clock time they have to guess:
+
+1. **Deadline.** The place's closing time that day, minus the visit (60 min for
+   food, 90 min otherwise), becomes the plan's `end_time`. With split hours,
+   the deadline uses the earliest opening window still reachable. A place with
+   no opening hours on record, or one open 24 hours, gets no deadline.
+2. **Trim.** The trip is replanned with the repair loop in make-room mode. All
+   three optional stop kinds may be skipped, and keeping them is not offered,
+   because the traveller chose this activity over a coffee stop. If even
+   skipping everything arrives too late, the result is `wont_fit` and the
+   frontend leaves the trip unchanged.
+3. **Fill.** With at least 45 spare minutes, the route agent runs in fill mode
+   on the longest open stretch of road, skipping 10% of the stretch at each end.
+   The agent starts from a query based on the traveller's learned signals. Code
+   keeps only places it saw in a search that are open at arrival and where
+   `detour + 30 min ≤ spare time`. The result is a **suggestion** the
+   traveller can add with one click; the agent never adds stops itself. If the
+   agent finds nothing, the planner's own candidates are tried first. Otherwise
+   the panel says the agent found nothing worth the detour and shows its trace.
+
+The response adds `make_room: {status, deadline, closes_at, arrival,
+spare_minutes, suggestion}`. A plain plan request is unchanged and makes no
+extra LLM calls. This gives the same agent two ways in: the traveller can ask
+it directly ("Ask for a better fit"), or the planner can call it when there's
+time to spend.
+
 ### Learned preferences (OKF)
 
 Profile preferences and feedback events (`POST /profiles/events`) become
