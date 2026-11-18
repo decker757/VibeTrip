@@ -366,7 +366,8 @@ def _validated_candidates(shortlist_ids: list[str], seen: dict[str, dict[str, An
 
     shortlist = [place_id for place_id in dict.fromkeys(shortlist_ids) if allowed(place_id)][:MAX_SHORTLIST]
     if not shortlist:
-        return []
+        # Fill mode: every pick was too far for the spare time; offer what else the agent saw that fits.
+        return [{**seen[place_id], "agent_pick": False} for place_id in seen if allowed(place_id)] if must_fit else []
     others = [place_id for place_id in seen if place_id not in shortlist and allowed(place_id)]
     return [{**seen[place_id], "agent_pick": place_id in shortlist} for place_id in shortlist + others]
 

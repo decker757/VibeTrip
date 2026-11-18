@@ -264,3 +264,12 @@ def test_replace_mode_prompt_is_unchanged():
 def test_fits_spare_counts_detour_once():
     assert fits_spare({"detour_minutes": 15}, 45) and not fits_spare({"detour_minutes": 16}, 45)
     assert fits_spare({}, 30)
+
+
+async def test_fill_mode_promotes_fitting_places_when_every_pick_is_too_far():
+    # Spare 40: the agent picks only the attraction (14 + 30 > 40), but it also saw the fuel stop (2 + 30 <= 40).
+    fill = replace(ctx(segment=(100, 210), target=None), mode="fill", spare_minutes=40)
+    model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "anything", "category": "other"}),
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-attraction"], "rationale": "Great lookout."}, "2")])
+    r = await run_route_agent(fill, DemoMapsProvider(), model)
+    assert [(c["id"], c["agent_pick"]) for c in r.candidates] == [("demo-fuel", False)]

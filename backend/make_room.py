@@ -60,6 +60,12 @@ def _windows_on(periods: list[dict[str, Any]], on: date) -> list[tuple[datetime,
     return sorted(windows)
 
 
+def closed_on(place: dict[str, Any], on: date) -> bool:
+    """True when the place has regular hours but none of its windows opens on ``on``."""
+    periods = (place.get("opening_hours") or {}).get("periods") or []
+    return bool(periods) and all("close" in period for period in periods) and not _windows_on(periods, on)
+
+
 def destination_deadline(place: dict[str, Any], on: date, current_arrival: datetime | None) -> Deadline | None:
     """Latest arrival that still leaves time for the visit; None means no usable hours.
 
@@ -156,12 +162,19 @@ async def _suggest_fill(result: dict[str, Any], request: Any, spare_minutes: int
     gap = longest_gap(result.get("itinerary", []), float(route.get("distance_km") or 0))
     agent = await run_route_agent(_fill_context(result, request, gap, spare_minutes), provider) if agent_allowed() else None
     if agent is not None and agent.candidates:
-        return {"candidates": agent.candidates, "rationale": agent.rationale, "trace": agent.trace, "source": "agent"}
+        top = agent.candidates[0]
+        rationale = agent.rationale if top.get("agent_pick", True) else (
+            f"The agent's own picks needed more than your {spare_minutes} spare minutes; "
+            f"{top.get('name', 'this place')}, also on this stretch, fits."
+        )
+        return {"candidates": agent.candidates, "rationale": rationale, "trace": agent.trace, "source": "agent"}
     used_ids = {str(item.get("place_id")) for item in result.get("itinerary", []) if item.get("place_id")}
     pick = deterministic_fill(result.get("candidate_places", []), _search_segment(gap), used_ids, spare_minutes)
     if pick is None:
         # The agent searched and found nothing that fits: say so, with its trace, rather than staying silent.
-        return {"candidates": [], "rationale": agent.rationale, "trace": agent.trace, "source": "agent"} if agent is not None else None
+        # Code writes this line: the agent's own rationale may praise a place the fit check dropped.
+        rationale = f"Nothing the agent found on this stretch fits your {spare_minutes} spare minutes."
+        return {"candidates": [], "rationale": rationale, "trace": agent.trace, "source": "agent"} if agent is not None else None
     rationale = f"{pick.get('name', 'This stop')} sits on the longest open stretch and fits your {spare_minutes} spare minutes."
     return {"candidates": [pick], "rationale": rationale, "trace": [], "source": "deterministic"}
 
@@ -179,7 +192,10 @@ async def build_make_room(result: dict[str, Any], request: Any, deadline: Deadli
         "spare_minutes": None,
         "suggestion": None,
     }
-    if deadline is None or arrival is None:
+    if deadline is None:
+        activity = request.destination_activity or {}
+        return {**room, "status": "closed_today" if closed_on(activity, date.fromisoformat(request.start_date)) else "no_hours"}
+    if arrival is None:
         return room
     if arrival > deadline.deadline:
         return {**room, "status": "wont_fit"}

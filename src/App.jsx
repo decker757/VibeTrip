@@ -475,12 +475,23 @@ function App() {
       addDestinationCandidate(candidate, { successMessage: `Deadlines apply to same-day arrivals only, so ${candidate.name} was added without one.` });
       return;
     }
+    // One activity sets the deadline. A replan would drop the first one, so later picks are simply added after it.
+    const deadlinePlace = makeRoom?.place;
+    if (deadlinePlace && stops.some((stop) => stop.place_id === deadlinePlace.id)) {
+      addDestinationCandidate(candidate, { successMessage: `${candidate.name} added after ${deadlinePlace.name}; the drive is still planned around ${deadlinePlace.name}'s hours.` });
+      return;
+    }
     if (stopsEditedRef.current && !window.confirm(`Adding ${candidate.name} replans the trip around its opening hours and resets your stop edits. Continue?`)) return;
     setIsMakingRoom(true);
     try {
       const plan = buildPlanRequest({ destinationActivity: candidate, currentArrivalTime: route.estimated_arrival_time });
       const result = await fetchPlan(plan.request);
       const room = result.make_room || { status: 'no_hours' };
+      if (room.status === 'closed_today') {
+        const weekday = new Date(`${startDate}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long' });
+        setMessage(`${candidate.name} is closed on ${weekday}s, so it wasn't added. Pick another place or change the trip date.`);
+        return;
+      }
       if (room.status === 'wont_fit') {
         // Quote the arrival the traveller is looking at, not the replanned one with every stop kept.
         setMessage(`Your trip arrives around ${route.estimated_arrival_time || room.arrival} — too late to visit ${candidate.name} before it closes at ${room.closes_at}. Start earlier or pick another place.`);

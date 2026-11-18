@@ -148,7 +148,8 @@ def test_agent_finding_nothing_is_reported_with_its_trace(auth_client, monkeypat
     monkeypatch.setattr("backend.make_room.run_route_agent", empty_agent)
     monkeypatch.setattr("backend.main._route_agent_allowed", lambda: True)
     r = auth_client.post("/trips/plan", json={**BODY, "destination_activity": place(period(10, 21))}).json()
-    assert r["make_room"]["suggestion"] == {"candidates": [], "rationale": "Nothing worth stopping for on this stretch.", "trace": [{"step": 1, "summary": "Searched"}], "source": "agent"}
+    # The rationale is written by code: the agent's own words may praise a place the fit check dropped.
+    assert r["make_room"]["suggestion"] == {"candidates": [], "rationale": "Nothing the agent found on this stretch fits your 265 spare minutes.", "trace": [{"step": 1, "summary": "Searched"}], "source": "agent"}
 
 
 async def test_empty_agent_search_falls_back_to_planner_candidates(monkeypatch):
@@ -168,3 +169,25 @@ async def test_empty_agent_search_falls_back_to_planner_candidates(monkeypatch):
     request = SimpleNamespace(start="A", destination="B", start_date="2026-11-20", start_time="08:10", budget_per_person=400, crowd_tolerance="medium", route_mode="balanced")
     suggestion = await _suggest_fill(result, request, 60, provider=None, agent_allowed=lambda: True)
     assert suggestion["source"] == "deterministic" and suggestion["candidates"][0]["id"] == "view"
+
+
+async def test_promoted_place_gets_a_code_written_rationale(monkeypatch):
+    from types import SimpleNamespace
+
+    from backend.make_room import _suggest_fill
+
+    async def extras_only(context, provider, model=None):
+        return RouteAgentResult(candidates=[{"id": "x", "name": "Lookout", "agent_pick": False}], rationale="Great far-away museum.", trace=[])
+
+    monkeypatch.setattr("backend.make_room.run_route_agent", extras_only)
+    result = {"route": {"distance_km": 300}, "itinerary": [], "candidate_places": []}
+    request = SimpleNamespace(start="A", destination="B", start_date="2026-11-20", start_time="08:10", budget_per_person=400, crowd_tolerance="medium", route_mode="balanced")
+    suggestion = await _suggest_fill(result, request, 60, provider=None, agent_allowed=lambda: True)
+    assert suggestion["source"] == "agent"
+    assert suggestion["rationale"] == "The agent's own picks needed more than your 60 spare minutes; Lookout, also on this stretch, fits."
+
+
+def test_closed_on_trip_date_is_its_own_status(auth_client):
+    # Open Mondays only (Google day 1); the trip is on a Friday.
+    r = auth_client.post("/trips/plan", json={**BODY, "destination_activity": place(period(10, 17, day=1))}).json()
+    assert r["make_room"]["status"] == "closed_today" and r["make_room"]["suggestion"] is None
