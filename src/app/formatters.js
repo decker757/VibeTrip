@@ -145,3 +145,18 @@ export function formatTravelGap(currentStop, nextStop) {
   const minutes = drivingMinutes % 60;
   return `${hours ? `${hours}h ` : ''}${minutes ? `${minutes}m` : ''} drive`.trim();
 }
+
+// Insert a stop at its position along the route (before the first later stop, else before check-in),
+// timed after the stop it follows.
+export function insertStopByProgress(stops, stop, fallbackDate) {
+  const progress = Number(stop.route_progress_km);
+  const stayIndex = stops.findIndex((item) => item.type === 'stay');
+  const laterIndex = Number.isFinite(progress)
+    ? stops.findIndex((item) => item.type !== 'stay' && Number(item.route_progress_km) > progress)
+    : -1;
+  const index = laterIndex >= 0 ? laterIndex : stayIndex >= 0 ? stayIndex : stops.length;
+  const previous = stops[index - 1];
+  const schedule = previous?.time ? addMinutesToSchedule(previous, (previous.duration_minutes || 0) + 20, fallbackDate) : {};
+  const placed = schedule.time ? { ...stop, time: schedule.time, date: schedule.date, day_number: schedule.day_number } : stop;
+  return [...stops.slice(0, index), placed, ...stops.slice(index)];
+}
