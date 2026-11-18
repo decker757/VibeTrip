@@ -154,14 +154,14 @@ def _fill_context(result: dict[str, Any], request: Any, gap: tuple[float, float]
 async def _suggest_fill(result: dict[str, Any], request: Any, spare_minutes: int, provider: Any, agent_allowed: Callable[[], bool]) -> dict[str, Any] | None:
     route = result.get("route") or {}
     gap = longest_gap(result.get("itinerary", []), float(route.get("distance_km") or 0))
-    if agent_allowed():
-        agent = await run_route_agent(_fill_context(result, request, gap, spare_minutes), provider)
-        if agent is not None:
-            return {"candidates": agent.candidates, "rationale": agent.rationale, "trace": agent.trace, "source": "agent"}
+    agent = await run_route_agent(_fill_context(result, request, gap, spare_minutes), provider) if agent_allowed() else None
+    if agent is not None and agent.candidates:
+        return {"candidates": agent.candidates, "rationale": agent.rationale, "trace": agent.trace, "source": "agent"}
     used_ids = {str(item.get("place_id")) for item in result.get("itinerary", []) if item.get("place_id")}
     pick = deterministic_fill(result.get("candidate_places", []), _search_segment(gap), used_ids, spare_minutes)
     if pick is None:
-        return None
+        # The agent searched and found nothing that fits: say so, with its trace, rather than staying silent.
+        return {"candidates": [], "rationale": agent.rationale, "trace": agent.trace, "source": "agent"} if agent is not None else None
     rationale = f"{pick.get('name', 'This stop')} sits on the longest open stretch and fits your {spare_minutes} spare minutes."
     return {"candidates": [pick], "rationale": rationale, "trace": [], "source": "deterministic"}
 

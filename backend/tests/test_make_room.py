@@ -139,3 +139,32 @@ def test_deterministic_fill_picks_best_unused_place_that_fits():
     ]
     assert deterministic_fill(candidates, (125, 300), {"used"}, 60)["id"] == "b"
     assert deterministic_fill(candidates, (125, 300), {"used", "a", "b"}, 60) is None
+
+
+def test_agent_finding_nothing_is_reported_with_its_trace(auth_client, monkeypatch):
+    async def empty_agent(context, provider, model=None):
+        return RouteAgentResult(candidates=[], rationale="Nothing worth stopping for on this stretch.", trace=[{"step": 1, "summary": "Searched"}])
+
+    monkeypatch.setattr("backend.make_room.run_route_agent", empty_agent)
+    monkeypatch.setattr("backend.main._route_agent_allowed", lambda: True)
+    r = auth_client.post("/trips/plan", json={**BODY, "destination_activity": place(period(10, 21))}).json()
+    assert r["make_room"]["suggestion"] == {"candidates": [], "rationale": "Nothing worth stopping for on this stretch.", "trace": [{"step": 1, "summary": "Searched"}], "source": "agent"}
+
+
+async def test_empty_agent_search_falls_back_to_planner_candidates(monkeypatch):
+    from types import SimpleNamespace
+
+    from backend.make_room import _suggest_fill
+
+    async def empty_agent(context, provider, model=None):
+        return RouteAgentResult(candidates=[], rationale="nothing", trace=[{"step": 1}])
+
+    monkeypatch.setattr("backend.make_room.run_route_agent", empty_agent)
+    result = {
+        "route": {"distance_km": 300},
+        "itinerary": [{"kind": "fuel", "route_progress_km": 50, "place_id": "f", "time": "09:00", "date": "2026-11-20", "duration_min": 15}],
+        "candidate_places": [{"id": "view", "name": "View", "route_progress_km": 170, "detour_minutes": 5, "enjoyment_score": 80}],
+    }
+    request = SimpleNamespace(start="A", destination="B", start_date="2026-11-20", start_time="08:10", budget_per_person=400, crowd_tolerance="medium", route_mode="balanced")
+    suggestion = await _suggest_fill(result, request, 60, provider=None, agent_allowed=lambda: True)
+    assert suggestion["source"] == "deterministic" and suggestion["candidates"][0]["id"] == "view"

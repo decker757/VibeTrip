@@ -68,6 +68,11 @@ function MakeRoomStatus({ makeRoom, onAddSuggestedStop }) {
       ? <p><Icon name="check" size={14} /><span><strong>{place.name} added</strong> · closes {closesAt} · arrive by {deadline} · you arrive {arrival}{spare > 0 ? `, ${formatSpare(spare)} to spare` : ''}</span></p>
       : <p><Icon name="help" size={14} /><span><strong>{place.name} added</strong> · no opening hours on record, so there's no deadline</span></p>}
     {addedSuggestion && <p className="make-room-note">{addedSuggestion} added to use your spare time.</p>}
+    {suggestion && !pick && <div className="make-room-suggestion">
+      <div className="make-room-suggestion-heading"><Icon name="sparkles" size={14} /><span>AGENT · NOTHING WORTH THE DETOUR</span></div>
+      <p className="agent-rationale">The agent looked for a stop to use your {formatSpare(spare)} spare but found nothing that fits on the longest open stretch. {suggestion.rationale}</p>
+      {suggestion.trace?.length > 0 && <details className="agent-trace"><summary>How the agent got here</summary><ol>{suggestion.trace.map((entry, index) => <li key={`${entry.step}-${index}`}>{entry.summary}</li>)}</ol></details>}
+    </div>}
     {pick && <div className="make-room-suggestion">
       <div className="make-room-suggestion-heading"><Icon name="sparkles" size={14} /><span>{suggestion.source === 'agent' ? 'AGENT SUGGESTION' : 'SUGGESTION'} · use your spare time</span></div>
       <div className="request-result"><div><strong>{pick.name}</strong><span>{pick.category}{pick.address ? ` · ${pick.address}` : ''}</span><small>{pick.detour_minutes ?? 0} min detour · 30 min stop</small></div><button type="button" onClick={() => onAddSuggestedStop(pick)}>Add to route</button></div>

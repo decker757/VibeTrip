@@ -240,11 +240,14 @@ async def test_fill_mode_drops_shortlisted_places_that_do_not_fit():
     assert [c["id"] for c in r.candidates] == ["demo-fuel"]
 
 
-async def test_fill_mode_returns_none_when_nothing_fits():
+async def test_fill_mode_reports_an_empty_search_with_its_trace():
+    # Unlike replace mode (None -> deterministic search), an empty fill is a result the traveller should see.
     fill = replace(ctx(segment=(100, 210), target=None), mode="fill", spare_minutes=30)
     model = ScriptedChatModel([ai_tool("SearchPlaces", {"query": "anything", "category": "other"}),
-                               ai_tool("SubmitShortlist", {"place_ids": ["demo-attraction"], "rationale": "r"}, "2")])
-    assert await run_route_agent(fill, DemoMapsProvider(), model) is None
+                               ai_tool("SubmitShortlist", {"place_ids": ["demo-attraction"], "rationale": "nothing fits"}, "2")])
+    r = await run_route_agent(fill, DemoMapsProvider(), model)
+    assert r.candidates == [] and r.rationale == "nothing fits"
+    assert [t["tool"] for t in r.trace] == ["SearchPlaces", "SubmitShortlist"]
 
 
 def test_fill_mode_uses_fill_prompt():

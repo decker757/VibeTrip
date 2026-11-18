@@ -379,7 +379,9 @@ def _agent_timeout_seconds() -> float:
 
 
 async def run_route_agent(context: RouteAgentContext, provider: Any, model: Any = None) -> RouteAgentResult | None:
-    """Run the agent; None means the caller should fall back to the deterministic search."""
+    """Run the agent; None means the caller should fall back to the deterministic search.
+
+    In fill mode an empty shortlist still returns a result (no candidates, with its trace)."""
     try:
         chat_model = model if model is not None else get_chat_model()
         config = {"configurable": {
@@ -393,5 +395,6 @@ async def run_route_agent(context: RouteAgentContext, provider: Any, model: Any 
         return None
     candidates = _validated_candidates(final["shortlist_ids"], final["seen_candidates"], context)
     if not candidates:
-        return None
+        # Replace mode falls back to the deterministic search; in fill mode "nothing fits" is the answer.
+        return RouteAgentResult(candidates=[], rationale=final["rationale"], trace=final["trace"]) if context.mode == "fill" else None
     return RouteAgentResult(candidates=candidates, rationale=final["rationale"], trace=final["trace"])
