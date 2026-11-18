@@ -76,3 +76,50 @@ if __name__ == "__main__":
         snapshot[_golden_key(mode, end_time)] = {"itinerary": result["itinerary"], "route": result["route"]}
     GOLDEN.write_text(json.dumps(snapshot, indent=2, sort_keys=True) + "\n")
     print(f"wrote {GOLDEN}")
+
+
+# --- Stop timing: fuel and lunch by where on the route you'd need them ---
+from backend.graph import _order_near_target, _pick_stop_options
+
+
+def _cand(id, progress, category="Gas station", detour=2):
+    return {"id": id, "name": id, "category": category, "route_progress_km": progress, "detour_minutes": detour, "open_now": True}
+
+
+def _timing_state(candidates, start_time="08:10", distance_km=600, drive_minutes=480):
+    return {"route_mode": "balanced", "start_date": "2026-11-20", "start_time": start_time,
+            "route": {"distance_km": distance_km, "drive_minutes": drive_minutes},
+            "candidate_places": candidates, "selected_places": []}
+
+
+def test_order_near_target_keeps_rank_inside_window():
+    options = [_cand("a", 100), _cand("b", 200), _cand("c", 150), _cand("d", None), _cand("e", 165)]
+    assert [o["id"] for o in _order_near_target(options, 160, 30)] == ["c", "e", "b", "a", "d"]
+
+
+def test_second_fuel_is_spaced_from_first():
+    picks = _pick_stop_options(_timing_state([_cand("f200", 200), _cand("f201", 201, detour=1), _cand("f410", 410, detour=5)]))
+    assert picks.fuel_stop["id"] in {"f200", "f201"}
+    assert picks.additional_fuel_stop["id"] == "f410"
+
+
+def test_no_second_fuel_when_none_is_far_enough():
+    picks = _pick_stop_options(_timing_state([_cand("f200", 200), _cand("f201", 201)]))
+    assert picks.additional_fuel_stop is None
+
+
+def test_meal_targets_lunch_time():
+    # 600 km in 480 min = 1.25 km/min; from 06:00, 12:30 is 390 min in, 487 km, clamped to 80% = 480 km.
+    meals = [_cand("r100", 100, "Restaurant"), _cand("r290", 290, "Restaurant"), _cand("r500", 500, "Restaurant")]
+    assert _pick_stop_options(_timing_state(meals, start_time="06:00")).meal_options[0]["id"] == "r500"
+
+
+def test_meal_targets_midpoint_when_drive_misses_lunch():
+    meals = [_cand("r100", 100, "Restaurant"), _cand("r290", 290, "Restaurant"), _cand("r500", 500, "Restaurant")]
+    assert _pick_stop_options(_timing_state(meals, start_time="13:00")).meal_options[0]["id"] == "r290"
+
+
+def test_ranked_meal_kept_when_inside_window():
+    meals = [_cand("r100", 100, "Restaurant"), _cand("r290", 290, "Restaurant"), _cand("r330", 330, "Restaurant")]
+    state = {**_timing_state(meals, start_time="13:00"), "selected_places": [meals[2]]}
+    assert _pick_stop_options(state).meal_options[0]["id"] == "r330"  # the reviewer's pick, within ±90 km of 300

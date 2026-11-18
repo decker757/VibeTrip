@@ -6,7 +6,7 @@ changing the API contract or the frontend's state model.
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any, TypedDict
 
 from langchain_core.runnables import RunnableConfig
@@ -241,6 +241,11 @@ MIN_LEG_GAP_MINUTES = 25
 ATTRACTION_MIN_DRIVE = 180
 MEAL_MIN_DRIVE = 210
 SECOND_FUEL_MIN_DRIVE = 360
+# Stop timing: choose fuel and lunch near where on the route they're needed.
+FUEL_MIN_GAP_KM = 150
+TARGET_WINDOW_RATIO = 0.15
+LUNCH_TARGET = time(12, 30)
+MEAL_TARGET_BOUNDS = (0.2, 0.8)
 BUFFER_RATIO = 0.2
 MIN_BUFFER_MINUTES = 20
 
@@ -277,16 +282,55 @@ def _sorted_by_detour(places: Any) -> list[dict[str, Any]]:
     return sorted(places, key=lambda item: (item.get("detour_minutes", 999), -item.get("enjoyment_score", 0)))
 
 
+def _progress_km(place: dict[str, Any]) -> float | None:
+    value = place.get("route_progress_km")
+    return float(value) if isinstance(value, (int, float)) else None
+
+
+def _order_near_target(options: list[dict[str, Any]], target_km: float, window_km: float) -> list[dict[str, Any]]:
+    """Ranked options inside the window around the target first (rank kept), then the rest by closeness."""
+    def distance(place: dict[str, Any]) -> float:
+        progress = _progress_km(place)
+        return abs(progress - target_km) if progress is not None else float("inf")
+
+    inside = [place for place in options if distance(place) <= window_km]
+    outside = sorted((place for place in options if distance(place) > window_km), key=distance)
+    return inside + outside
+
+
+def _fuel_targets(distance_km: float, drive_minutes: int) -> list[float]:
+    """Where on the route fuel is wanted: halfway, or at thirds on drives long enough for two stops."""
+    if drive_minutes >= SECOND_FUEL_MIN_DRIVE:
+        return [distance_km / 3, distance_km * 2 / 3]
+    return [distance_km / 2]
+
+
+def _meal_target_km(state: PlannerState, distance_km: float, drive_minutes: int) -> float:
+    """The route km reached around lunchtime, kept off the ends of the route; midway if the drive misses lunch."""
+    start = _parse_start(state)
+    lunch = datetime.combine(start.date(), LUNCH_TARGET)
+    minutes_to_lunch = (lunch - start).total_seconds() / 60
+    if drive_minutes <= 0 or not 0 < minutes_to_lunch < drive_minutes:
+        return distance_km / 2
+    low, high = MEAL_TARGET_BOUNDS
+    return min(max(minutes_to_lunch * distance_km / drive_minutes, distance_km * low), distance_km * high)
+
+
 def _pick_stop_options(state: PlannerState) -> StopOptions:
-    """Choose the candidate for each stop role from the ranked places."""
+    """Choose the candidate for each stop role from the ranked places, near where on the route it's needed."""
     route_mode = state.get("route_mode", "balanced")
     all_candidates = state.get("candidate_places", [])
     selected_candidates = state.get("selected_places", [])
+    route = state.get("route") or {}
+    distance_km = max(1.0, float(route.get("distance_km") or 348))
+    drive_minutes = max(0, int(route.get("drive_minutes") or 229))
+    window_km = distance_km * TARGET_WINDOW_RATIO
+    fuel_targets = _fuel_targets(distance_km, drive_minutes)
     meal_stop = next((item for item in selected_candidates if _is_restaurant(item)), None)
     meal_stop = meal_stop or next((item for item in all_candidates if _is_restaurant(item) and candidate_is_plannable(item)), None)
     coffee_stop = next((item for item in all_candidates if _is_along_route(item) and any(term in item.get("category", "").lower() for term in ("cafe", "coffee")) and candidate_is_plannable(item)), None)
-    fuel_stops = _sorted_by_detour(item for item in all_candidates if _is_along_route(item) and _is_fuel_stop(item) and candidate_is_plannable(item))
-    practical_stops = _sorted_by_detour(item for item in all_candidates if _is_along_route(item) and _is_refuel_or_convenience(item) and candidate_is_plannable(item))
+    fuel_stops = _order_near_target(_sorted_by_detour(item for item in all_candidates if _is_along_route(item) and _is_fuel_stop(item) and candidate_is_plannable(item)), fuel_targets[0], window_km)
+    practical_stops = _order_near_target(_sorted_by_detour(item for item in all_candidates if _is_along_route(item) and _is_refuel_or_convenience(item) and candidate_is_plannable(item)), fuel_targets[0], window_km)
     fuel_stop = fuel_stops[0] if fuel_stops else practical_stops[0] if route_mode != "fastest" and practical_stops else None
     scenic_stop = next((item for item in selected_candidates if item.get("recommendation_kind") == "scenic" and item.get("recommendation_scope") == "along_route"), None)
     scenic_stop = scenic_stop or next((item for item in all_candidates if item.get("recommendation_kind") == "scenic" and item.get("recommendation_scope") == "along_route" and candidate_is_plannable(item)), None)
@@ -294,13 +338,22 @@ def _pick_stop_options(state: PlannerState) -> StopOptions:
     for candidate in [meal_stop, *all_candidates]:
         if candidate and _is_restaurant(candidate) and candidate not in meal_options and candidate_is_plannable(candidate):
             meal_options.append(candidate)
+    meal_options = _order_near_target(meal_options, _meal_target_km(state, distance_km, drive_minutes), window_km)
+    additional_fuel_stop = None
+    if len(fuel_targets) > 1 and fuel_stop is not None:
+        first_km = _progress_km(fuel_stop)
+        spaced = [
+            item for item in fuel_stops
+            if item is not fuel_stop and first_km is not None and (_progress_km(item) or 0) - first_km >= FUEL_MIN_GAP_KM
+        ]
+        additional_fuel_stop = next(iter(_order_near_target(spaced, fuel_targets[1], window_km)), None)
     return StopOptions(
-        meal_stop=meal_stop,
+        meal_stop=meal_options[0] if meal_options else meal_stop,
         meal_options=meal_options,
         coffee_stop=coffee_stop,
         fuel_stops=fuel_stops,
         fuel_stop=fuel_stop,
-        additional_fuel_stop=fuel_stops[1] if len(fuel_stops) > 1 else None,
+        additional_fuel_stop=additional_fuel_stop,
         scenic_stop=scenic_stop,
     )
 
