@@ -100,12 +100,12 @@ def test_order_near_target_keeps_rank_inside_window():
 def test_second_fuel_is_spaced_from_first():
     picks = _pick_stop_options(_timing_state([_cand("f200", 200), _cand("f201", 201, detour=1), _cand("f410", 410, detour=5)]))
     assert picks.fuel_stop["id"] in {"f200", "f201"}
-    assert picks.additional_fuel_stop["id"] == "f410"
+    assert picks.second_fuel_after(picks.fuel_stop)["id"] == "f410"
 
 
 def test_no_second_fuel_when_none_is_far_enough():
     picks = _pick_stop_options(_timing_state([_cand("f200", 200), _cand("f201", 201)]))
-    assert picks.additional_fuel_stop is None
+    assert picks.second_fuel_after(picks.fuel_stop) is None
 
 
 def test_meal_targets_lunch_time():
@@ -123,3 +123,14 @@ def test_ranked_meal_kept_when_inside_window():
     meals = [_cand("r100", 100, "Restaurant"), _cand("r290", 290, "Restaurant"), _cand("r330", 330, "Restaurant")]
     state = {**_timing_state(meals, start_time="13:00"), "selected_places": [meals[2]]}
     assert _pick_stop_options(state).meal_options[0]["id"] == "r330"  # the reviewer's pick, within ±90 km of 300
+
+
+@pytest.mark.parametrize("mode", ["fastest", "balanced"])
+def test_closed_first_fuel_falls_back_to_next_station_and_respaces_second(mode):
+    # Long drive: the best-placed station is closed when you'd arrive; the open one 10 km on should be used,
+    # and the second fuel stop spaced from that one, not from the closed one.
+    from backend.graph import day_builder
+    closed = {**_cand("f200", 200), "opening_hours": {"periods": [{"open": {"day": 5, "hour": 6, "minute": 0}, "close": {"day": 5, "hour": 7, "minute": 0}}]}}
+    state = {**_timing_state([closed, _cand("f210", 210, detour=3), _cand("f420", 420), _cand("r300", 300, "Restaurant")]), "route_mode": mode}
+    fuel_ids = [item["place_id"] for item in day_builder(state)["itinerary"] if item["kind"] == "fuel"]
+    assert fuel_ids == ["f210", "f420"]

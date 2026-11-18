@@ -259,8 +259,20 @@ class StopOptions:
     coffee_stop: dict[str, Any] | None
     fuel_stops: list[dict[str, Any]]
     fuel_stop: dict[str, Any] | None
-    additional_fuel_stop: dict[str, Any] | None
     scenic_stop: dict[str, Any] | None
+    second_fuel_target_km: float | None = None
+    window_km: float = 0.0
+
+    def second_fuel_after(self, first: dict[str, Any] | None) -> dict[str, Any] | None:
+        """The fuel stop nearest the second target that is at least FUEL_MIN_GAP_KM past ``first``."""
+        first_km = _progress_km(first) if first else None
+        if self.second_fuel_target_km is None or first_km is None:
+            return None
+        spaced = [
+            item for item in self.fuel_stops
+            if item is not first and (_progress_km(item) or 0) - first_km >= FUEL_MIN_GAP_KM
+        ]
+        return next(iter(_order_near_target(spaced, self.second_fuel_target_km, self.window_km)), None)
 
 
 @dataclass
@@ -339,21 +351,14 @@ def _pick_stop_options(state: PlannerState) -> StopOptions:
         if candidate and _is_restaurant(candidate) and candidate not in meal_options and candidate_is_plannable(candidate):
             meal_options.append(candidate)
     meal_options = _order_near_target(meal_options, _meal_target_km(state, distance_km, drive_minutes), window_km)
-    additional_fuel_stop = None
-    if len(fuel_targets) > 1 and fuel_stop is not None:
-        first_km = _progress_km(fuel_stop)
-        spaced = [
-            item for item in fuel_stops
-            if item is not fuel_stop and first_km is not None and (_progress_km(item) or 0) - first_km >= FUEL_MIN_GAP_KM
-        ]
-        additional_fuel_stop = next(iter(_order_near_target(spaced, fuel_targets[1], window_km)), None)
     return StopOptions(
         meal_stop=meal_options[0] if meal_options else meal_stop,
         meal_options=meal_options,
         coffee_stop=coffee_stop,
         fuel_stops=fuel_stops,
         fuel_stop=fuel_stop,
-        additional_fuel_stop=additional_fuel_stop,
+        second_fuel_target_km=fuel_targets[1] if len(fuel_targets) > 1 else None,
+        window_km=window_km,
         scenic_stop=scenic_stop,
     )
 
@@ -387,7 +392,7 @@ def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel
     if route_mode in {"balanced", "scenic"} and drive_minutes >= ATTRACTION_MIN_DRIVE and "attraction" not in skipped_kinds:
         add(options.scenic_stop, "attraction", ATTRACTION_MINUTES[route_mode])
     if drive_minutes >= SECOND_FUEL_MIN_DRIVE and "extra_fuel" not in skipped_kinds:
-        add(options.additional_fuel_stop, "fuel", FUEL_MINUTES)
+        add(options.second_fuel_after(fuel), "fuel", FUEL_MINUTES)
     if drive_minutes >= MEAL_MIN_DRIVE:
         add(meal, "meal", MEAL_MINUTES)
     planned_stops.sort(key=_route_position)
@@ -479,11 +484,20 @@ def day_builder(state: PlannerState) -> PlannerState:
 
     itinerary: list[dict[str, Any]] = []
     scheduled_fuel_stop = None
-    fuel_options = [*options.fuel_stops, None] if route_mode == "fastest" else [options.fuel_stop]
-    for fuel_option in fuel_options:
+    if route_mode == "fastest":
+        fuel_options = [*options.fuel_stops, None]
+    else:
+        fuel_options = [options.fuel_stop, *(item for item in options.fuel_stops if item is not options.fuel_stop)]
+    for index, fuel_option in enumerate(fuel_options):
+        is_last_fuel_option = index == len(fuel_options) - 1
         for meal_option in [*options.meal_options, None]:
             result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds), start, drive_minutes, distance_km)
-            fuel_requirement_met = route_mode != "fastest" or result.fuel_was_scheduled
+            # If this first fuel stop was dropped (closed on arrival), try the next station rather than
+            # accepting a day whose only fuel is the far second stop.
+            first_fuel_kept = fuel_option is None or is_last_fuel_option or any(
+                item.get("place_id") == fuel_option.get("id") for item in result.itinerary
+            )
+            fuel_requirement_met = first_fuel_kept and (route_mode != "fastest" or result.fuel_was_scheduled)
             if fuel_requirement_met and (meal_option is None or result.meal_was_open):
                 itinerary = result.itinerary
                 scheduled_fuel_stop = fuel_option if result.fuel_was_scheduled else None
