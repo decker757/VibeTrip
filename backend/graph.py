@@ -27,7 +27,7 @@ class PlannerState(TypedDict, total=False):
     start_date: str
     end_date: str
     start_time: str
-    end_time: str
+    end_time: str | None
     preferences: list[str]
     adventure_level: int
     route_mode: str
@@ -451,12 +451,14 @@ def _arrival_and_warnings(state: PlannerState, start: datetime, drive_minutes: i
     if state.get("route_mode", "balanced") == "fastest" and not fuel_scheduled:
         warnings.append({"code": "fastest_no_fuel", "message": "Fastest routes require at least one fuel station, but no usable fuel stop could be scheduled. Try generating again or choose Balanced."})
     arrival = start + timedelta(minutes=arrival_offset)
-    try:
-        target_end = datetime.combine(start.date(), datetime.strptime(state.get("end_time", "18:00"), "%H:%M").time())
-        if arrival > target_end:
-            warnings.append({"code": "late_arrival", "message": f"Arrival estimate {arrival.strftime('%H:%M')} is later than your target end time of {state.get('end_time', '18:00')}."})
-    except ValueError:
-        pass
+    end_time = state.get("end_time")
+    if end_time:
+        try:
+            target_end = datetime.combine(start.date(), datetime.strptime(end_time, "%H:%M").time())
+            if arrival > target_end:
+                warnings.append({"code": "late_arrival", "message": f"Arrival estimate {arrival.strftime('%H:%M')} is later than your target end time of {end_time}."})
+        except ValueError:
+            pass
     return arrival_offset, buffer_minutes, warnings
 
 

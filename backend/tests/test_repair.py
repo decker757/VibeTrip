@@ -158,3 +158,13 @@ def test_make_room_mode_allows_a_third_attempt():
     late = {"route": {"warnings": [{"code": "late_arrival", "message": "late"}]}, "itinerary": [{"kind": "coffee"}], "repair_attempts": 2}
     assert should_repair(late) == "finalize"
     assert should_repair({**late, "make_room_mode": True}) == "repair"
+
+
+def test_plan_without_end_time_has_no_late_warning_or_repair(auth_client):
+    # A late start would pass the old hidden 18:00 default; with no deadline given there is nothing to be late for.
+    r = auth_client.post("/trips/plan", json={"start": "Singapore", "destination": "KL", "start_date": "2026-11-20", "start_time": "15:00"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["repair_log"] == []
+    assert "target end time" not in (body.get("warning") or "")
+    assert all(w["code"] != "late_arrival" for w in body["route"].get("warnings", []))

@@ -242,7 +242,9 @@ function App() {
     // the request for backwards-compatible saved-trip/API payloads.
     const requestEndDate = overrides.endDate ?? requestStartDate;
     const requestStartTime = overrides.startTime ?? startTime;
-    const requestEndTime = overrides.endTime ?? endTime;
+    // The "Latest arrival" field is hidden, so don't send its 18:00 default as a deadline;
+    // make-room derives a real one from the destination's opening hours.
+    const requestEndTime = overrides.endTime ?? null;
     const requestTravellers = overrides.travellers ?? travellers;
     const requestBudgetPerPerson = overrides.budgetPerPerson ?? budgetPerPerson;
     const requestPreferences = (overrides.preferences ?? preferences).filter((preference) => preference !== 'student-budget');
@@ -1062,7 +1064,6 @@ function App() {
         to: trip.destination,
         startDate: nextStartDate,
         startTime: nextStartTime,
-        endTime: nextEndTime,
         travellers: nextTravellers,
         budgetPerPerson: nextBudgetPerPerson,
         preferences: nextPreferences,

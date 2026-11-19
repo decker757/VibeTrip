@@ -39,7 +39,9 @@ class TripRequest(BaseModel):
     start_date: str = Field(default_factory=lambda: date.today().isoformat())
     end_date: str = Field(default_factory=lambda: date.today().isoformat())
     start_time: str = "08:10"
-    end_time: str = "18:00"
+    # Optional deadline. Without one the planner neither warns about lateness nor trims stops;
+    # make-room sets it from the destination's opening hours.
+    end_time: str | None = None
     preferences: list[Literal["adventurous", "local-gems", "slow-mornings"]] = Field(default_factory=list)
     adventure_level: int = Field(default=70, ge=0, le=100)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
