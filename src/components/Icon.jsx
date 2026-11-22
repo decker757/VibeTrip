@@ -6,6 +6,7 @@ export default function Icon({ name, size = 18 }) {
     calendar: <><rect x="3" y="4.5" width="18" height="17" rx="2" /><path d="M16 2.5v4M8 2.5v4M3 9h18" /></>,
     check: <path d="m5 12 4.2 4.2L19 6.5" />,
     chevron: <path d="m9 18 6-6-6-6" />,
+    lock: <><rect x="5" y="10.5" width="14" height="10" rx="2" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></>,
     clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3.5 2" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
     compass: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z" /></>,

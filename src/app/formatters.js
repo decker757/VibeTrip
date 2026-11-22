@@ -81,20 +81,59 @@ export function itineraryToStops(itinerary, detours, destination) {
         ? { place: associatedPlace?.name || 'Fuel + bathroom', detail: associatedPlace?.address || 'On-route station', type: 'fuel' }
         : item.kind === 'meal'
           ? { place: associatedPlace?.name || item.title, detail: associatedPlace?.address || 'Along the route', type: 'lunch' }
-          : item.kind === 'attraction'
+          : item.kind === 'attraction' || item.kind === 'activity'
             ? { place: associatedPlace?.name || item.title, detail: associatedPlace?.address || 'Scenic stop along the route', type: 'attraction' }
             : details[item.kind] || details.coffee;
-    return { time: item.time, date: item.date, day_number: item.day_number, schedule_offset_minutes: item.schedule_offset_minutes, title: item.title, place_id: item.place_id, location: associatedPlace?.location, opening_hours: associatedPlace?.opening_hours, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
+    return {
+      time: item.time, date: item.date, day_number: item.day_number, schedule_offset_minutes: item.schedule_offset_minutes, title: item.title, place_id: item.place_id, kind: item.kind,
+      locked: Boolean(item.locked), closed_during_visit: Boolean(item.closed_during_visit), closes_at: item.closes_at || null,
+      location: associatedPlace?.location, opening_hours: associatedPlace?.opening_hours, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails,
+    };
   });
 }
 
+const KIND_FOR_TYPE = { lunch: 'meal', coffee: 'coffee', fuel: 'fuel', attraction: 'attraction' };
+
+function stopTypeFor(category = '') {
+  const text = category.toLowerCase();
+  if (text.includes('cafe') || text.includes('coffee')) return 'coffee';
+  if (['gas', 'fuel', 'convenience', 'store'].some((term) => text.includes(term))) return 'fuel';
+  if (['restaurant', 'food', 'bakery', 'meal', 'diner'].some((term) => text.includes(term))) return 'lunch';
+  return 'attraction';
+}
+
 export function candidateToStop(candidate, time = '12:30', schedule = {}) {
-  const category = candidate.category?.toLowerCase() || '';
+  const type = stopTypeFor(candidate.category);
+  // Places carry the backend's planned visit length by category; other places default to 45 min.
+  const visitMinutes = candidate.visit_minutes || 45;
   return {
     time, date: schedule.date, day_number: schedule.day_number, schedule_offset_minutes: schedule.schedule_offset_minutes, title: candidate.name, place: candidate.name, detail: candidate.address || 'Along the route',
-    type: category.includes('cafe') || category.includes('coffee') ? 'coffee' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : category.includes('attraction') ? 'attraction' : 'lunch',
-    duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location, opening_hours: candidate.opening_hours, route_progress_km: candidate.route_progress_km,
+    type, kind: KIND_FOR_TYPE[type],
+    duration_minutes: visitMinutes, duration: `${visitMinutes} min`, place_id: candidate.id, location: candidate.location, opening_hours: candidate.opening_hours, route_progress_km: candidate.route_progress_km,
   };
+}
+
+export function withVisitMinutes(stop, minutes) {
+  return { ...stop, duration_minutes: minutes, duration: `${minutes} min` };
+}
+
+// What the backend schedules: the traveller's stops in their order, with their visit lengths.
+export function scheduleStopsPayload(stops) {
+  return stops.filter((stop) => stop.type !== 'stay' && stop.place_id).map((stop) => ({
+    id: stop.place_id, location: stop.location, duration_min: stop.duration_minutes, opening_hours: stop.opening_hours, route_progress_km: stop.route_progress_km,
+  }));
+}
+
+// A locked stop as the planner keeps it: the place, its role and the traveller's visit length.
+export function lockedStopsPayload(stops, candidates) {
+  return stops.filter((stop) => stop.locked && stop.place_id && stop.type !== 'stay').map((stop) => {
+    const place = candidates.find((item) => item.id === stop.place_id) || {};
+    return {
+      ...place, id: stop.place_id, name: stop.place, address: place.address || stop.detail, category: place.category || stop.type,
+      location: stop.location || place.location, opening_hours: stop.opening_hours || place.opening_hours, route_progress_km: stop.route_progress_km ?? place.route_progress_km,
+      kind: stop.kind || KIND_FOR_TYPE[stop.type] || 'attraction', duration_min: stop.duration_minutes,
+    };
+  });
 }
 
 // The backend re-times the traveller's stops after an edit; check-in takes the new arrival.
@@ -103,7 +142,7 @@ export function applySchedule(stops, schedule) {
   return stops.map((stop) => {
     const timing = stop.type === 'stay' ? schedule.arrival : timesById.get(stop.place_id);
     if (!timing) return stop;
-    return { ...stop, time: timing.time, date: timing.date, day_number: timing.day_number, schedule_offset_minutes: timing.schedule_offset_minutes, closed_on_arrival: Boolean(timing.closed_on_arrival) };
+    return { ...stop, time: timing.time, date: timing.date, day_number: timing.day_number, schedule_offset_minutes: timing.schedule_offset_minutes, closed_during_visit: Boolean(timing.closed_during_visit), closes_at: timing.closes_at || null };
   });
 }
 

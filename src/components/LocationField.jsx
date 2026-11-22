@@ -9,7 +9,8 @@ function createSessionToken() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export default function LocationField({ label, value, onChange, icon, selectedLocation }) {
+// resolveDetails=false hands back the raw suggestion (its id is the Google place id) without a details call.
+export default function LocationField({ label, value, onChange, icon, selectedLocation, resolveDetails = true }) {
   const fieldRef = useRef(null);
   const sessionTokenRef = useRef(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -40,6 +41,14 @@ export default function LocationField({ label, value, onChange, icon, selectedLo
   const displayValue = selectedLocation?.main_text || value;
 
   async function selectSuggestion(suggestion) {
+    const resolvedSuggestion = resolveDetails ? await withDetails(suggestion) : suggestion;
+    sessionTokenRef.current = null;
+    onChange(resolvedSuggestion.text, resolvedSuggestion);
+    setSuggestions([]);
+    setIsFocused(false);
+  }
+
+  async function withDetails(suggestion) {
     setIsResolving(true);
     let resolvedSuggestion = suggestion;
     const sessionToken = sessionTokenRef.current;
@@ -56,10 +65,7 @@ export default function LocationField({ label, value, onChange, icon, selectedLo
     } finally {
       setIsResolving(false);
     }
-    sessionTokenRef.current = null;
-    onChange(resolvedSuggestion.text, resolvedSuggestion);
-    setSuggestions([]);
-    setIsFocused(false);
+    return resolvedSuggestion;
   }
 
   return (

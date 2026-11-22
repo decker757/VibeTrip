@@ -219,3 +219,22 @@ def test_parse_route_keeps_per_leg_minutes():
     routed = {"duration": "23700s", "staticDuration": "23000s", "distanceMeters": 600000, "legs": [{"duration": "7200s"}, {"duration": "6630s"}, {"duration": "9870s"}]}
     route = GoogleMapsProvider._parse_route(routed, "Phoenix", "Los Angeles", "balanced")
     assert route["leg_minutes"] == [120, 110, 164]
+
+
+async def test_a_searched_place_becomes_a_stop_on_the_current_route(monkeypatch):
+    polyline = _encode_polyline([(1.30 + i * 0.05, 103.80) for i in range(21)])
+    place = {**_google_place(lat=1.80), "id": "own-1", "displayName": {"text": "Own Museum"}, "primaryType": "museum", "types": ["museum"],
+             "regularOpeningHours": {"periods": [{"open": {"day": 1, "hour": 10, "minute": 0}, "close": {"day": 1, "hour": 17, "minute": 0}}]}}
+    seen = {}
+
+    async def fake_get(self, url, **kwargs):
+        seen["mask"] = kwargs["headers"]["X-Goog-FieldMask"]
+        return httpx.Response(200, json=place, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
+    monkeypatch.setattr(providers, "_google_request_windows", providers.defaultdict(providers.deque))
+    stop = await GoogleMapsProvider("test-key").stop_from_place("own-1", {"polyline": polyline, "route_mode": "balanced"})
+    assert stop["id"] == "own-1" and stop["name"] == "Own Museum"
+    assert 50 <= stop["route_progress_km"] <= 62
+    assert stop["opening_hours"]["periods"] and stop["visit_minutes"] == 90
+    assert "regularOpeningHours" in seen["mask"]

@@ -17,6 +17,8 @@ from typing import Any
 
 import httpx
 
+from .opening_hours import visit_minutes
+
 
 GOOGLE_ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
 GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchNearby"
@@ -898,6 +900,14 @@ class GoogleMapsProvider:
             })
         return normalized
 
+    async def stop_from_place(self, place_id: str, route: dict[str, Any]) -> dict[str, Any] | None:
+        headers = {"X-Goog-Api-Key": self.api_key, "X-Goog-FieldMask": GOOGLE_PLACE_FIELD_MASK.replace("places.", "")}
+        async with httpx.AsyncClient(timeout=8) as client:
+            _reserve_google_request("details")
+            response = await client.get(f"{GOOGLE_PLACE_DETAILS_URL}/{place_id}", headers=headers)
+            response.raise_for_status()
+            return _stop_on_route(response.json(), route)
+
     async def place_details(self, place_id: str, session_token: str | None = None) -> dict[str, Any] | None:
         """Resolve a selected autocomplete prediction to its canonical address."""
         headers = {
@@ -926,6 +936,25 @@ class GoogleMapsProvider:
             "location": place.get("location") or {},
             "google_maps_uri": place.get("googleMapsUri") or "",
         }
+
+
+def _stop_on_route(place: dict[str, Any], route: dict[str, Any]) -> dict[str, Any] | None:
+    """Score a traveller-picked place like a suggestion and place it by its position along the route."""
+    location = _place_location(place)
+    if not location:
+        return None
+    points = _decode_polyline(route.get("polyline") or "")
+    nearest = min(points, key=lambda point: _distance_km(point, location)) if points else location
+    stop = _score_place(place, nearest, 400, "medium", route.get("route_mode") or "balanced", "along_route", _route_progress_km(location, points))
+    return stop and {**stop, "visit_minutes": visit_minutes(stop)}
+
+
+async def stop_from_place(place_id: str, route: dict[str, Any]) -> dict[str, Any] | None:
+    """Resolve a searched place into a stop; only Google has the hours and location this needs."""
+    provider = get_maps_provider()
+    if isinstance(provider, GoogleMapsProvider):
+        return await provider.stop_from_place(place_id, route)
+    return None
 
 
 async def suggest_cities(query: str, session_token: str | None = None) -> list[dict[str, str]]:

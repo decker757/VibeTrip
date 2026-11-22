@@ -5,7 +5,7 @@ weather, and recommendation providers can be added behind each node without
 changing the API contract or the frontend's state model.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 from itertools import accumulate
 from typing import Any, TypedDict
@@ -13,8 +13,8 @@ from typing import Any, TypedDict
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 
-from .providers import DemoMapsProvider
-from .opening_hours import candidate_is_plannable, opening_status_at
+from .providers import DemoMapsProvider, _decode_polyline, _route_progress_km
+from .opening_hours import candidate_is_plannable, closing_time, open_for
 from .recommender import refine_recommendations
 from .repair import finalize_best, repair_step, should_repair
 
@@ -57,6 +57,7 @@ class PlannerState(TypedDict, total=False):
     repair_snapshots: list[dict[str, Any]]
     repair_log: list[dict[str, Any]]
     make_room_mode: bool
+    locked_stops: list[dict[str, Any]]
 
 
 def _normalise_category(place: dict[str, Any]) -> str:
@@ -415,14 +416,54 @@ def _route_position(item: PlannedStop) -> float:
     return float(progress) if isinstance(progress, (int, float)) else float("inf")
 
 
-def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel: dict[str, Any] | None, route_mode: str, drive_minutes: int, skipped_kinds: frozenset[str] = frozenset()) -> list[PlannedStop]:
+def _locked_stops(state: PlannerState) -> list[dict[str, Any]]:
+    """The traveller's locked stops, re-placed on the current route when it has geometry."""
+    polyline = (state.get("route") or {}).get("polyline")
+    points = _decode_polyline(polyline) if polyline else []
+    stops = []
+    for stop in state.get("locked_stops") or []:
+        location = stop.get("location") or {}
+        if points and location.get("latitude") is not None and location.get("longitude") is not None:
+            progress = _route_progress_km((float(location["latitude"]), float(location["longitude"])), points)
+            if progress is not None:
+                stop = {**stop, "route_progress_km": round(progress, 1)}
+        stops.append(stop)
+    return stops
+
+
+def _first_locked(locked: list[dict[str, Any]], kind: str) -> dict[str, Any] | None:
+    return min((stop for stop in locked if stop.get("kind") == kind), key=_progress_km_or_inf, default=None)
+
+
+def _progress_km_or_inf(place: dict[str, Any]) -> float:
+    progress = _progress_km(place)
+    return progress if progress is not None else float("inf")
+
+
+def _cover_locked_roles(options: StopOptions, locked: list[dict[str, Any]]) -> StopOptions:
+    """A locked stop fills its role, so the planner doesn't pick another for it."""
+    kinds = {stop.get("kind") for stop in locked}
+    return replace(
+        options,
+        meal_options=[] if "meal" in kinds else options.meal_options,
+        meal_stop=None if "meal" in kinds else options.meal_stop,
+        coffee_stop=None if "coffee" in kinds else options.coffee_stop,
+        scenic_stop=None if "attraction" in kinds else options.scenic_stop,
+        fuel_stop=_first_locked(locked, "fuel") or options.fuel_stop,
+    )
+
+
+def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel: dict[str, Any] | None, route_mode: str, drive_minutes: int, skipped_kinds: frozenset[str] = frozenset(), locked: list[dict[str, Any]] = ()) -> list[PlannedStop]:
     """Assemble stops for one meal/fuel choice, ordered along the route.
 
     ``skipped_kinds`` may contain ``coffee``, ``attraction`` and ``extra_fuel``;
-    the meal and the first fuel stop are never skippable.
+    the meal and the first fuel stop are never skippable. Locked stops are always
+    kept with the traveller's duration; locked destination activities come last, in
+    the traveller's order.
     """
     planned_stops: list[PlannedStop] = []
-    seen_stop_ids: set[str] = set()
+    # Locked ids count as taken up front, so the planner never re-picks one for another role.
+    seen_stop_ids: set[str] = {str(stop.get("id")) for stop in locked}
 
     def add(place: dict[str, Any] | None, kind: str, duration: int) -> None:
         if not place:
@@ -433,16 +474,22 @@ def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel
         seen_stop_ids.add(place_id)
         planned_stops.append((place, kind, duration))
 
+    activities = [stop for stop in locked if stop.get("kind") == "activity"]
+    for stop in locked:
+        if stop.get("kind") != "activity":
+            planned_stops.append((stop, stop.get("kind") or "attraction", int(stop.get("duration_min") or 0)))
     if route_mode != "fastest" and "coffee" not in skipped_kinds:
         add(options.coffee_stop, "coffee", COFFEE_MINUTES)
     add(fuel, "fuel", FUEL_MINUTES)
     if route_mode in {"balanced", "scenic"} and drive_minutes >= ATTRACTION_MIN_DRIVE and "attraction" not in skipped_kinds:
         add(options.scenic_stop, "attraction", ATTRACTION_MINUTES[route_mode])
-    if drive_minutes >= SECOND_FUEL_MIN_DRIVE and "extra_fuel" not in skipped_kinds:
+    locked_fuel_count = sum(1 for stop in locked if stop.get("kind") == "fuel")
+    if drive_minutes >= SECOND_FUEL_MIN_DRIVE and "extra_fuel" not in skipped_kinds and locked_fuel_count < 2:
         add(options.second_fuel_after(fuel), "fuel", FUEL_MINUTES)
     if drive_minutes >= MEAL_MIN_DRIVE:
         add(meal, "meal", MEAL_MINUTES)
     planned_stops.sort(key=_route_position)
+    planned_stops.extend((stop, "activity", int(stop.get("duration_min") or 0)) for stop in activities)
     return planned_stops
 
 
@@ -456,10 +503,11 @@ def _schedule_metadata(start: datetime, minutes: int) -> dict[str, Any]:
     }
 
 
-def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: DriveClock, keep_closed: bool = False) -> ScheduleResult:
+def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: DriveClock, keep_closed: bool = False, locked_ids: frozenset[str] = frozenset()) -> ScheduleResult:
     """Place stops on the timeline, dropping any that would arrive while closed.
 
-    With ``keep_closed`` (the traveller's own stops) a closed stop stays and is flagged instead.
+    A stop counts as open only if it stays open for the whole visit. With ``keep_closed``
+    (the traveller's own stops) such a stop stays and is flagged instead; locked stops always do.
     Each leg is that stretch of road's own driving time. A floor that lengthens a short
     leg adds time to the day; it is never taken back from a later leg.
     """
@@ -474,15 +522,20 @@ def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: Dr
         floor = SHORT_HOP_MINUTES if known else MIN_LEG_GAP_MINUTES if itinerary else FIRST_LEG_MIN_MINUTES
         arrival_driving = driving + max(floor, position - last_position)
         stop_offset = clock.with_buffer(arrival_driving) + planned_stop_minutes
-        opening_status = opening_status_at(place, start + timedelta(minutes=stop_offset))
-        if opening_status is False and not keep_closed:
+        arrival = start + timedelta(minutes=stop_offset)
+        opening_status = open_for(place, arrival, duration)
+        locked = str(place.get("id")) in locked_ids
+        if opening_status is False and not (keep_closed or locked):
             if kind == "meal":
                 meal_was_open = False
             continue
         title = "Coffee stop" if kind == "coffee" else _practical_stop_title(place) if kind == "fuel" else place.get("name", "Lunch with a view") if kind == "meal" else place.get("name", "Scenic stop")
         itinerary.append({**_schedule_metadata(start, stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": place.get("route_progress_km"), "opening_hours_verified": opening_status is not None})
+        if locked:
+            itinerary[-1]["locked"] = True
         if opening_status is False:
-            itinerary[-1]["closed_on_arrival"] = True
+            closes = closing_time(place, arrival)
+            itinerary[-1].update({"closed_during_visit": True, "closes_at": closes.strftime("%H:%M") if closes else None})
         driving = arrival_driving
         last_position = max(last_position, position)
         planned_stop_minutes += duration
@@ -499,7 +552,10 @@ def schedule_given_stops(route: dict[str, Any], stops: list[dict[str, Any]], sta
     result = _schedule_stops(planned, start, _drive_clock(route), keep_closed=True)
     return {
         "stops": [
-            {"id": item["place_id"], **{key: item[key] for key in ("time", "date", "day_number", "schedule_offset_minutes")}, "closed_on_arrival": item.get("closed_on_arrival", False)}
+            {
+                "id": item["place_id"], **{key: item[key] for key in ("time", "date", "day_number", "schedule_offset_minutes")},
+                "closed_during_visit": item.get("closed_during_visit", False), "closes_at": item.get("closes_at"),
+            }
             for item in result.itinerary
         ],
         "arrival": _schedule_metadata(start, result.arrival_offset),
@@ -543,18 +599,24 @@ def day_builder(state: PlannerState) -> PlannerState:
     drive_minutes, buffer_minutes = clock.drive_minutes, clock.buffer_minutes
     start = _parse_start(state)
     skipped_kinds = frozenset(state.get("skipped_stop_kinds", []))
+    locked = _locked_stops(state)
+    locked_ids = frozenset(str(stop.get("id")) for stop in locked)
+    options = _cover_locked_roles(options, locked)
+    locked_fuel = _first_locked(locked, "fuel")
 
     itinerary: list[dict[str, Any]] = []
     arrival_offset = clock.with_buffer(drive_minutes)
     scheduled_fuel_stop = None
-    if route_mode == "fastest":
+    if locked_fuel:
+        fuel_options = [locked_fuel]
+    elif route_mode == "fastest":
         fuel_options = [*options.fuel_stops, None]
     else:
         fuel_options = [options.fuel_stop, *(item for item in options.fuel_stops if item is not options.fuel_stop)]
     for index, fuel_option in enumerate(fuel_options):
         is_last_fuel_option = index == len(fuel_options) - 1
         for meal_option in [*options.meal_options, None]:
-            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds), start, clock)
+            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds, locked), start, clock, locked_ids=locked_ids)
             # If this first fuel stop was dropped (closed on arrival), try the next station rather than
             # accepting a day whose only fuel is the far second stop.
             first_fuel_kept = fuel_option is None or is_last_fuel_option or any(

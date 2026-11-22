@@ -12,12 +12,9 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from .opening_hours import candidate_is_plannable
+from .opening_hours import candidate_is_plannable, visit_minutes
 from .route_agent import RouteAgentContext, fits_spare, run_route_agent
 
-VISIT_MINUTES_FOOD = 60
-VISIT_MINUTES_DEFAULT = 90
-FOOD_TERMS = ("restaurant", "cafe", "food", "bakery")
 LAST_MINUTE_OF_DAY = time(23, 59)
 FILL_TRIGGER_MINUTES = 45
 # Learned signals in priority order, mapped to the fill query the agent starts from.
@@ -36,11 +33,6 @@ class Deadline:
     deadline: datetime
     closes_at: datetime
     visit_minutes: int
-
-
-def visit_minutes(place: dict[str, Any]) -> int:
-    category = str(place.get("category") or "").lower()
-    return VISIT_MINUTES_FOOD if any(term in category for term in FOOD_TERMS) else VISIT_MINUTES_DEFAULT
 
 
 def _windows_on(periods: list[dict[str, Any]], on: date) -> list[tuple[datetime, datetime]]:

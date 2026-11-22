@@ -648,3 +648,14 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
 .make-room-suggestion { display: grid; gap: 4px; padding-top: 9px; border-top: 1px dashed #c9dcc5; }
 .make-room-suggestion-heading { display: flex; align-items: center; gap: 6px; color: #47734f; font-size: 10px; font-weight: 600; letter-spacing: .1em; }
 .make-room-suggestion .request-result { border-bottom: 0; }
+.locked-state { display: inline-flex; align-items: center; gap: 3px; color: #5d7461; background: #edf3ea; }
+.stop-controls { display: flex; align-items: center; gap: 10px; margin-top: 2px; color: #6f7a71; font-size: 11px; }
+.stop-controls label { display: inline-flex; align-items: center; gap: 5px; }
+.stop-controls select { min-height: 32px; border: 1px solid #d8ddd4; border-radius: 5px; background: #fbfcf8; color: #3d4a40; font-size: 11px; padding: 0 6px; }
+.stop-lock { min-height: 32px; display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; border: 1px solid #d8ddd4; border-radius: 5px; background: transparent; color: #6f7a71; font-size: 11px; }
+.stop-lock.locked { border-color: #a9c2a6; background: #edf3ea; color: #3f6a45; }
+.stop-lock:hover { color: var(--blue); }
+.add-stop-panel { margin-top: 5px; padding-top: 12px; border-top: 1px dashed #d8d8d0; }
+.add-stop-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.add-stop-link { min-height: 32px; padding: 0; background: transparent; color: #7a827b; font-size: 11px; }
+.add-stop-link:hover { color: var(--blue); }

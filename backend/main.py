@@ -13,11 +13,12 @@ from pydantic import BaseModel, Field
 
 from .graph import day_builder, planner_graph, schedule_given_stops
 from .make_room import build_make_room, destination_deadline, parse_day_time
+from .opening_hours import visit_minutes
 from .repair import repair_until_settled
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
 from .media import MEDIA_ROOT, MAX_TRIP_MEDIA, save_upload
 from .okf import okf_profile_exporter
-from .providers import DemoMapsProvider, get_maps_provider, place_details, suggest_cities
+from .providers import DemoMapsProvider, get_maps_provider, place_details, stop_from_place, suggest_cities
 from .route_agent import RouteAgentContext, run_route_agent
 from .search_intent import _deterministic_intent, _llm_search_enabled, parse_place_search_intent, reserve_llm_search_slot
 from .simulation import SimulationEvent, recalibrate_trip
@@ -51,6 +52,8 @@ class TripRequest(BaseModel):
     # (as returned in candidate_places) and the current plan's arrival time ("HH:MM").
     destination_activity: dict | None = None
     current_arrival_time: str | None = None
+    # The traveller's own choices (added, replaced or re-timed stops): kept as-is, planned around.
+    locked_stops: list[dict] = Field(default_factory=list)
 
 
 class SimulationRequest(BaseModel):
@@ -92,6 +95,18 @@ class RerouteRequest(BaseModel):
     route_mode: Literal["fastest", "balanced", "scenic"] = "balanced"
     route: dict = Field(default_factory=dict)
     stops: list[dict] = Field(default_factory=list)
+
+
+class ScheduleRequest(BaseModel):
+    start_date: str = ""
+    start_time: str = "08:10"
+    route: dict = Field(default_factory=dict)
+    stops: list[dict] = Field(default_factory=list)
+
+
+class PlaceStopRequest(BaseModel):
+    place_id: str = Field(min_length=2, max_length=300)
+    route: dict = Field(default_factory=dict)
 
 
 class SaveTripRequest(BaseModel):
@@ -372,6 +387,18 @@ def _build_cost_breakdown(route: dict, selected_places: list[dict], travellers: 
     }
 
 
+def _with_visit_minutes(candidates: list[dict]) -> list[dict]:
+    """Destination suggestions carry how long a visit is planned for, so every path uses the same length."""
+    return [{**place, "visit_minutes": visit_minutes(place)} if place.get("recommendation_scope") == "destination" else place for place in candidates]
+
+
+def _with_locked_places(result: dict) -> dict:
+    """Locked stops the planner didn't find itself still need routing through and showing."""
+    known = {place.get("id") for place in result.get("candidate_places", [])}
+    extra = [stop for stop in result.get("locked_stops") or [] if stop.get("id") not in known]
+    return {**result, "candidate_places": [*result.get("candidate_places", []), *extra]} if extra else result
+
+
 def _waypoint_places(result: dict) -> list[dict]:
     """Return itinerary places in driving order, not recommendation-score order."""
     candidates_by_id = {
@@ -418,7 +445,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         deadline = destination_deadline(request.destination_activity, date.fromisoformat(request.start_date), current_arrival)
         if deadline:
             state |= {"end_time": deadline.deadline.strftime("%H:%M"), "make_room_mode": True}
-    result = await planner_graph.ainvoke(state, config={"configurable": {"maps_provider": provider}})
+    result = _with_locked_places(await planner_graph.ainvoke(state, config={"configurable": {"maps_provider": provider}}))
     if result.get("provider_name") == "demo" and not isinstance(provider, DemoMapsProvider):
         provider = DemoMapsProvider()
     reroute_warning = None
@@ -459,7 +486,7 @@ async def plan_trip(request: TripRequest, user: dict = Depends(get_current_user)
         "route": result["route"],
         "vibe_profile": result["vibe_profile"],
         "detours": result["detours"],
-        "candidate_places": result.get("candidate_places", []),
+        "candidate_places": _with_visit_minutes(result.get("candidate_places", [])),
         "selected_places": result.get("selected_places", []),
         "itinerary": result["itinerary"],
         "confidence": result["confidence"],
@@ -519,6 +546,21 @@ async def reroute_trip(request: RerouteRequest) -> dict:
             "provider": "demo",
             "warning": f"Live route recalculation unavailable ({type(error).__name__}); showing the draft route geometry.",
         }
+
+
+@app.post("/trips/schedule")
+def schedule_trip(request: ScheduleRequest) -> dict:
+    """Re-time the traveller's stops on the current route without a routing call (e.g. a new visit length)."""
+    return {"schedule": schedule_given_stops(request.route, request.stops, request.start_date, request.start_time)}
+
+
+@app.post("/places/stop")
+async def place_as_stop(request: PlaceStopRequest) -> dict:
+    """A place the traveller searched for, as a stop on the current route."""
+    try:
+        return {"stop": await stop_from_place(request.place_id, request.route)}
+    except Exception:
+        return {"stop": None}
 
 
 @app.post("/trips/save")

@@ -46,6 +46,15 @@ def test_closed_at_arrival_is_skipped(demo_state):
     assert "coffee" not in _kinds(run_deterministic_planner(state))
 
 
+def test_meal_place_that_closes_soon_after_arrival_is_not_planned(demo_state):
+    state = demo_state("balanced")
+    for place in state["candidate_places"]:
+        if place["id"] == "demo-lunch":
+            # 2026-11-20 is a Friday (Google day 5); lunch arrives ~12:17, and a 55-min meal needs it open past 12:30.
+            place["opening_hours"] = {"periods": [{"open": {"day": 5, "hour": 11, "minute": 0}, "close": {"day": 5, "hour": 12, "minute": 30}}]}
+    assert "demo-lunch" not in [item.get("place_id") for item in run_deterministic_planner(state)["itinerary"]]
+
+
 def test_late_arrival_warning(demo_state):
     route = run_deterministic_planner(demo_state("balanced", "12:00"))["route"]
     assert "later than your target end time of 12:00" in route["schedule_warning"]

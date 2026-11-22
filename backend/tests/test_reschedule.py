@@ -29,13 +29,13 @@ def test_stops_keep_the_travellers_order_and_check_in_comes_after_the_last():
     assert schedule["arrival"]["schedule_offset_minutes"] == round(400 * 1.2) + 105
 
 
-def test_a_stop_closed_on_arrival_is_kept_and_flagged():
+def test_a_stop_closed_during_visit_is_kept_and_flagged():
     # Museum reached at 08:00 + 350*1.2 + 15 = 15:15 -> open; start at 12:00 and it's 19:15 -> closed.
     open_schedule = schedule_given_stops(ROUTE, _stops(MONDAY_10_TO_17), "2026-11-30", "08:00")
     late_schedule = schedule_given_stops(ROUTE, _stops(MONDAY_10_TO_17), "2026-11-30", "12:00")
-    assert not any(item["closed_on_arrival"] for item in open_schedule["stops"])
+    assert not any(item["closed_during_visit"] for item in open_schedule["stops"])
     museum = next(item for item in late_schedule["stops"] if item["id"] == "museum")
-    assert museum["closed_on_arrival"] and museum["time"] == "19:15"
+    assert museum["closed_during_visit"] and museum["time"] == "19:15"
     assert [item["id"] for item in late_schedule["stops"]] == ["fuel", "museum", "market"]
 
 
@@ -49,3 +49,19 @@ def test_reroute_returns_a_schedule_for_the_edited_stops(auth_client):
     last = schedule["stops"][-1]
     assert [item["id"] for item in schedule["stops"]] == ["a", "b"]
     assert schedule["arrival"]["schedule_offset_minutes"] > last["schedule_offset_minutes"] + 45
+
+
+def test_a_stop_that_closes_before_the_visit_ends_is_flagged_with_its_closing_time():
+    # Museum reached at 15:15 for two hours: still open on arrival, but it closes at 17:00.
+    stops = [{**stop, "duration_min": 120} if stop["id"] == "museum" else stop for stop in _stops(MONDAY_10_TO_17)]
+    museum = next(item for item in schedule_given_stops(ROUTE, stops, "2026-11-30", "08:00")["stops"] if item["id"] == "museum")
+    assert museum["time"] == "15:15" and museum["closed_during_visit"] and museum["closes_at"] == "17:00"
+
+
+def test_schedule_endpoint_re_times_without_rerouting(auth_client):
+    response = auth_client.post("/trips/schedule", json={
+        "start_date": "2026-11-30", "start_time": "08:00", "route": ROUTE,
+        "stops": [{"id": "fuel", "duration_min": 15}, {"id": "museum", "duration_min": 120}, {"id": "market", "duration_min": 45}],
+    })
+    times = {item["id"]: item["schedule_offset_minutes"] for item in response.json()["schedule"]["stops"]}
+    assert times["market"] == round(370 * 1.2) + 15 + 120

@@ -46,9 +46,11 @@ def _late_warning(state: dict[str, Any]) -> dict[str, str] | None:
 
 
 def available_actions(state: dict[str, Any]) -> list[RepairAction]:
-    """One skip action per optional kind in the itinerary, plus accept_warning."""
-    kinds = [item.get("kind") for item in state.get("itinerary", [])]
-    present = {"skip_coffee": "coffee" in kinds, "skip_attraction": "attraction" in kinds, "skip_extra_fuel": kinds.count("fuel") > 1}
+    """One skip action per optional kind the planner chose, plus accept_warning; locked stops are never offered."""
+    itinerary = state.get("itinerary", [])
+    kinds = [item.get("kind") for item in itinerary if not item.get("locked")]
+    fuel_total = sum(1 for item in itinerary if item.get("kind") == "fuel")
+    present = {"skip_coffee": "coffee" in kinds, "skip_attraction": "attraction" in kinds, "skip_extra_fuel": fuel_total > 1 and "fuel" in kinds}
     actions: list[RepairAction] = [action for action in ("skip_coffee", "skip_attraction", "skip_extra_fuel") if present[action]]
     return [*actions, "accept_warning"]
 
