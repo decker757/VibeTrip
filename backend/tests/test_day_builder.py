@@ -211,3 +211,43 @@ def test_stop_after_a_closed_one_keeps_its_real_arrival_time():
     assert "casino" not in [item.get("place_id") for item in itinerary]
     # Real drive to lunch is 245 min (+20% buffer), plus the two 15-min fuel stops.
     assert lunch["schedule_offset_minutes"] == round(245 * 1.2) + 30
+
+
+# --- Short drives: no fuel stop nobody needs; scenic mode still gets its scenic stop ---
+# Kyoto → Osaka (58 km, 80 min, Scenic) used to plan "Fuel + bathroom" and nothing else,
+# while Google had returned Fushimi Inari 5 km from the start.
+
+def _short_trip(mode, drive_minutes, distance_km=60, **extra):
+    shrine = {**_cand("shrine", 8, "Shinto shrine", detour=10), "recommendation_kind": "scenic", "recommendation_scope": "along_route"}
+    state = {**_timing_state([_cand("fuel", 30), shrine], start_time="09:00", distance_km=distance_km, drive_minutes=drive_minutes), "route_mode": mode}
+    return {**state, **extra}
+
+
+def _kinds_for(state):
+    return [item["kind"] for item in _day_builder(state)["itinerary"]]
+
+
+@pytest.mark.parametrize("mode", ["fastest", "balanced", "scenic"])
+def test_drive_under_two_hours_gets_no_fuel_stop(mode):
+    result = _day_builder(_short_trip(mode, 80))
+    assert "fuel" not in [item["kind"] for item in result["itinerary"]]
+    assert not any(warning["code"] == "fastest_no_fuel" for warning in result["route"]["warnings"])
+
+
+@pytest.mark.parametrize("mode", ["fastest", "balanced", "scenic"])
+def test_drive_of_two_hours_or_more_still_gets_fuel(mode):
+    assert "fuel" in _kinds_for(_short_trip(mode, 125, distance_km=160))
+
+
+def test_traveller_locked_fuel_is_kept_on_a_short_drive():
+    locked = [{"id": "my-fuel", "name": "my-fuel", "category": "Gas station", "route_progress_km": 20, "kind": "fuel", "duration_min": 15}]
+    assert "fuel" in _kinds_for(_short_trip("fastest", 50, locked_stops=locked))
+
+
+def test_scenic_short_drive_gets_its_scenic_stop():
+    assert _kinds_for(_short_trip("scenic", 50)) == ["attraction", "stay"]
+
+
+@pytest.mark.parametrize("drive_minutes,expect_attraction", [(80, False), (95, True)])
+def test_balanced_scenic_stop_needs_ninety_minutes(drive_minutes, expect_attraction):
+    assert ("attraction" in _kinds_for(_short_trip("balanced", drive_minutes))) is expect_attraction

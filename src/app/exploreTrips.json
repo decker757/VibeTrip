@@ -1,0 +1,4050 @@
+[
+  {
+    "id": "fallback-boston-new-york",
+    "author_name": "Maya · Exchange student",
+    "title": "Coastline, coffee, and a little history",
+    "start": "Boston, MA",
+    "destination": "New York, NY",
+    "route_mode": "scenic",
+    "adventure_level": 78,
+    "budget_per_person": 180,
+    "travellers": 3,
+    "preferences": [
+      "local-gems",
+      "adventurous"
+    ],
+    "route": {
+      "distance_km": 363,
+      "drive_minutes": 235,
+      "static_drive_minutes": 254,
+      "summary": "Boston, MA to New York, NY",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "}poaGffupL_Gn@GwApCo@p@c@tIcJZv@XPtBxEr@fCLf@RPlA~G\\tA^|@h@v@fA~@lAh@tA\\vF~@jCz@rBdAlD~Bd@j@^x@VfAD~@EnAi@tE@NwAjJUpCs@bLIxCBnh@VhUZ~o@GzCa@~GEpFDpv@OpEQbC}Ezb@m@lDu@xCq@rBeAbCaDbHgAzCkBfGa@fAuHfQq@hAgAnAgAz@mDpBoBdAgA`Ay@dAu@xAg@|Aq@fDUlBWjE?dDJtCR`Cv@xEbBbI\\rCRrCDxCEjDcJduAQxBKpGDfF`AxONlFxA`wAAjK_@~Zc@zX?rDPxEX`E|@lHlDfXn@|FbBjP|D`[lAxHzL`o@rAfIlAjJdAfKdBfVxArSn@fGfF`_@j@|F^nFvBrg@l@`Jx@nKLhDN~NVrHjDdx@TrCh@dDn@lCj@fBbA`CjDbGbB|ChArCt@dC`AxEvB|Jp@pClArDz@tBdAxBbDnF`AnBl@`Bz@bDVnARhC@z@OjHEvBIhJYzWD|ERnIr@|Vl@dSZdGf@|FxMjgA\\bE`@jHNrFFfGK`WCtLHjGTdG^xFl@xFbAzG|@|EvAbGpAnErEbNb[x~@lBzE|B|ExB|DrClEtX``@jB`DnBxDvBhF|AtElAlEhAfF|@tFp@xFj@pHnAxPf@pEr@rEfAhFpAnElAjDvAdDvHzNdB`EjAfDhA`Ev@pDl@jDl@bF\\pEPfEFxDCtFMfE[~EoSxdCsFth@_@~ESrGGxEDvGNpFVtE`@nEn@hFje@jzCt@tDr@vCjAzDzA~DnBdEjP~[bCjFvAvDfBdGjA|Er@vD~@vGf@dF^zGj@tTtBpz@VjFh@hFh@tDz@fE~@xDn@tBtAvDdA`ChCzEpCtE`FtI`p@fhAvAnCvAvCdBlE~ArEnAfEhAvEjA~FhYr|A~ExZjB|Kvs@rqEr@bFjA`GbAjEfAtDjF`PlElLbDfKbDtJ`FrOpEfMfA`D~CnH`BjDrBbDrBnCpCvCnE|DbK`JpDfDnJfIvf@~c@`M~KtDtDnDdEjClDvClEn[zh@pCnFjC`GrBfFv[jy@zD`KhApDvA|FdApFrK~q@l@xFd@dGR|FFfGE`GUtGcJteBc@rHQlFGnEBzGRdH^xFj@pFjE|\\f@fF\\`GLlFBvE{CzmC@fGHhEVpF^vEh@vEt@~EtKlk@vAfI~@tGv@lHj@fH^lHRdGLvMrCldDTjKd@dLn@dLt@lJnApLtApKfA~GhBdKfBpIbC~JbCxIxClJjDtJtDbJlj@xqAbBtE`AfD|@tD~@zEt@fFr@xGZ`FPvFrApv@VjHb@~Ip@tJl@|GjBfPzEz`@~@xJh@xH`HfkAb@xEl@dEx@~DhApEx@tCjA|CrHvNjD`GnCtFdCnGhFtN`DxJtD~LhBxHhArGl@jEl@jGPnDdAh^XfFt@vHp@dF`AlFjAdFnAlEtKn\\lAtE|@pEbPb~@lApI~J|t@pAbIbBpIpBpIrCfKrIhZdB~GfBpIbApFnAdIrFzc@dApH`BjJnBhJpBxH`BxFfCrHnCfHpd@|fA`CnGbBdFzYlbAdCjH|C|HvKxVhB`F~AhFt@vClAxFhAvGt@~Fd@fF`@~GPfGhAts@\\`Kh@xIt@zI`AzIxV~qBrAtIlBzJdBnHrCdKdCrHdDxIfTxi@fClH|BvHrBzH|AjHlJrf@|O`s@pBxI~FxWxDtPCd@TlBLxBBzAEfBg@vICvBHtBPlB^pBh@hBt@`Bz@rAfBxBhRbTnJtKf@n@fJjKxCzC~BrBzCnBzL|GnBtA|@x@dBjBnAfBjBhD~HzOv@pAnBnClAtAv@v@nAdAlBpAnBfAdC`AbHtBfXvHnE`Ax]rGlEhAnFbBhFtB~EdCdEfC`EtClg@na@vEdDdEbChEvB`E`BdPzF|EtBdFlCjFfDpEnDvW|UfEjDpGrEpGnE~CxBrQxL~e@`ZxGpEpInGdKpI~EnD`F|CxFzCbFzBtJpDhFbCfE`CvE`DrEpDdk@ze@lCxBnd@``@zA`BnAhBzApC|FlLbGvK|EhIhZzf@xApBdBlBdBzAxCtBtd@dZrJxFpUdMpU|KxPdIdFpCtFnDnMlJhEdD|DrCxd@|\\`JdG|DdCvDvBbM|GrQjJtFfDrFvD|UtPrq@ze@H\\nAhAlAtAz@rAf@`Ad@vA|AvGHTx@i@bA}@lYa[X_@x@}AJKpDBhM_@rB@jBJdCb@nBn@vBdAx@^t@FvL?tCL|DAfLYdE?dIZrLn@~Eh@hFbAtKjCvAPrAB`DI~V{@nD[|E}@dPeDjAK|JBhG@jGOpBGb@Ds@dEo@tDMfAIdB?lCZrJTnB|@dEtAzFPrABx@E~@e@~Dc@lCOj@k@hB{@@oCK{BY_CHqDPoABcBJ}HtAmC\\}Ex@iBRiDXc@HoDFnDGfAOf@C|AOlBSxEy@rEo@vFcAbBKrBClCQ~BInCZzBHz@AOn@El@HtBXxCb@jDRzBDvC@|B}@jOOrBkBxI_CtJEn@@|An@jMJ|@nA~Fb@tC\\zB`A|FXxAD~@GtAg@`D[r@SViAr@cAr@gAnAg@v@e@dB_BxHm@nBkAjC{@vAmA|A]p@wB~Ek@lBOp@UlBI|@?hANdBl@zFV|CJhBGnAKx@Qp@_@t@yAhBmCxC_E`EcClBwEhCkA|@_EtDQZOn@IvFFtBRjCj@pCfD`O\\`DVhBXdAr@|AtGvL\\z@TlAL|AH`FLlBTzA^vAjCrHn@~@bAlAg@~@_DxIuAKa@Kw@c@aB{Ad@aAPSXOTEVBd@PrGrETAvwAtiAdFlEtB|B`BzB~AjC|A`DnAbDhArD|@xD~D|St@xCx@fC`AbCtAtChBrC`CrCdJbJzIpIjBzBvAvBnA|BlAlCdOnb@hk@|_Bnn@hgBzObd@rI`VrYby@v]pbA`T~l@nAzCtAtCzKtSzAlDdAbDp@nCt@`EvBdNxKnv@XbDLlC@jDMpE[lDi@jDs@|CmFfRm@xC[dCWpDIlC?rDH`CRvCb@hDd@|B|BpJj@fDXhCVbEFxHV~j@GxBcDhk@GhHFtDPzDR`Ch@~Dz@pEx@`DjArDjAtC~@lB`BlCtN|RfOhSfOrS`DhFnBxDtRhd@lRbd@zLjYzFbNjCbGtE`L`BpEdArDhBvHrAbHlApHv@dE~Ef[vTrvAbKjo@~@rEz@vCpAnD`BfDpArB|b@zn@jCnEfBlDjAnC~BlGhAtDlAvEnBrJlBxJtA|Gt@zChA|DvSdm@|BpHrBzHlBpI~AvI|AtK|@xHrB|U~B`V^bCj@tChAxDjAzCdAtBnArBlB`C|BzBpc@|[vGxE~I|FpgAxq@`ChB`CzBtBbCfBdClBfDrApCrAdD|@jCnApEf@vBv@jEf@tDXfDPdFDvCGfRFjFRjEpGt{@bDjc@v@dId@zDfGn_@rGl`@rHzb@pCfP~CjS|B~MRHvBbLl@xBv@jBhApBhAvAdEjEjA|ArAbCz@vBv@jCfBzIzFlZx@dD`AdDpAjDrAtCxB`EjJzOvSl]hBbCfApApCdCpAbAtAz@bEvBhWjLpE~AVXbTrFdDz@jDd@fCNjCAjBItCa@xBi@rBu@|BmArBqArBgBfBkBzAqBfByCvKqR|AmCbDcFzGcJpE}FlBqBpAgA|AaAhB{@tBs@nHoAlN_CrEiAjDiArCkA~HoDfOmGvFuBlCu@jF_AtSuClQ{BlDSjDA`EVlDh@hDx@fDlAlEnB|E~BnEjBjiA~g@nAn@xClBl@f@bGvF`XzWxDhEjHbJhCpCbCpB|AfArDrBxFvB|FtB~C~AvClBfUnPzClBxFjCpCbArErA`Ex@xEn@`F^hFVXXdANlCh@fE~@jB^lA^LEt@pHNHlAxLl@xHyHdCuDr@k@JkGl@gB?oBMmB[gBg@{HiDiA]?{@_@_@^^?z@vAd@lH`DpBh@~B^zBHdBGbGm@f@?`AGdBW~Bm@pDqAeAoMy@cIFQ[mC@c@@m@Ve@VQ^I~Fh@vB`@xC`AxAp@f@?fCdBrC~Bjk@fk@vD`DlDbCzI~FtC~BvI|ItNdO~CtCzDzC`EhCzEfCtDzAfH|BnM|Dlj@vPnCjAdT|L`JhFxFbDdPlJrZfQhD|ApCdAnErA|Dx@dk@zJ|DbAvDpA`DvApDnBbDvBd`@bZhNfJzRrMzErDpFxEtFtF~CnD`BrBnAvA`EtF`EjGrDlGdFdKnPf_@|BlEvBfDjChD|BbCfB`BpCvBzCjBzCzAbRtHzEfBpUlJhDdB`C|AjCtBnChC`CpCxBxCrBhD|R|_@bJlQfOrY~@pBrBtDrBlDnAbBp@l@DTvF|FrCtCh@`@bA`@jAPnAAzDUxAB|@LTEzY~EdEfA~DpA|EtB|Av@vJdGjEhD`DtC|C~CtEtFlhA|zA|FnIv|@huAjR|YrNxTnE`GzFvG~EdFhFtE~FtEhFpDzFhD|gAtl@l\\rQ~D`ClE~CdEbDzCjClGxFrDtCzCnBjCpAjFrBr[xJxEvAdDpArDhBxn@b_@fEtBro@`V|DfAnEz@zlAvRzD~@zDnA~EtBtf@zTpDrBhD`CdDnCzCzCn`AfhApAhB~A|ChVhg@~AdEjAtD~@|DrLvo@r@bD~@|CfAlC|Uxc@lNnWtAxBjB`C|k@pn@hK`L`AtAz@fBx@bCf@`CVtBJrB@bG@nKHfCTrC^dCf@~Bz@hC|@rB|MxV~ArDpAtDb\\bgAbCvInAhF~@dFv@zFnC~WzBpTn@`E|@vD|@tChApC~A|C`BdC|[d`@n[h_@nT|Vvu@f}@bFtGrEtGdKhObG~HrRxVbCrD|AlC|BvEfBjEdB~ErAxE~@xDhAdGx`@~bCv@jDbAbDfApCpAhCvAzB`BtBfBhBzBhB`CvA~BdAbCt@tAXzCf@p@LvTtC~WjD|F~@zFtA|ExA~ElB|DfBjE~BtExC~DxC~o@pj@~c@d`@vGlG`IxHfNjMbJbIjH|FlHlF|IpGxFrErYvVrFlFlFxFzEvF`FvGbFlHpBdD@XfBrDNl@Fr@CfAOv@c@z@sAtBc@~@e@bBa@bCQdC?tBDbBPdB^zBt@pCr@lBhAtBj@z@fBlBpA~@vAn@zA^z@FfACbAQjAe@|@q@|MyNjAiAfu@ux@nBiCfBsClBuDLYJCf@u@h@c@l@Wn@If@Bl@RZPdCtCTFpCrDhBpBlB`BjA|@n`@nVt^fS|BdBlBhBpA|A|AzBrLrSlBnCbCtC~BzBxP`N`B`BpAdBlArBlAlCn@lBv@vCl@dDXfCz@vNv@vMj@dGv@tFrKho@l@dC~@vChAnCtAbCjA~A|@dAhCzB`KjI|B`CzBxCfCbElBvDrAhDr@`Cx@hDn@zD`@|D|@hKb@hDl@`Dv@|C~@tCjAlC|AtC`BbCvBbC|BpB~DrC~_@nWrBdBbBjB`BzB`BrC`CpFnI`SfB`D|AxBdWdZzA|BbAnBp@`B~@tCn@tC\\zBXhCPjD@lDiA|p@ShE{AvPi@dE}@xE_AtD{BzHUj@wBrHETkEjOg@hC[lCMpCCpDHlDTnCVpBz@xDx@bC`AvBhAfBjA|AxBnBbSzOjAhAxAfBxA|BbAnBpAjDzFbTtEdQrCvJnBnGhAnEXvAv@jF\\zDPtCtAv]BhDG|C}Av_@]jDu@fEyCvOa@xCQpBMtD?`ELzCTlC`@|Cf@|BbQxr@rAjErAfDjBpDjB|C|BzCjK|LhBbB`BhAfB|@fBp@rBf@`ANbKhArCh@pBj@xBz@rCxAfCdBvBlBdBhBpBjCbBnCzAzCnA~Cz@jCbDvMj\\ruAv@xDl@tDh@~EZ~DN~DrAtt@FrAXvCb@zCb@rBv@lCfArCfAtBhC|Dt[le@nCfDj_@ja@|BvCfBtCfBjDtAfDtAjExAbG`ErQ~@hFrFv_@d@dC~@lDtB|FlEhLx@hC|@bEd@xCZdDPnDBnCAtCIlCY|Dc@hDgCdNsAlH{@pGoCrWm@tGUlEIhE?hF\\fMjAp\\lC~t@h@`JhC`]b@xHh@jPj@tSn@nR`@`MT|CZnCv@tDx@nCjAvCt\\dv@xBdG|AlFfArE|@tElH|b@`A|EtApF`I~Wv@fDr@|E~Gbe@ZrCNtD@jDc@|W@tDLhD\\zDd@pCxH|\\|@tC|Z|x@|AlDrBvDdCzDtAjBl`@bd@bB`CpAzBpAvChA|Cn@`ClF~Tt@bC~@|Bv@~AxAzB|AlB`BxA|AhAtr@t`@~G|D~AnAdBhBjA~A~AzC~@tB~@vCj@`CdLho@d@~DVdE|@hSZfDj@~Dn@|Cz@zCdKpYz@vE^`DRjDDhDElCiAn]@nCTjEZlDh@fDt@|C`AxCjAlCtAdC~AxB`BbBrFxE~c@l_@rApAlA`BtA~BjAnCh@~Ax@dDh@|CbEn^xD`\\d@lC`A~Dz@zB`ApBzF`K~AjDtAjDnAfErCzLdAdD`C`Hz@`D~O|v@|DdSXnB\\pDPtCDhCErEg@zMiArVQxDItG@xDLdEVpE\\xDn@|Ef@pCbArEtAtE|IrWr@hCh@lCz@tFnEn\\x@hE|@bDpUrx@`ArClAlClAxB`BbCbBlBtArAnDhCbQbM`BzAbAlAzAxBlAbCz@zBv@fCTdAxEzW`AtEz@hDhArD~HjUxAdFfCzKtJxb@Ed@XdBN|DHxCD`@u@r@{@`@_@LsEXa@JEXo@|AkClEY~@}AtHgLkI{B}A[[u@oEYwH~AMzDc@`Ca@hOtI`@N`@KrEY|@]\\Qd@D^ZHJbArEPvABf@NP\\lLZjDf@hDr@vCn@rBfAjCnAbCjAdBrz@fcArBxBrC~BvJ~GjKhHbDjCnDlD~e@rh@pQdS`LxL|ApBxA~BbA|Br@vBl@dCZ`BZfCNrBNjFC|AoAzYEnCBvDRbG\\xEZpCf@|CdAvEbD~KxAfE`BjDxa@vt@nEtGhB~CtArCnJlUfAzDt@rDf@lDT|BTjEF|CCzDG~BeCle@MpG@fHHbEZlGTxC^hCr@~Cn@rB`A|BbAjBpAfBnArAlAbAjAt@`Bx@bA^fNjDdDpAhCvAfCdB~BrBtAzAhCfDfAbB~A|CzAzDhArD~@xDdFbXp@hCp@jB~@jBz@nAdAnArAfApAx@xAn@dHlB`EdAhAb@jBbAf^xXn@d@v_@dRnBh@dIpAfBh@dBt@tAz@~ArAfXjZd_@|c@|ExGhB|CbAvB|@bChFfQt@lB|@xAfAtAvAlA|A|@rE|BbAt@pArAtArBlO|U`BtBzBbCxGtGlB~BbE~FvBdClBbBnShNjB`A|Al@vHzBjBx@hBrAtAvAz@jAt@pAz@rBnChIdAzBnAjBvA|A~AjAxEdCzEnCvF|DnCzBzDhDfChBlAn@~Ap@dJrCzD~AbFxB`TbIbGjCxLlGjBrAbAdAlAbBfArBl@`Bf@jBb@|BTtBLbC?`CG~BS`Cu@|F]fESzDMrFBjEJrD\\nFX|BpFh\\~BzMbAlEjAbEfCnHtBnFrBrEtBxDnBxCpBdClBrBdCxBtCtBlBdAdC`AjBf@`C\\rAHnCFlCK|CYlDk@vCq@fF{AfJgD~KuErLiFdDeA~DuAbB{@|AgAbA{@pCeD|AoAdAg@~C_AfDu@tDo@bGk@lHYlB@nBP~HbB~A^l@JjBZzALnB@|BMlB]`Be@xCsAjCgA|Bk@pBU`FIhb@_@`CQbDy@hCY`AAtAPbAZdAl@dA`Ap@bA`AxBvDnJ|DrHlIrOdAlCn@pBt@~Cp@xD^zCPtCJ|DN~MTbGb@`G~@bI~@tH~@pHVfCnIxlAZlGx@fRxCjd@l@xIdAlNfBhXz@lLZdFbAnNTfENvAZbA^t@fCjDhBvCpBhDbB`CbDjDtK`LfHfHfJtJ|AtBlc@dr@t@zAv@xBvE|NlFfOdCbHbAnCTnAJrAFtBN|@\\r@\\^b@PrBVzAt@lVfPlC|AlGtEbHxFdKvI`HlGjJdIlNpLvAbAxAn@vA\\|ALlAA|ASlA]pAo@jXqR`T}NtGyEfBaBzAkB~NgUxAsB~@}Ab@kAXoAt@}HdBoRb@aDb@wEPaDL}FZuDd@yCd@gCPMj@eBd@y@p@k@VMfRcGdLeDdDi@rO_CpCq@vCcAnB_A|BuAnAs@LQvOsIbA_@xAUpFc@|@QxAg@tR{JfDuAhAUxAEjAJpA\\bAf@|@r@pA|ArTnY`A|AdA|Bx@~BhDrMnBbGxAlEf@jB^jBZ`CbFht@XtJRhDb@|Ej@hDv@fDl@rB`AbCdAjBpAzAxArAjBrAXTrHvEjB~@hCnBxAxAlJ~KlB~B`AzAt@zAl@~Aj@lBlB~J|CnQj@|Bj@dB|DxIxA`CpCnE~CnG|DbI~I`QpIhO`BfC~DpFvJlLhBnBpAdAxBpAr@VtDv@zw@`_@bExAxCx@vKxB|@\\z@n@|@bAr@lA^fAVjAPbBBjAcApx@m@x_@MtA[vAc@pAM?SVYJUESYG_@D]R[XG`@Bl@Xd@b@^p@`@jARp@BbAE~DC`@CdD?z@Cd@@~@SjOAjEcMWeDEs@Lm@Zm@n@gAfBkAlB{aAdsAgAtASXKBWP]CSQK[@a@L]RKVBRVP\\JJHv@?b@Kj@i@nAO~@Af@Lj@[Li@xA",
+      "leg_minutes": [
+        74,
+        40,
+        73,
+        48
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 2217,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 47,
+      "estimated_arrival_time": "15:52",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 47-minute driving buffer plus planned breaks.",
+      "stop_count": 3,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 78% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 412,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJoX521SaO5okRigmvzIQwCHo",
+        "ChIJMwb_81xN5okR8l8MR0G-AGk",
+        "ChIJU_aAvy6ZwokR2ZY0iqjyzaU"
+      ],
+      "waypoint_note": "Route plotted through 3 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:29",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 89,
+        "title": "Tinkerville Brook Preserve",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJoX521SaO5okRigmvzIQwCHo",
+        "route_progress_km": 116.1,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "12:17",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 197,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJMwb_81xN5okR8l8MR0G-AGk",
+        "route_progress_km": 171.9,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "13:59",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 299,
+        "title": "MŌLÌ",
+        "kind": "meal",
+        "duration_min": 55,
+        "place_id": "ChIJU_aAvy6ZwokR2ZY0iqjyzaU",
+        "route_progress_km": 288.9,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "15:52",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 412,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJoX521SaO5okRigmvzIQwCHo",
+        "name": "Tinkerville Brook Preserve",
+        "category": "Park",
+        "address": "135 Armitage Rd, Ashford, CT 06278, USA",
+        "rating": 4.9,
+        "review_count": 8,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 6,
+        "enjoyment_score": 84,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.9 rating, $ pricing, and an estimated 6-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=8793331619368733066&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://joshuastrust.org/tinkerville-brook-2/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 41.9274291,
+          "longitude": -72.2063979
+        },
+        "route_progress_km": 116.1,
+        "opening_hours": {},
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      },
+      {
+        "id": "ChIJU_aAvy6ZwokR2ZY0iqjyzaU",
+        "name": "MŌLÌ",
+        "category": "Chinese Restaurant",
+        "address": "253 Greenwich Ave, Greenwich, CT 06830, USA",
+        "rating": 4.5,
+        "review_count": 458,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 4,
+        "enjoyment_score": 55,
+        "crowd_risk": "medium",
+        "open_now": false,
+        "reason": "4.5 rating, $ pricing, and an estimated 4-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=11947472192170923737&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "http://www.moligreenwich.com/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 41.0264896,
+          "longitude": -73.6256344
+        },
+        "route_progress_km": 288.9,
+        "opening_hours": {
+          "openNow": false,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 0,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 1,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 2,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 3,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 4,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 5,
+                "hour": 23,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 11,
+                "minute": 30
+              },
+              "close": {
+                "day": 6,
+                "hour": 23,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 11:30 AM – 10:00 PM",
+            "Tuesday: 11:30 AM – 10:00 PM",
+            "Wednesday: 11:30 AM – 10:00 PM",
+            "Thursday: 11:30 AM – 10:00 PM",
+            "Friday: 11:30 AM – 11:00 PM",
+            "Saturday: 11:30 AM – 11:00 PM",
+            "Sunday: 11:30 AM – 10:00 PM"
+          ],
+          "nextOpenTime": "2026-11-22T16:30:00Z"
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 12,
+        "cost_label": "~SGD 12/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJMwb_81xN5okR8l8MR0G-AGk",
+        "name": "Smoke N Munch",
+        "category": "Gas Station",
+        "address": "414 Cromwell Ave, Rocky Hill, CT 06067, USA",
+        "rating": 5.0,
+        "review_count": 57,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 2,
+        "enjoyment_score": 57,
+        "crowd_risk": "low",
+        "open_now": false,
+        "reason": "5.0 rating, $ pricing, and an estimated 2-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=7566256561556578290&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.instagram.com/smokenmunchrh",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 41.6578346,
+          "longitude": -72.6780223
+        },
+        "route_progress_km": 171.9,
+        "opening_hours": {
+          "openNow": false,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 7,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 7,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 22,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 6:00 AM – 10:00 PM",
+            "Tuesday: 6:00 AM – 10:00 PM",
+            "Wednesday: 6:00 AM – 10:00 PM",
+            "Thursday: 6:00 AM – 10:00 PM",
+            "Friday: 6:00 AM – 10:00 PM",
+            "Saturday: 7:00 AM – 10:00 PM",
+            "Sunday: 7:00 AM – 10:00 PM"
+          ],
+          "nextOpenTime": "2026-11-22T12:00:00Z"
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 3,
+      "estimated_total_sgd": 79.87,
+      "estimated_per_person_sgd": 26.62,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 63.53,
+          "detail": "363 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 16.34,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 3 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0.0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [
+        "Tinkerville Brook Preserve"
+      ],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:17:03+00:00"
+  },
+  {
+    "id": "fallback-portland-seattle",
+    "author_name": "Daniel · Exchange student",
+    "title": "Rainy-day stops up the Pacific Northwest",
+    "start": "Portland, OR",
+    "destination": "Seattle, WA",
+    "route_mode": "balanced",
+    "adventure_level": 56,
+    "budget_per_person": 145,
+    "travellers": 4,
+    "preferences": [
+      "slow-mornings"
+    ],
+    "route": {
+      "distance_km": 284,
+      "drive_minutes": 172,
+      "static_drive_minutes": 178,
+      "summary": "Portland, OR to Seattle, WA",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "euxtGxrwkV{OgH}DcB_Ae@jBqKFgBXeFV}Bj@sDxC{PTu@AWbAsFH}@?WG_AOe@W_@e@Y[EW?[Js@h@cA`Ac@Xq@Ne@?uCg@k@KWD}Ae@_D_@e@CYHsBOuT_@sPSyN@gBDuCXeCf@aCv@qCrAcBdAub@x\\cBzAaCjCqKdNcLrNgAfAmAx@oAj@yA`@qAPiA@}DEel@My[GgUN_XGoIHwL@wv@SeDJyCZwCh@eD~@ss@|V{LfEqCl@cBRoCJ}BE}CYcHoAs`@{H}C{@qCaAoJmEmJyE}IgEys@u^wEgCgB{Aq@q@eFkHyAwBsBcC_CyBgCqB}x@{a@wBw@oCo@iCe@giAk@yBHaD`@mkAv]aCj@{C\\}ADcCCkCU{Ba@cCu@qQaIyBq@sBa@yBUyBI}fAR{ESsFo@uEcAcF_Bur@aZcMoFcp@uX_Cw@gD{@kCc@uCYoDMwEDeCPcEh@gB`@yQhG{Dz@kDb@cCNcC?wQsA_CC{BJeD\\wNxCYIuIpBmmAhWcVxE{n@|MiEz@otDdw@shA|U}DdAeJzCalDhoAsyDxuAsErAaEt@mDb@y_@|BcEh@iDp@iD|@{DxAaDzAaDhBmDdCuC`CqTrSiCpCaBpBwCbE{BvDmq@trA}A|BsAzAuAjAoAx@ycBt{@oNdGyCzAyLjHopAdp@eHfEwLtH_FnCgWpMoCzAoBvAqBnByAbB{BzCsFpIeE`H_r@foAk|@p|AoEjIiErIuD`IaG`NwKxWqBfEiBdD}CxEyLzPmDbEiJ~IebBh~AyEhEwdB`zA}CzBuC`BoDvAyBn@gCf@}GfAgGnAsFbBml@lSyCn@yMbBoCl@wBt@{HpDqQpIsDpAoy@tUaLpCcFhAgq@zOg^nIqb@jKwDrA{Ap@yPvIiCfAaCr@wCl@}KlA}RlByCPoDFuEIwDYg`@uFcEc@gEOuCA{ENaDVgFx@oFtAke@~M}FrBeg@tRwTbKoq@t\\yGvDuUlNew@fc@sAz@qAfAgBtBkAhB_AlBaAdC}FpQaAvBk@hA}A|BkArAqAhAgAv@wAt@_Cx@uB`@aBJcCAggAwGwBCmCHuC\\_Dt@aC|@}KhFiI|CaF~AoHfBmF`AyFv@sk@rFot@nHcCD}BGcC[sCs@{B}@}CiBia@{WkCwAuCsAyE_BqU}FgcAuV_Eq@mDa@oFYsr@_AoKg@cL_AkH_Awv@yLyLkAgvAaMqMkAgCW_v@cLcCUeDC}CN{C`@}Cv@kE~A}D|Bih@b\\_RzJwDvB{y@xc@mt@v]aZnN}JdEsq@jXwFlBiHhBmF`AuaAlO_CXeEXeEDiEMoEa@cEq@eD{@yDoAoD_BaEyBwYyQsCuAgDkAcCm@mCa@gHe@axAiI}Lo@c[eBwDIiCB}DPqD`@kg@dIuD\\aELeEC{EWcEi@qoDkm@kCm@{By@iCsAeCgBaB}AwBgCkZka@kBuBoBgB{B}AkCsAuBs@mCm@gCWqBG_CBmBNw@LoFn@oAFkd@xE{DR{D@oDK_wAmKa@GgGe@cCMglA_JmOoAebCuQgDe@yEeAuJkCqNwD{hAaZcDm@iDa@aGWiRAewKIyCLyC\\aDp@oDhAe_At]cD`BsClBkCzBeiB|dB{CbCcEnCmy@bf@eClBeBdBkB`CgBnCoo@xeAqEvG_KpMgLxN_UjYkBdCq_B|rBmC~D{B|DmCvFoC~Gan@l`B{A|CkBxCqLvO{BfCmB~AwAz@OEoBn@aCb@gAHoAAmAOoBq@iBs@aAK]H|@dG~@jErAfFrCcFrAeCXU\\K\\@jE~A|@PrFa@jHBrC?@qMFMDEhBCfADrAAfASrEiB~DoBfEwBHATStDmBGYFXuDlBURI@gFjCiD~AkEdBeARsA@kBEeABKJCtA?bKiKAcB@eE\\}@QkE_B]A]JYT_ClEgBzCiBgHu@{Dq@uEy@p@eCdDaAz@kAl@qA\\eFz@ITqEx@yDhAkFdB_Cd@iBJgCEsBYaBe@{Aq@wBwAwCmCoF_F?QiC{C}@}AmAaC_B}Dr@uBJc@h@`@`ALhBK@vATCUBAwAiBJaAMi@a@Kb@MDU^S`@]PW@uDiAmBy@kBiAsC_C_@AqB}AkCwA}B}@sCs@wC_@caA_I{CK_C?mDTaCZuOnDwlAlYmDn@iE`@{z@dF_P|@cFJcEAsDKuFa@iFy@kFoAsIwBiAU}De@mDO_DBaDP{C`@{Dz@qC`AyCrAmDrB}^jVuHrE}JjFeqAbq@cNvGiVlMwuCb{AiBt@}Ab@_Cd@sBReBFyCCgCUgCg@{Bq@}BcAw`@gSamBy`AeNeHoMwG{TyKujBq_AwP}I_ReJcf@mV}D_B}DkAgyBmf@eGqAqVuFmPwDme@oKuJqBoH_B_D{@gEyAwBaA{[iPsy@qb@__@mRwDaBwCeAcFqAyKyBe{AcZgOuCwO}C_`@uH_JaBoc@}IwYwFsVaFsu@aOsCu@cEyAgEoBsD{B_FsDw}AonA{CsBsDqBqrAko@mBm@}@SqCW}\\sAcCC}CJuOrAyBBaBOqAYcBw@{AeAoAsAeA_By@cBy@{Bu@uDcB}J{@aDcAmCoAcCyAuB{BcCwQ}QeCkBeNsJ_Ay@qAsAqAiBkAwBcA}By@iCw@gDc@kCYyCS{D_Bch@KcCQ}B]eCu@wDu@mC_AcCuAoCiHoLeBmD{@cCq@eCg@sCYcCSuCG}C@_Fj@_u@CuDOcDUaCi@qDo@oCgBwG}R{r@eA_F]gDY}EcGa~A[kFWqCk@qD{@kD{@iCgAaCaGwJkd@yt@oAeCmA{C{@uCs@eDc@aDoIi~@cK{hAwOqdB]oFyCsv@i@}H}Qm~B_@sH}Aiq@EqFJku@ImDWmDQ}Ai@wCa@kBaw@ypCuAaGiPuy@{Hgd@i@gEk@oHeFgr@i@uEiWoaBaAiHiBwPcAeHqBkMiA{HwAmKaBkKqCmRwHqf@uAiHyAcG}@yCqByFuBgFqEqJ}KgX{C}Hw@aC{@_DoA{FuIgd@i@qDUwBW_EKeFSoNQiCYeCkGy\\_A_FuAmFoBgGuAkDcEsI_BiEaAmDq@_DaFoWoBqKgAgEuA_EmAsCeOiZyK{TgB_EyG{OgDgH_CoEeH_MsL{U_LeUqHaQ{DaIeDaGgM}TaTub@eDgH}Ywr@{@iCc@eBkCqN{@aDcAoCam@}tAq`AmoBwAaCiB{BuaBqbByBgBaCwAuBaAkCu@q~@qP_IsAuCY_FOmXOmEIaIe@{\\uCeCCeDLyt@bFo^bC}J\\{HFmQAcGIwBYmBi@aBs@wA_AcB{AqA}Ae@s@oBcEkAiDk@eC_@_CYyCO}CC{EF_CxAwWHgBHmGCeGSkG_@iFm@iFq@mEsAcHyCcO_AyFs@oGYkEiAiSc@_F{@aGw@{Ds@{CgAsDiAaDuD_KsHoTu@mCu@iDo@yDe@gE[aE}A{Yg@mMcAm_@W{Ee@_Fm@yEoDoSm@wEc@qE]sFOeGCcFF{F~@{[zBav@PeLDySA{NiCmiDOeEQcC]qCo@kDu@sCiA}CuAsCuAwBaBkBgB{AuA{@yBaAcCo@sg@aJsFsAqFkBuEoBmDkBuBmA{EkDwD_DuCoCsFeGck@eo@aHcHeFmEeEcDkGcEuFeDgSsKcLeGyCsAoBw@wGsBumBed@ui@mMqDaAqhAy\\oFqAcHqAmI}@gHc@olBeHuE@yEToEj@qDt@{DjAkU~IsDhAyCn@wFt@sDTwDDwCEaDSaDa@m|Bg_@wIuAmGo@_G_@gFMyEC_IRmHd@uY|Bm]rCsLdAaHd@gGNyKAgGUgGe@aH}@sQwC_P{CkI}AwDoAsB{@qDoBqDiCaCsB_DkDcCaDaCwDcm@oeA_CkDiByBmC_CeCcByAs@qCaAoBc@{dAoNiHwAoFuA_c@aNkE{@iFo@aEQaSUuCH_Db@aCh@_C~@_CrAwK`IgCzAqDdBeEvAwA^sRhD_IzAeEhAwQ~GqEbBkBb@qC\\uBDgCIcC_@yBk@}BcAqBmAkCyBmC{C}NaSyAgB{AsAuAy@qAe@u@ScBSiB?oBTcBh@qAp@}AlA_BfBaYz^iGlH}GlH{UnV}G`GsFhE_u@zg@sE~CoEjCqDbBySfIaCx@kD|@_O~CgIpB{IdCgKjDuSdIcDzA_DjBsCvBcDxCqB|BsUdYwHbJuR`TyCvDcCtDaDzFkEfIyKfTyAnB}AzAaBfAqMrGgE`CwJbGyB`A{C`A}Dr@kCNsC?kCQ{LsAiJcA_UiBmGUc\\u@}BOaEe@eG_AyBMqAAwCL}ANyMtBaFd@_I\\{GRg@B]UkDTkFv@KHcCPsCD_DQ}Ca@_GoAuBa@qDWYDmBDsC\\oB`@mD~AeBhAiB~AoBzBwHnKo@`A]V_FnGcB~AaE~CeDhCeBdAaIxGhFlPb@xA",
+      "leg_minutes": [
+        82,
+        7,
+        83
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 1121,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 34,
+      "estimated_arrival_time": "13:26",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 34-minute driving buffer plus planned breaks.",
+      "stop_count": 2,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 56% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 266,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJEyocJMDhk1QRrTxVvpNeKZ8",
+        "ChIJZzK9Gyrgk1QRR1wc48vOpUk"
+      ],
+      "waypoint_note": "Route plotted through 2 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:38",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 98,
+        "title": "Willapa Hills State Park Trail - Chehalis Trailhead",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJEyocJMDhk1QRrTxVvpNeKZ8",
+        "route_progress_km": 137.6,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "11:32",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 152,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJZzK9Gyrgk1QRR1wc48vOpUk",
+        "route_progress_km": 140.0,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "13:26",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 266,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJZzK9Gyrgk1QRR1wc48vOpUk",
+        "name": "Mobil",
+        "category": "Gas Station",
+        "address": "1349 NW State Ave, Chehalis, WA 98532, USA",
+        "rating": 3.9,
+        "review_count": 117,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 1,
+        "enjoyment_score": 76,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "3.9 rating, $ pricing, and an estimated 1-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=5306875111009967175&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.exxonmobilfuels.com/en/find-gas-station/200320711",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 46.673550899999995,
+          "longitude": -122.97458950000001
+        },
+        "route_progress_km": 140.0,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 4,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 4:00 AM – 12:00 AM",
+            "Tuesday: 4:00 AM – 12:00 AM",
+            "Wednesday: 4:00 AM – 12:00 AM",
+            "Thursday: 4:00 AM – 12:00 AM",
+            "Friday: 4:00 AM – 12:00 AM",
+            "Saturday: 4:00 AM – 12:00 AM",
+            "Sunday: 4:00 AM – 12:00 AM"
+          ],
+          "nextCloseTime": "2026-11-22T08:00:00Z"
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      },
+      {
+        "id": "ChIJEyocJMDhk1QRrTxVvpNeKZ8",
+        "name": "Willapa Hills State Park Trail - Chehalis Trailhead",
+        "category": "Hiking Area",
+        "address": "Willapa Hills Trail, Chehalis, WA 98532, USA",
+        "rating": 4.5,
+        "review_count": 319,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 7,
+        "enjoyment_score": 75,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.5 rating, $ pricing, and an estimated 7-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=11468801914722139309&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "http://parks.state.wa.us/1023/Willapa-Hills-Trail",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 46.647601099999996,
+          "longitude": -122.9739595
+        },
+        "route_progress_km": 137.6,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 62.48,
+      "estimated_per_person_sgd": 15.62,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 49.7,
+          "detail": "284 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 12.78,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:17:06+00:00"
+  },
+  {
+    "id": "fallback-munich-prague",
+    "author_name": "Isha · Exchange student",
+    "title": "Munich to Prague with only the good breaks",
+    "start": "Munich, Germany",
+    "destination": "Prague, Czechia",
+    "route_mode": "fastest",
+    "adventure_level": 34,
+    "budget_per_person": 120,
+    "travellers": 2,
+    "preferences": [],
+    "route": {
+      "distance_km": 391,
+      "drive_minutes": 245,
+      "static_drive_minutes": 268,
+      "summary": "Munich, Germany to Prague, Czechia",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "fastest",
+      "route_mode_label": "Fastest",
+      "route_mode_description": "Bare essentials with minimal route drift.",
+      "polyline": "glxdHwbueAO^InA?TrAa@PQDILo@f@{@fBuA`@WYoASuAs@kIWwCMYiFaFh@mBTy@mBqAyBcAMQ{@y@_AcB_JuPm@_AiBcBaCyAqG{B{Ac@wDiA_Cc@yL}A}H_Au@]M?_Ao@gUyR{H_GaH_FsImGmCkBiAk@iAYe@Ew@Bs@Rc@Vg@h@_@x@UdAGhA@rBGf@Sj@UVIRsAhAy@~@}A~BcBdDaFtKi@|@mAvA}@l@w@\\{AXkAD}AOqAa@iC{As[sRcA_@aAIy@Hs@Zg@^o@|@[l@{DnJk@Xk@lAiFjMw@vBM`@[`@YH]AoAq@wFmDMByGuFwGkGcDmD}ByCyA}BaBgDoAeD}@cDs@kDa@mCgAcJu@gEsA{FqA}DgAuCiBsDwBkD}AsBsBuBuCeCyCkBeGsCa_@eO{ScI_Y_Lg\\uMwa@sPs@SccBcq@eoAig@}fAcc@{DqAuDaA}E}@cFg@{ESgF@}EToEf@cDn@iq@|Oct@~PiIxBuGrBuIdDkcAdc@e~@vc@cQ`JeJhFsGxDaMzGw{@pa@mMrF{J`E{UxKy|@hb@oAn@mHnDuzAtu@}CrAeEvA{ElAyDn@wD^uETsE?wCKqxBoL{EK{GLsFf@wDn@uCp@yE|AoDxAeEtByDbCsNfK{D~BeEpBaEzAwDfA_Ez@sEj@mDVaGHgmA`@gz@\\wRBieA^{JSoJg@}j@}DkOgAoEMyEDqF\\qDb@{Dv@mGbBs_@|KsCx@wH~BaQbF_Dl@_Eb@yBJoD?eEQ}C[sDs@iDcAyCmAwC{Auw@}d@gFgCuDyAcD_AeCg@}Dc@gEOqDBqEVsEr@iD|@qEdBmFvCeD~Bin@li@kChBeE~B_DpA_D`AaEz@oEf@uPj@}EB{CMsD_@cEu@iCq@gDoAgDcBaEkCcDmC{C{C}`@ue@sCkCqCoByC{AmC_A{@WmCc@cCQcCGeCH}t@hGcEh@sCp@oA`@mBt@uGlDoXpOsB`AqCz@kCj@_CVkDLqCEqCQqAQeEaAyDuA_[yL}DkAyDw@cEa@mDM_c@e@cA?a@QaDMiBUiMaD}DiAkAk@w@o@s@cAm@oAOIqCcH_B_DgBoCiBuBmBeBgFiD{I{FqB}AsBqB_BoB}AeCsAqCkA_D_AaDu@mDk@sDg@kFk@wJcBs[q@iIm@sFgAwH}`@w}BoAgGkAeE_AqCyAgDiBeDyEmHo_@cj@yD}FaAkBw@oBc@uAm@cCg@iC_@wCWwDIaD@aD`@eR@uEO}D]wDc@uCg@yB_AgDmD_Ls@{Ck@aDk@cFWgEKgEEwZOkH]_HWsDw@eHeAaHoAqG_BkGeBkFiA}CyB}EaB_DuDaGsOmUcBoB{BqB_C{A_CeAso@uRsA[yKiD{BaAiCcBoBiBkAsAkBmCwFmJyB_DiBsBmBeBwA_AsBcAcCy@_Dm@yNcBeCi@}@WqBu@el@mXgDiBkEoC}DsCwDeDiDkDgD{D_DcEgDcF_DsFyC_GwRab@wAgC}A}BqAwAkCyB{AaAyBaAsCu@eC[aCKgCB}CVqd@`GqEZeEHcEG}a@aC_D_@}Bk@wCeAcCqA}B}A{BuBcBkBqBsCeCkEwp@opAwByEoBmFwAyEuAyFkAeGaA{GaMyeAeA_H{I{e@cNmt@_BgH{AuFiBwFwFgOqFwNaAcDcAkEs@aEo@mF_@aF_@iIk@iP]_GOiBy@kG_A_F}@qD_BcF_DgI{p@s`BaE{KeEaMqD_MeGaUmFiSgCsI{BuGcBgEaCgFgCuEoCiEkCiDaCoCmDkD_FaEaGgEcUiOaFqDcLgJyHmHmGyGgGkH_GwHgEaGcF}H}CgFqDuGoLgUaBmCgCqDiBwBaC{BaBsAcFeDys@wb@aEcCgCiBuCcCwA_BmBeCkAkBgBgDaB{DiAgDkAsE{EqScAuDsAcEuA_DqAiCmBcDqDiFmv@adAwDsF_CaEoFuKgT_d@yCqFuBgDqBkC{DqEo|@e`AuI}JgO{QuYm^oD_EcC}BmDgCoRcMwDwC{DoDmGiHcCkD{CaFiBgDmC{F_C_GmCgI{BiH_\\efAoFoRaIsZaMuf@qAeGoAaH}AaL_Hcj@w@yE}@aEcAsDsAuDwAcDoBoD_B_CaCqC{BsBwB}AgCwAyEmBqt@qXkEkBcAg@sDwB_EuCoCiCeCsCgCiDiBwCoCiF}AkDaBqE{AcF{AkGiF_WiAwEuAuEsAmDkB{DoB_DgCeDmKkL}B}CoBeDyA{CwAwDgAmDqAsFuAqHwBuLiA{EsAeE_ByDoBwD}AeCqCoDcLaM{BuCsBaDgBmDyAqDcAaDqAiFeAsFkAgImB}M{@gFqAmG}AiGcCiIyA_EqB_F}BaF}C{FgDiF{ByCwDkEuBwBcDoCcEyCcDmBkCmAiC}@}DeA}PkDuGcBqFiBcEeB{EaCaGkDaWsPaFqCuEuBqE_BqGiBwH}AuGaAyHu@}FYyHKwIHwUn@}G@aHQgGg@{Fw@gHqAsGwAgXcFwEu@aHy@gL_AoK[yPOeWMwL[mIc@aGg@mKgAeCKmBAoDVsDl@{C~@kClAuChBwBfB{B`CcClDkAnB_BbDwAnDuAlEeAlEu@dEk@dE_@fEk@lJk@xMe@xGm@lFq@hEaAlEkA~DmAhDcBrD_BrC{BbDiBrB_CrB}CzBqVpNoI~DaFpBiNzEaFzAuFpAaEn@eDZuDLsE?gDM}Da@sEw@sImCsMwEgD{@eDe@kEWaD@kDTgC\\iDx@aEtA}MlFyDjA_Dj@{CTgCBmCKkAQIEsCk@uC_AoCsAcC_ByCcCiC_CsBgBqHqGiGuEeG}DcE}B_DuA}Bu@iAWuDi@cIu@cCc@eBm@qBgAsAaA_BcBsAkBcAgB{@mBgAeDqAaF{GqZuAwEuAcDqBqD}AwB{BeCwEgEqIyHyBaCyByCkBaD{AcD_CkGmF{OeAgCkAuBkA_BoAuAwAmAuA{@gBw@yAa@_C]cBCcBFeBTcATgBr@uAv@uBzAaIxGsCfBuBbA}Bt@yCn@gDZyCBaDOaEg@wIwAiD[_CGuC@mEXyGr@aKnAiFZyDBgESyC]uDu@eCs@wCkAoCqA}BwAuDqCoDgDyO}OyCgCuCmBwC}AqCiAeD}@cDk@oCWcDI_DD_CR{Cb@yCt@oDjAyEtBcFjCiKtGgTfNiEbCyDdByDnA{Dv@uCXeDF_DG}CY}Ck@yC_AoD{AmDmBkFoDsVcRgLeIwIuF_MgHyIuEyHoDyMsFoLeEkK_DaHeBiF{@cFi@kEUoFG{FLuGf@yFv@qFlAcGdB{SzGeHjBcF~@qDb@{F^wEH{FE}DS}D_@eGaAkEeAuE_BkD{AmEcCeEqC{GcF_F{DiJeHyG{D_D}AiDuAoEuAyCq@}Eu@iFa@wQw@kFe@mEq@_Dy@_DoA{CeBcCcB}BwBiDqDsI}JkCmCgDoCmDwByBcAaCy@wCs@kEi@qCMgEDcDP_Ej@}DbAkC~@qClAaE|BeGfEeNfKwDdCaDjBgErBaGzByGlB{E|@gEf@iENgEIgD]iDq@gDkAyCuAmD}BaDmCwEuEmLqMcF{EuDaDaCiBeFiDaH_EkIiEoKcFkJuDqHkCsMyDeLqCmFkAiDi@cDk@wJqAcLeAaLo@_HMeGDwFVcHt@yFfAsGjBwFxBiEpBgGlDaJfGsQnMwFrDkFnCmFvBsEnA}E`AaFj@kDPqFBaEMyEc@aEq@yCq@kBi@mE}AqEoBgGcDcG{D_GmE_EcDqHwG}JoJuUaUeNmMyNmMwJ_IqKeIwLgI}IoFgIsE}KuF}MaGeLiEmIqCwK_D}JaCwJqBgHoAoIkA_KiAeL}@_Jc@gHQcICcIPsIh@yH|@uGhAkGrAeNnDeMbDgIdB_G`AaI`AqJt@uGXmHJ{AEsEAkL[qH[k\\oB{XeBi}@qFeIWwGA}HR_F\\gI~@iJzAoIrBiHxB_UvH}EnA_Cb@eDb@wBL{B@{CKmDe@{Cw@aC}@mCuA}B}A_CqBiBmBwAkB{BgDqLmS{DaG{C}D{CiDmDgDmEkDgDyBiDiBaDwAyEcBqFsAcHmAy[cEqJ}AqJsBaJeCsIwCqHwCuFgCkIeE}GyDqHwEiHcFmHyFiGiFcJuIaNiNqVkW_KyJoImHiEiDqIaGwFmDkGmDoKeF_HoCaLuDmEmAGWu@WuA_Ac@e@g@cAu@kBc@m@e@]OCYA}ACm@BIE_@Bc@_@O[CiCIyE?qFBgBJ_CLkBRIHW?]KYOGUJKVq@PyONw@C}@OeAc@q@e@cAoAeAqBmDsHkCgHiEkM{@iB_ByC]}@Og@SyBAu@B_EG_@UOoAHoAXsA`@w@Dc@CYYMk@CcA@kCKyB_BaQq@yE}@{Du@yBq@eBeCeFuBuEkA_DsAeF}@gEe@cBg@sAeAwBk@aA{BeC{CsCeAo@qCkCoCwBeBeBaC{CsFgIoB_Ds@yBa@iBcCySMs@Y}AiDuLsAoE{@aCsAmCu@kBi@{BWyASgCEqAFyGHqEAa@JqF?mBUeBoCkHwAwFs@oEe@yAg@{@i@m@}@k@_Bq@gAe@_As@eAiAsB{CqA_B{@cBSe@cAmDe@{AyB_J_@qB]iDIuAQuKSsBSmA[aAsMcYo@y@eAg@u@Oc@Ci@@cBTc@?gAOq@q@mBcDQ]qA]q@aB_AuADu@LaAVsA{@y@sBcC_AmAoD_EqCsBw@cAkAuBgCoFc@}AM}@e@kMBoALeECeAgA{FMq@_@}@u@y@_DiC_BmB_FkIUWuBsDYWUIMnCWzCi@`Dm@fCuAtDo@nAcA~AwBzBgD~BcF|C_Bp@}A\\mCN_IO\\yFF}ARgD?}BGqCa@}C_@aBQo@qC}FgGuJg@m@qHmLyBaDeDeEgAgAoB{AaAeBg@s@][eAsAe@}@u@oBg@oBw@mFGq@[eAgBaFi@eAkBiDUk@[eBU}AgAwF[mA_A{BiAyBcAwBo@yAq@iAiAgBaAeC_AwC[iAa@o@q@s@o@sByDeNIs@CsEAwGA]m@uCUq@Se@{A{Ai@w@qEkEmByBaAk@w@_@o@O_BU]WQg@GY@u@HeAwAM]?QFeAHqAX_Ab@k@Vi@b@_AbAw@lAeA|BY~@ANkBvGa@hAy@bBy@dAq@n@cAv@kI`GIR}AlA{@dAo@jA[r@i@hBWpAgA`Ja@zBg@`Bm@xAq@lAu@bAuAnAwAt@{IjDQ@iDnAqBz@KLcFhB_Cd@eBJsA?uBOeB]gBk@sAo@wA_AeByAmAsAoB}CuFaLqDmH_AqAc@c@u@i@sAo@qAScAAeAJsA\\{@b@cAz@aAlAm@dAg@pAi@pBq@nEk@|Dc@tB[~@Uj@y@xA{AhBqDvDwArBcAtBw@zBq@rCUrAmBjR_AtJO~C?dDD`BRtCZdCRfAjE`SXzA^`DJ~BNl`@BhKGlCU~Be@`Ce@vAs@|Ao@~@a@d@kA`Ao@ZiA\\oALqR^yATkA^oAn@}ApAwFhGqBfB_BbAgBp@aBZaCLeIMmAH}@PU@wFnBSHJdARhAFr@Al@Mh@Yd@WLY?YS_@e@OG}BcGsBcE_A_B{@iAwA}AmBcBiBmAoBaAwC{@_FsA}By@sCwAmCgByBkByB_CcCeDuBqDgB{D}AmE}@}C{AmGsAcHsBoMcD{SgDcSkDgRaJ_e@{@uFg@wE[{Eq@gOYeEe@aEq@sEs@gDw@aDgAkDeAqCuAyCkAuBwBcDiC_DeC_CmC{BuDgCiHaEgQcJmEkCuDoCgDwC}CcDuCuDsCiEcCmEaCaFcCoGuBsGyA{FkAkFkA{Gw@wFk@uFc@gFk@yKc@kJ]wFk@mFo@gE_AkEq@kCiAsDuDeKqAcE{@uDy@eFW}BU{CQyDKyHAyLJqNHoC\\iHRoCr@oFv@eE`AqDr@uBx@kBd@}@hDuFjHaLxB{DtAwCvAsD`AeD|@_E~@cGj@uFl@sHb@oIXsILiHFgHAcIMwJOuFc@mJi@wIs@cI}@eIuAkJw@kE}@aEyAqFgAcDsAiDkBaE}BcEoCeE_N_R{DgGaD_GcCmFaCgGmB{FoBiH_B_HeB_JmBkLyCeTyDiYsBsM}BmMaDwOiB{H_BaGgCyH_DaIwDgJ_BuE{@eD_@mBi@iDWsBW}CSsEG}EBaETuFbAyPP{F?{DKkFWkEa@}Do@qEeDeR_AoGy@uHe@gG[}GKcH?gHHyFVaHl@iIl@uFt@gFzAiIzC{MfCaLnA{Gt@kF^}DXyEL_FBqEEgESeF]yEg@uEs@mEw@wDaAmDeAaDqAcD{A{CyAcCgBcCaCmC_DuCmMmKqCiC_CkCwBwC}AmCi@gAaCaG}@qCeBqGmAoFqB}IgCwJwAqEeBoEeBsD}AqCcBiCqCiDqCsCoDuCiOwKwCeCeBgBmCaDmBkCgByCsB}Dw@eB{@wBgA{CoAeEs@mCs@_Dq@kDcA{G_BgMm[oqCsA_MeAgIq@mEu@mDwAwFmAyDuAqD_BkDaAiBoBaDs@aAoBeCqBqBwAoAsCuBqHcFqDuCwBqBwCcDoAcBaBkCmFwJm@wA{CcIwDkNw@aEcAaHq@uGYeD_@_H_@wLUeKkJc_ESuG_@aGa@_Fc@wD}@mGeAwFw@oDeBmGmBuFcAiCoAqCqCkFiCaE}JoNqFeIaEqHsCgGyCuHoB{FeBcGcBuG_AmEuBkLkBiMgE_ZwBqMcCoM_DiNuCgLeBeGiE_NeDeJkB{E}CoH{FwL{E}IgF{IyD_GoFoHsCmDyNeQ_HkI{GwI}D{FoFqIaKgQcH_MeBsC}CyEgCkDaCuCeBmBsDqDwFsE_F_DcDgBeCkAaP_HgCmAcDmBsDgCqBaBmEmEwBiCgCmDiCaE{BeEkB}DeCqGkBsFsAaFo@cCgAcFwAcI}@}Gw@}HwC{^y@kIw@gG_AiGaBeJuCkN_EeReAiFoAaHgBqLcAuH}@gIeAqLgH{`AkGi{@a@iEu@_JqBoR{DqZaBkMo@mFgAqKi@uHYkFYoIOkGGsM@uET_MXiIXuFbAuNtAuOtA{Lh@_EtBkNnB_LpCmNjB{HzAeGpBoHbDoKjDgKpBoFtE_L~EsKhDuGbHeMdKcQxFmK|BuEfFiLrBiFjDiJhCuHpBwGpD}MtC_MbA}EbCqMnHgb@`BsIt@iD`DkMfBqGhCgI|C}IpL_[`AqCtBiH|@mDtAsGfAqGj@aEz@gIj@_IjAiUnBy_@p@kJt@}H`AkHlAmHz@iEpAuFpBoHfj@ujB|ByIdAoEbCyLlAsHnAmJv@mHv@{JbD}f@dO{~BnAuTTwFLwFF_E@}HMkKW}HOqDy@}LiAmKiCqSk@yDkAqHqBoNkB}M}@aI{@uIc@wFi@uK[cKOuMKamAEw_@GoUIgOM}FYwGi@kIi@wF}@wHy@cGeAgGmB_KmAwFsBgIaAsDoBuGmAuDaCwGiB{EyDyIaBkDqEoIeO_WuAgCoB{DwAaDsAeDmAeDcBgFcBeGo@gCy@wDs@qDq@{DgAiI]wCu@uIe@gIY_IOiKCwODgQNyNXuMZcLj@mNX_Gj@wJn@}IX{CpA}KxBmNjQudAjP{`ApB}Mz@gHz@wIx@mL^kH\\yKNeM?kLUca@BoHP}HPyDh@cIl@oFn@sE`AuF|A_HjAgElAuD`BkEfB{DtB{DlCoEtBeDtBaDdGyJfBiDtCoGhBaFtAoEnAyEfAaFd@aCnAaI`@aDd@{EPyBf@yINqEDwCDkFAeDEaFWyHMaCm@wIi_@mdEaMauAq@}I_@oGSgGKwH@kHLiGL_ER}Dp@_Kn@aJTyDJuCLwF@gIEmDKiFW}Fy@yOOgFIuE?{GRsIb@mGt@cHp@qEvAcHlAyEnA}DnAcDfByD|@aB~BuDbByBdCsCbDuC~F{DrlAav@pNmIvTmLjD}BlD_DdCqCbCeDjCoEjB{D|@{BpBgGjAkE|@iE~@qF`@aDh@cFl@eIXwF\\qLP}N@_JCgEMqHS_Hc@{J[sFgAuMeBgP_AsGsAkI_EaSwCaNsHw^uBuLeBeLsAaKyAsMYiCoAeP@i@MuAc@qK{@qRD]Bw@Lw@Tk@\\W`@GXDXNZf@Pp@Br@Gn@Qn@UZ[P_@Fg@CUDiEcAiDi@wEa@{BIqCCqB@}Hd@{Ep@_JnByNfD[Gg@@YI[]O_@UiAQgBvF{ANuD?{HIsH@kBGuCQwDQ{CC_DDaDh@_NDmB?_CIsHKiFQuBUiCWyGEuF?mN?yGNoL?a@@sALSBYI[EE@aACEHeFNyCZ}EAGNyDNoAXaAbAiAr@i@\\c@LYLq@TsAPu@Z{@PUdAy@|DaBj@a@l@s@Zi@Rs@Jq@FaA@aACu@YsCk@aDi@wCkAeFOsAQcEW{B_DaO[cBwA{JQoCQoB[sByBhFaCtFiC_BuAKk@KyA]YiAeByE_D}GOUUOa@M?}@pBDnBPtB_@BqAHw@b@kC?u@IqE?cANcCp@{INwALkBHo@HoAVIR[H_@Ai@M_@UUj@}IDoAD{DNMDYG[MMM}@GwAAoANwENmDCcCNOD[GYOIQHIXiDU_@FWRINIFm@nA[Va@By@AyCqAmAu@g@g@a@s@Yy@eAgFW}@c@{@q@w@k@_@c@Oc@WqBUoAAaBFkAGqAa@{@g@UOWKmHiIi@s@QAwD}F_EkHuCeGyDiJcM_]iCkGeDiHcCuEeFsIcL}Q}CsFiDaHoCqGaCsGyAiEuD_MeBuGuDmOcCaLiC}MiCuOkAqIg@}Ek@{Gc@mHUoFOuGYqTImD[aH_@aF{@oH_A}Fu@oDeAeEkA_Ek@aByA}DoDkImKsTwCyG_A}BqBwFiBgG}@kDeByHu@_EcAgGs@sFYiCq@uIg@{IaBgb@m@{Lq@kK_B{PyAcM_BwKkAgHyAuHyBaKuBkIsDiMsI}WiDcLuDcN}CcMyD{QgD{PuBwMaBkLcBcN{AwNs@aIgAuNc@_Hi`@o{G}@oLg@iFy@cH}AoLkB_LmBsJyBiJeByGwCuJcDoJgCqGwDwI{D_IeQe\\}BoE{EcKgF{L{DgKcDiJeEsM}D_NkD}MuCwLmB}IeDwPm@gDkB_L}AiKcC{QwAgM_BqPcAyLs@mK]iHc@cMOaIEuPJsUCeIMgFQyESgDq@iIo@wFg@cDg@uCi@oC}AiGo@iCeBgFwBeFeDeHgCiFiKiUyGoPwEuM}BiHgEwNkPeo@eN_i@aCiI}BaHaAcCuBwEaCqEoCgEaCyCcBmBoCgCcE_DyD{BkCmA}CiA}e@wOmCiAuBgA{DgCcCmBeCaCsAyAcBqBwByCw@oA}AqCaCyEkKaUgEkIaBuCwBkDuEqGwAiBqEeF{EuEwF_FsMkKuEgEiDyDyAoBsCsEyAoCyAeDaCiGeAkDmAsEeAaFq@{D_A{G}@sIoB{Ua\\oaEmAyM_DuZsCwU}@wGiC{QuAcJaDyRmDuRgDeQwEoTuDaPwDiOuGcVyEgPuFkQuFoPaIoToGcPcHmPgIqQwFmLmFgKmGoLaLuR{HcMcIwLaKqNuKmN}FeHiImJqVgXcE}EcEuF}AyBsDcG{CyFwCwGkAsCgBgFsB}G}@gDuBuJeByJiAuHmFs_@_BkKkB}K{@yEsA}GyAyGmC_L{CeLcAiDmBkGuD{KeEaLkEsKiVmk@wFsNiEoLaFuO}AkFgGiU{Paq@kH}WaEaNsDgLgDwJ}FsOqF_NqCoGgFsKqGyLaDwFuGgK_DqE}JuM_HeIcMyMo`@aa@cFoFaKgLkJsL{GkJqFmIoF_JiFgJ_DgGsEmJmFuL{EqLqDuJ{EkNwEoO}DsNqC}KsDkP}CuOoCwOgCgPqB_O{Jiw@sB}NqBoL}BqLiCiL{CsL_DoKoDwKq@gB_EoKiCgGiCwFkFmKoHyMaPsXkFqJsE{I}CyGmCkG{DoK{C}JuAqFyAcHcBuJcBqMs@uHkBwVy@mJy@uGcAkG_AcEiAcEu@_Cy@yBeB}DyAuCmCoEsF{HsIiLyBkDoBiDuBoE_BcEsAmEaAaE}@aFcAaHwAoMqCiYw@gGuAmIs@mD}@mDaA_DoAkDaAuBeAmBiBwCwByCoByBqDcDsFqE_N{JkCwBsEiEwEcFaCwCsDgFaDgFqCcFyD_IwDcJoEmLwP{e@{DeKqByEsDeIcCeFg@oAcDgGwCaFaGiJ}EaHuHqJaI{Im[a\\}H{I{FiH}E_HiE}G_GgKoDeHgDkHwBkFkByEsBwFsCmI_DgKw@kCkFaSaEmPgI}]{Ho^qEmTcEeToAcHwB}MgA}HeAyIiA{KaAqMq@iMa@qLQ_HH]O{L?aBFqALiAZoAf@cAf@o@fByAxAw@bAWt@Az@LxAf@v@b@nDzA`B^`@AhCb@dBNvCBxBKlEq@`AUlC}@pCuAfBgArCiCtB}BzB_DrAaC~AgDv@sBzAkEzCgKnBiGzByFjByDxCeFlIiM`C{DjCsEpBgE`BwDtAeEzA}Fj@eC`A{FXqBl@mF\\kEVmEToFpAih@vDs_BZgJ\\{Gd@eGf@{Ex@yF`AoFlAqFhAeEtAkEvAuDvAyCdCyEbC{D|DwFrByBP@l@i@bAg@t@Ir@Fl@VpCxBVBf@Rd@?`@Mb@a@Zm@T_AD{@CaAMcAa@iBwBsGuCiH_AqBuCkFwNyUk]yj@{BoEmAaDeAuDs@gDm@yD_@iD[oFKuE?iDHgDVaF`BiXDsBA_COcCa@kCaBiG{HmY_AoCu@cByAaCoAyA{AqAq_@mVeAgAw@sAk@}Aa@iBU}BE_BB{BrBkZPwEBoEImEOqD]cEi@}Dm@iDeAgE{@gC_BoDqAaCaCwDkD_F_AyAmFoI}@aAcAu@mEuB_By@{@g@k@O{D}C_C_BoCkAgCk@IUiA_@eCi@mHgAmF]kEFWLw@EaCL{F^mDTgBEcD[kFq@qFe@oNo@KK}A@sFp@{OdCs@Ii@Wk@a@m@Sk@Eg@A}TlAKI}CCeFQu@LeBh@mGjCQTS\\{@h@i@Tu@QOOYu@EQ_AuSIwAZ_G@gAEmC[{IGmEHmFZiJHgER{b@Fi@@uClIYTALY?ScBuSyByXOo@Uk@]e@i@]c@KW?",
+      "leg_minutes": [
+        114,
+        64,
+        67
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 2883,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 49,
+      "estimated_arrival_time": "15:04",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 49-minute driving buffer plus planned breaks.",
+      "stop_count": 2,
+      "route_mode_summary": "Essential breaks only, including a fuel stop on drives of two hours or more; optional coffee and scenic detours are excluded.",
+      "profile_influence_note": "Route shape: Fastest. Stop ranking: 34% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 364,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJ47ffjLwXoEcRp-Vuea3FGK0",
+        "ChIJEQYqtqXvCkcRV4yAX-O-AzU"
+      ],
+      "waypoint_note": "Route plotted through 2 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "11:17",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 137,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJ47ffjLwXoEcRp-Vuea3FGK0",
+        "route_progress_km": 193.5,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "12:49",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 229,
+        "title": "U Matasů",
+        "kind": "meal",
+        "duration_min": 55,
+        "place_id": "ChIJEQYqtqXvCkcRV4yAX-O-AzU",
+        "route_progress_km": 291.3,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "15:04",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 364,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJEQYqtqXvCkcRV4yAX-O-AzU",
+        "name": "U Matasů",
+        "category": "Restaurant",
+        "address": "3, Selská náves 28, 326 00 Plzeň 8-Černice, Czechia",
+        "rating": 4.5,
+        "review_count": 887,
+        "price_level": 2,
+        "price_label": "$$",
+        "detour_minutes": 5,
+        "enjoyment_score": 63,
+        "crowd_risk": "medium",
+        "open_now": false,
+        "reason": "4.5 rating, $$ pricing, and an estimated 5-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "fastest",
+        "google_maps_uri": "https://maps.google.com/?cid=3820106792709426263&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.umatasu.cz/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 49.6986941,
+          "longitude": 13.4135408
+        },
+        "route_progress_km": 291.3,
+        "opening_hours": {
+          "openNow": false,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 11,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 1,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 2,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 3,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 4,
+                "hour": 22,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 5,
+                "hour": 23,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 10,
+                "minute": 30
+              },
+              "close": {
+                "day": 6,
+                "hour": 23,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 10:30 AM – 10:00 PM",
+            "Tuesday: 10:30 AM – 10:00 PM",
+            "Wednesday: 10:30 AM – 10:00 PM",
+            "Thursday: 10:30 AM – 10:00 PM",
+            "Friday: 10:30 AM – 11:00 PM",
+            "Saturday: 10:30 AM – 11:00 PM",
+            "Sunday: 11:00 AM – 9:00 PM"
+          ],
+          "nextOpenTime": "2026-11-22T10:00:00Z"
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 22,
+        "cost_label": "~SGD 22/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJ47ffjLwXoEcRp-Vuea3FGK0",
+        "name": "AVIA",
+        "category": "Gas Station",
+        "address": "Großenschwandner Str. 9, 92723 Tännesberg, Germany",
+        "rating": 4.0,
+        "review_count": 125,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 16,
+        "enjoyment_score": 61,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.0 rating, $ pricing, and an estimated 16-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "fastest",
+        "google_maps_uri": "https://maps.google.com/?cid=12472936516859913639&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.avia-regenstauf.de/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 49.532014,
+          "longitude": 12.3225915
+        },
+        "route_progress_km": 193.5,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "selected_places": [
+      {
+        "id": "ChIJTfKDHOTJn0cR_WMDF44OJrE",
+        "name": "Armin Kellerer Hendlbraterei",
+        "category": "Catering Service",
+        "address": "Amselweg 2, 93345 Hausen-Großmuß, Germany",
+        "rating": 4.9,
+        "review_count": 22,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 5,
+        "enjoyment_score": 78,
+        "crowd_risk": "medium",
+        "open_now": true,
+        "reason": "4.9 rating, $ pricing, and an estimated 5-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "fastest",
+        "google_maps_uri": "https://maps.google.com/?cid=12764906197262492669&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://catering-kellerer.de/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 48.839677699999996,
+          "longitude": 11.957636599999999
+        },
+        "route_progress_km": 94.9,
+        "opening_hours": {},
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 2,
+      "estimated_total_sgd": 86.02,
+      "estimated_per_person_sgd": 43.01,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 68.43,
+          "detail": "391 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 17.59,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 2 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:17:10+00:00"
+  },
+  {
+    "id": "fallback-singapore-malacca",
+    "author_name": "Aisha · Exchange student",
+    "title": "Singapore to Malacca without rushing the border",
+    "start": "Singapore",
+    "destination": "Malacca, Malaysia",
+    "route_mode": "balanced",
+    "adventure_level": 68,
+    "budget_per_person": 95,
+    "travellers": 4,
+    "preferences": [
+      "local-gems"
+    ],
+    "route": {
+      "distance_km": 248,
+      "drive_minutes": 235,
+      "static_drive_minutes": 215,
+      "summary": "Singapore to Malacca, Malaysia",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "}ugGc~txRk@OEOQGkAOUl@GBMCM]uCqIu@uBw@iEaAaFe@{CaBGK?cCOkABqANqGbBwD`@mDF_GQePm@gHMkLi@mBCqHHkVb@wBLoALmBd@iA^yUvJgDvAmAv@}@z@g@p@mApBgFnJgA~BmI~NY^eAbAw@f@u@ZuA`@eAN_ADiACmBOcKyAcCc@e@Gk@V]L]ZQZYjAcApDuAbD_@l@SNq@lA{A|A]^e@b@_BdA_Bt@{@ZA?oJ`C_GdBiFtBeChAiCvAaFjD{AjAwE|C{A|@cChAaEzA}WrH{F|AeDtAyCdBiBxAyAvAuDpE_HxIsC~DoBdC_CrDuB|D{@vA_BfDmEfKgAvByAlDaGfNgAtCaBhFo@tCc@fCaAdHI|@WxDGvC?rEBfCHbCVbEz@`HfAzFt@zCvAfEx@hBrB`Ej@~@DPdCnDbO|Rf@b@^PVFd@?\\G\\UR[N_@?[E[O]UWc@Qe@Kq@E_E?OK_IDcDH}E\\_BRiCb@{Dx@{DdAaB^gM~C}Cd@wC^}DZaBHkEFsSH{G?y@Hy@Tu@VeATSB_KJ{@@iBLm@Nq@V}@f@{AnA[HSBo@GwFcBa@UkAaBcAuAw@qAWYkEgCiA_@w@Kg@Co@B{K~BgVlFqA`@qAh@eAZkAN_ADsD@gAFmAV_AZ_@RoFvCaCfAqG|Cs@Rw@Je@EaA]]A]Fu@V[BQCWc@Qe@cGwNAC_@k@QMq@Wa@IqAGsBGMAe@[{BiDs@aBKa@Oy@k@cFu@iHWiBOi@Sm@kAiBoBiC}CmEoD{EsEuGYe@cBwBsA{A_@[_@UiAe@iAU{BUoGg@sAS{DkAsDsAmCkAkNoFaBs@iMuE_Aa@sHaEcA_@sAUYE{@AoADk@H}Af@u@X_RfImOrG_DhAoCjAoAl@sBpAkClBwAfAcB`BsJbK{ClD_CfCoH~H}C`DiCpBwW`OaAl@gBtAuJrIqEjDmCjBeCnAsB~@aFbByBn@{Bx@_OtEwAf@yBlAyAlAo@`@{@x@uAhBeAhBYn@cAlC}@`DqAtFe@~A_AdC{HjRyBjFyBzEs@rBaCxF}B`FiBhDuA~BsC~DaC`DEBsA`BsBxBeDzCmAfA}FpE_GdEkKhHqCzB}FnFyE`F}EjG_CdD}BpDkAnByDlHsBlEq@`BgAhD_AhCu@rCy@|Cq@pCo@~CmBbMe@jEa@jFOjCaBb^{AhYiAzS]fDOjAc@tCa@fBgAtDqAjDoFhKqAtByC`D{BlBiDnBkBhAiE|BgBz@mFxCoCfBwCzBaEhD}D`EgAnAeDbEoCfE[f@gM|UeE`IqDzGuAnCsA`Cc@~@a@r@}BlF_BbEeA`Dm@pBmA~EqAxG_@rBu@rF_@~Dk@tJWlGo@zKs@pGwAbKOnAwAzHc@nBgAvEo@~B_DbKaBfGuBvGaDbKsBlGMj@m@jBmA|DeEnMyBpIo@|CeBtFeB|E{@pCiGnOoBbEgBxCiDpFkDfF{CtDsArAqf@lk@ab@~e@iExEkOpQgGpHiEvFkBzCkD`GCFeDtGoBhECFcPb`@oa@r`A_DzHuMv]iAxCiBxE}D`LcBtE{@fCmB`F}CpIwCpJoGtQwAzDcDnGiCpE{AzBiC|CqBzBm@r@eBdBgIbHaAp@kC`CsDhDaCzB_G`FcAx@iC~BgBfBcCxBkCtByEfEk@h@aHzFqL~K}ApAS\\mBhBuBvBi@p@o@pAS~@It@?~@Fn@TxAFt@C^ETOd@W\\i@f@k@P_BNc@@iACcAOcAYu@]_Am@e@e@e@w@c@gAWcAm@aH{@cH[sBCi@kF}\\i@mCg@}AWk@i@aAu@_AeAcAiAu@q@_@gDuAiGoDaBeAo@e@k@m@]V_@VOh@wAOcBi@y@{@a@AeDqByAeAgBuAUIUZUr@}BrOCPSGqEm@mIsAaEg@kKwASAiCg@mHcAq@Ta@tDEhAKtAYtA]z@mCvEM\\QbAG~AHbCVfCThAjAdEdB|FZbA\\jCz@zJCZ@^v@bJF~Af@dGDV`B`ERz@F|@AxAU|DAzARtD?z@IjAUvAKtA@hAF|@hAnGHz@?jAEn@_@hBy@|CMZg@p@yAlAy@~@Y`@O\\UhBIbCInAOrAe@rCQfBi@nCg@|Ak@tAk@dA[`@_A~@mDzBgBdAmAr@_Ax@sAzAeA~AuIdNi@~@zBnAeCjEt@`@u@a@aC`E[MwAu@a@QcA`BkCrE}BvEs@vByAnF]`BOxAw@|Fu@rGMt@o@fBQ`@qDvFOJsChE{@lAyDhGc@|@iBfFe@fBmOtc@}@`Ds@zCs@nBeAdBaDzEkChFiOf^wJ`VgGbOoB|EmBdE}DlH}@nAq@n@sAbAcFhC{@j@k@h@a@d@m@bAwBnE_@r@uAvAiEvFw@vAi@jAQd@o@|A_@~AQfAGh@A`AFpBHfALv@Z|AHv@@r@C^Or@KTS`@cCrDqHhLsC|DoIvMqDdFwBhCoErG_GtIoAlBoCvByAbAsAfAaElCyBz@}CbAe@PiA|@m@l@q@dAiBrD_BjDo@~A{DxLEXqElKH`@LR`It@tGn@hC\\jCt@r@ZnAr@l@f@zBnBrExDxFxEXLnDdDx@z@l@Fb@Cd@ID?tDaDJQrCaCzAqA|@m@jAm@`A[xAS|A?fBLf@JjA\\x@\\VTl@\\`A^vB~@dAZb@Dd@Bz@EZIj@WPMV]N_@He@Be@C]G]M[KQUWq@_@c@Ko@Cc@DYF]La@T_Ax@kBpBM@}\\t`@}HjJo[d_@}FbHoGrHyJjMaEtF{EhH_BfC}GdKiDnFgCvD}E`HqTb\\}r@teA_m@p}@}CfFmBpDi@~@kBtD?@sAhCwC`GyAvD}EbMyAzDyCvKsAxEsApFiCnMgBnLqAtKkCjYQ~ASfC}@bH{BhM}@vE{@zD}CdLaBpFeDzIiBrE{C~GqDdH{AhCqFnIk@t@EFuMxPgE|EsPpQyN|OqMfNmCzCuH~H_CbCoBvBgUjVyBbCeThUsMxMqB~BqNnOgVlWcHxH_LtLiNnN}IrImOjNoQ~NmLjJoGxEwSzNuKjHiKzGcGpD{HlEyJ|FqRxK{FjD{h@xZiG|DaH~EkHdGmGbGmObOu^l]uJhJwCpCoGlFiHlFmD`CgKrGaExBiHtD{MxFeFjBqC`Aq[~JgFnBuGvCkEzBgCzA_DtBiE~CuDbDsCjCeDlDwClDmObT{T|ZkBlCkCdEiAjBmBnD_F~IsDxHiN~\\iEjKiAtCwS|g@eDnIsKpW}CxHyApD_CjEuBpDaBlCiBfCyCxDqBdCkElEqBhBqBbBsL|IeMdKsFpEsEbEwBxB_EhEuB~BcEfFoAdByAxBiB~Bqa@|k@aItKuCbEcCxDkBdDsBjD}DtH}GfOyB|FyGvR_DbJkEjMyH|TcEfLgOjc@wCzH_CpFeGtLqEtIu[jn@mDnGiBzCmDpFaQlWwB`DmBxC}ArCeA|B}@tB}ArEkBdG{@`CiA`CmArBgA~A_AfAqApA{BjBk@d@wj@p_@qBvAoB|AcB`BsBhCaAzAmAdC[t@gAdDo@hCSpAs@pGkCfXYtBWzAk@zBc@zAkArCy@`By@pAuBlCw@z@u@p@aBrAeG~DsIpF_I|F}HnGiBbBsCjCga@z^oDfDwAxAiFbGwD|EoHlKaAzAqA~BmBtDcFzK_BlEuAnEqCbKuAhGcArFHP_@jCGdA?tARdBf@|CDv@Cd@Oj@e@r@SRqAdAmDdCc@\\qB~BmB|BsAfB}EdG_At@i@Pg@@UAQISKSSKYSkAUS_@EgBJOF_CN}B`@iB^}ChAcCt@yCl@o@HqG`@w@Ho@LcAZgAf@A@c@Xg@d@i@t@y@vAkD|GkAhCWp@WpAGp@GnBa@vFB\\Q~C[xFQnCgDjn@MpBTrA^TRPlHxJbDbEbAjAXb@\\~@hGnXNt@j@`B\\l@b@d@xCxBPNrCfBtAfAvA`AvAp@dAn@LN`Br@Ol@kDtIuApDEZCj@HjAHZVl@jFfITj@Hn@Ad@Kt@S\\[`@YPg@N_ANkAFwBHwEZs@LWF[Ne@\\iAfA{@z@Q?eSpSsD~DkN~Nmu@hv@yA~AyL`MkFzFwJ|JyH`JgHhIoIjKeAlAmEtEqDnDoExDuF~DsEtCmEfCqEdCiMpGuG~CgMrGeGvCqFpCuCvAiCtAsA|@oBxAcBdAcBvAyFtFwBzBwCnDuBlC_MjPuQdViOjScBdCuD~FkBdCmMjQ}AtBoCfD_B~ByCzDiA`BiAjAcAz@kBxB{BbC_C|BuEdEeF`Esa@bZmKtIaGrFqJfK_^ra@URcLtM{HzIiHrIgExEoA|A{@fAoAnBkAxBeAbCoA~C_A|C]rA_A|EQxAWfCUrEa@jYe@ja@?~EFnDJtCZpD\\`DhAhGdA~EvAtEZ|@tBbFl@nAlCzEj@|@fDpEfBvBbCbCnBfBzC~BrDfCnJlFh`@|S|XjOpGjDfDxBrCvBrAfAlCbC`BbBrDrElAfBdC~DxAvCvA`DzA~Dz@pCp@`Cn@tCp@|Dd@~D^dFP|EDnEAdCG~BUrEc@hE]hCiAnGg@vBm@xBgAzCiBhEwBjEcCfE{BhDqCbD{F`GyHpIuI`KuD~DaDhDsGtHu@z@qCfC_E`D_GbEyBnAmAn@qIhFwCvByKpIwBxA{BrAgK~EqAh@kJxCmDhBgDrBuF|DiCpBsBhBy@|@uA`B}BnDkCzEo@~As@~B_@xA]dBc@xCa@jDM~BEx@?fABxB^~F`@jJL|F?lFItGOpEi@`K]|Dy@~KoBdUo@jJkA`Om@zHaB~QYlDc@dKDzDAdDY|WC|DOxJClDKxEE~DAnEIdHMvFa@lF]jDYlBw@~D_AvDgAfDmAbDi@lAyBbE_CrDiAxAWb@_CtCwCxCgC|BgCnBqCnBmIvEug@lW{FzCmGpEeCtBwApAsBpBeBlBcBtBkEjG{@xAeCzEsAbDmA`DuCrJgAbFI`@cCnW]`KEdDAdJBpEFhDR`Ff@|IP`CjAvKXvB`CtNbBrH`BnGlCpJhAnFv@xEn@rGNvBLpGA|BMxEGt@C|GK|NE~JM`FI|B]lEe@`Eo@lEyAlHaAdEcBfFsD|Jib@fgAeVjm@eS`g@}EtL?\\gB~FG^Zn@TVj@b@`@d@JXAjA?n@U|BUp@}AhDKNaAl@e@RS?mBe@c@AQR_Az@mAlBeBdEUViBvEy@~Be@fBeAdFe@xC[bBSpAa@nD[xD[|GMtJiA~fASvMQxEW~Dy@hHQpAk@dDmBnIcAbD_BpEm@zAcBnDeKlR}MtVoNlWyFjKeBbDiG~KaDdFoAfBgBxBiEtE{CvCqAbAg@h@_Ar@{FvDwEjCw\\~OoP~HoIzDeClAwKdFoB`AcQbIgHlDo`@~QiHlDkLdGaV`LcFzBoLdFsKvEgHxDuCdBgJnGaCfBkCpBuGzFaH|GeEpEqFxG}E~GkQrXmYdd@yJzOwAhCiA`CuB~EoA`DyApEy@nCoA|EkA|F_AzF]fC[~CwMz~AUjEsAfM_@hCu@rEy@hDy@~DqBxG{@bCoBtEiClFuCjFsCtEwArBuFtH}GtJsBjD{@|AoBbEuAhDu@vBy@hCaArDq@xCkAzHYlC]rEOxEK`RAbI]x_@Q`L@JCjNAbEWfTCtEMrNCxJ?dAQpGa@~Eg@hIk@rHg@~Gg@zF]pEg@jFQpCIfBk@zF_@pESrBy@xKUpBa@vFSlBqAzOyBbXa@vFuApPc@~FkAzLiAbO]xEcAlIcDpR}CvMc@~Ac@hBeArDkB~FmDrJoA~CaD|IoA|CyF|OaAbCcBbF{FpR_EzN}AnFe@bBc@pA{A|FsCrJc@dBwCtMsBdL{BxKc@jBgAhEaB|FKP{A~EmAzCm@dB_AxBUj@_@z@oFbKuE|HyBlDk@hAo@`Am@hAcH`LaDjFuSl\\aFbIiDpGwBpEqBnFy@~BaBvFuAhG}@hF{@tGc@nFOfCSrEWdTUdSItIGbA{AngAWxPo@xf@MfF]fIa@vFi@|Fu@|FsAlIeAfFk@lCuCnKsE~M}\\l`AaGlPuCnIc@tAaCzIcAvEu@~Da@~BeAfIq@vHaN`nBc@tEeAzIcCfOaB|HMd@Gb@iAnEa@zAOd@oArEH`@_BjGM~@Ef@@j@Dn@Lp@Rl@^n@n@p@x@j@v@\\nDn@j@NbARrANdAFdEr@v@VjAXzAT|Cx@j@NzB|@~@f@l@VbBx@`Bh@bC|At@l@p@r@xAhBtBnDVVt@fA|@v@zAp@lCx@|Dt@dDh@tE@fGAhDFzAJ|APfARd@L|B|@~DtBrDvBbI~FrHzFxD`Dh@b@lBlAlAb@pCz@~MtDfBRlC|@`An@|@b@|@j@tBfB|FdHlGfHhDvD`A|@bB~@nB^hBHr@AbAO`@IlGeBz@ShBY|@IrNEvEDpVFjJHzBFlEE|@EdDe@rBQbF_ArBWtAGxA@h@FrAThBj@hGhC`DzAbAl@zA`@xDr@bHdAxBb@zA`@p@TjAp@jAv@rAvA`A~@rDpDdDfDlBrBhAzAf@j@zBvBrB~BrAfCnCnGdCbGtBvEnA`DrB~EFVHtBIzAOvAG~ADvBLpAJvBP`BTnAPx@v@nBfEvGXf@|@tB`AfDtAlF|BlIzAbE~AbFrAfCf@l@nBdBrAbA^`@z@tA|A|CTb@L`@ZXbAn@j@PtDbArB`@|@Dp@Al@G`HoA`AKjBMlCEt@@|@P^Pp@`@n@j@~AvAjBxAnBtBt@bAVb@FTzAdC`@t@z@~@hCpBnA|@lBv@h@PpBf@rA`@xAl@fB|@d@`@~AZxCBl@AEZIvAHPDXNHVNJJ~@@`IGlDClCAzAJh@HVH|@Hn@@lEOfBH~Er@pB\\~GnA`C^~C|@r@ZfAbBv@dB\\~@^p@f@l@j@t@d@x@Jd@",
+      "leg_minutes": [
+        82,
+        54,
+        36,
+        62
+      ],
+      "traffic_status": "heavy",
+      "traffic_delay_minutes": 20,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 64,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 64,
+          "endPolylinePointIndex": 69,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 69,
+          "endPolylinePointIndex": 168,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 168,
+          "endPolylinePointIndex": 172,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 172,
+          "endPolylinePointIndex": 192,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 192,
+          "endPolylinePointIndex": 194,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 194,
+          "endPolylinePointIndex": 197,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 197,
+          "endPolylinePointIndex": 206,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 206,
+          "endPolylinePointIndex": 208,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 208,
+          "endPolylinePointIndex": 307,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 307,
+          "endPolylinePointIndex": 310,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 310,
+          "endPolylinePointIndex": 416,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 416,
+          "endPolylinePointIndex": 419,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 419,
+          "endPolylinePointIndex": 773,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 773,
+          "endPolylinePointIndex": 800,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 800,
+          "endPolylinePointIndex": 1845,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 47,
+      "estimated_arrival_time": "15:37",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 47-minute driving buffer plus planned breaks.",
+      "stop_count": 3,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 68% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 397,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJrbdPkmWC0DERgqRGNalTCG8",
+        "ChIJ8ZNOJ-JF0DEREgy_eYkhIow",
+        "ChIJ18U6VwPJ0TERFSEK7Vy9pUw"
+      ],
+      "waypoint_note": "Route plotted through 3 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:38",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 98,
+        "title": "Kelapa Sawit Wall Art",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJrbdPkmWC0DERgqRGNalTCG8",
+        "route_progress_km": 57.8,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "12:28",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 208,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJ8ZNOJ-JF0DEREgy_eYkhIow",
+        "route_progress_km": 122.3,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "13:26",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 266,
+        "title": "Summer R&R Pagoh",
+        "kind": "meal",
+        "duration_min": 55,
+        "place_id": "ChIJ18U6VwPJ0TERFSEK7Vy9pUw",
+        "route_progress_km": 173.1,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "15:37",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 397,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJ18U6VwPJ0TERFSEK7Vy9pUw",
+        "name": "Summer R&R Pagoh",
+        "category": "Restaurant",
+        "address": "Kampung Jawa, 84300 Panchor, Johor Darul Ta'zim, Malaysia",
+        "rating": 3.9,
+        "review_count": 69,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 5,
+        "enjoyment_score": 80,
+        "crowd_risk": "medium",
+        "open_now": true,
+        "reason": "3.9 rating, $ pricing, and an estimated 5-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=5523028724851286293&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://m.facebook.com/pages/Summer-Rnr-Pagoh/197808270366788",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 2.1471728,
+          "longitude": 102.7002419
+        },
+        "route_progress_km": 173.1,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 12,
+        "cost_label": "~SGD 12/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJrbdPkmWC0DERgqRGNalTCG8",
+        "name": "Kelapa Sawit Wall Art",
+        "category": "Tourist Attraction",
+        "address": "Unnamed Road, Kampung Sri Paya, 81000 Kulai, Johor Darul Ta'zim, Malaysia",
+        "rating": 4.3,
+        "review_count": 869,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 7,
+        "enjoyment_score": 83,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.3 rating, $ pricing, and an estimated 7-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=8000736724232086658&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 1.6760798,
+          "longitude": 103.52802489999999
+        },
+        "route_progress_km": 57.8,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      },
+      {
+        "id": "ChIJ8ZNOJ-JF0DEREgy_eYkhIow",
+        "name": "Petron Jalan Yong Peng (FI)",
+        "category": "Gas Station",
+        "address": "1, Jalan Dagang Utama, Taman Dagang Utama, 83700 Yong Peng, Johor Darul Ta'zim, Malaysia",
+        "rating": 4.6,
+        "review_count": 24,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 16,
+        "enjoyment_score": 77,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.6 rating, $ pricing, and an estimated 16-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=10097670188854873106&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "http://petron.com.my/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 2.0077672,
+          "longitude": 103.0766024
+        },
+        "route_progress_km": 122.3,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 0,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 1,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 2,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 3,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 4,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 5,
+                "hour": 22,
+                "minute": 30
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 6,
+                "hour": 22,
+                "minute": 30
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 6:30 AM – 10:30 PM",
+            "Tuesday: 6:30 AM – 10:30 PM",
+            "Wednesday: 6:30 AM – 10:30 PM",
+            "Thursday: 6:30 AM – 10:30 PM",
+            "Friday: 6:30 AM – 10:30 PM",
+            "Saturday: 6:30 AM – 10:30 PM",
+            "Sunday: 6:30 AM – 10:30 PM"
+          ],
+          "nextCloseTime": "2026-11-22T14:30:00Z"
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 102.56,
+      "estimated_per_person_sgd": 25.64,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 43.4,
+          "detail": "248 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 11.16,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 48.0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:17:14+00:00"
+  },
+  {
+    "id": "fallback-kyoto-osaka",
+    "author_name": "Jun · Exchange student",
+    "title": "Kyoto to Osaka for food and small-town views",
+    "start": "Kyoto, Japan",
+    "destination": "Osaka, Japan",
+    "route_mode": "scenic",
+    "adventure_level": 82,
+    "budget_per_person": 155,
+    "travellers": 3,
+    "preferences": [
+      "local-gems",
+      "adventurous"
+    ],
+    "route": {
+      "distance_km": 64,
+      "drive_minutes": 92,
+      "static_drive_minutes": 87,
+      "summary": "Kyoto, Japan to Osaka, Japan",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "shutEeft{XGtFA~A~FBEwCW{IpLErQi@xFOvKIT?~@Z~MlFdDnAHBpNpElAh@h@TlBhApBlAjCrAfHpCd@Lj@D|UAlE@NALI|OQR@^Dd_@n@p_@|@tAFt@Ij@Lv@\\DPvFvEpAt@`BlA~@z@r@n@hAlAVRPXfBtAjAn@nBjBf@r@Xl@X~@RlAFjACxAWlHAlAF~@NfAPr@^x@p@~@vAvA`Ap@j@TnAPhOn@zFHPAfVhAhHVzPLjNNjf@bAfg@hApDL^EpKHvSTjDHvETfIl@hPv@|ShA|L`@zKNhm@\\tCAnCBp@Fdj@\\xQN`OH~a@Vv@AlFFn\\Pda@ZhCJfBV`B^jBp@zAx@bBlAfE~Drg@dg@vXjXrB~AhB`AlBt@tBf@bCVzJ`@dWz@rBL|AVpBh@vAj@bB~@xAhAtArAjFpGbWj[fClC~BpBhCdBlCtA|ChAlCp@zAT~GT`BBt@BjAN|g@Ihc@ApFJ~BLfFj@fAZ~GzAtDtAfCnA|CbBlAr@vUfQnPjM|RnOvb@h\\r]dXjHjGdElEfDdEvItLbM`QzHrKdGhIbLxO|DrGxB~EdAvCfAbEhPrv@xCfN~AfG`B~EnA~CjBdE~A|CbC~D~A`CzFlHnRbVtP|SnZf_@~CdDjDdDx^fZvAhAzBxBrBhCbCvDbAxBtClHtKpYdChGlCvFrCrFv[zl@bChFhBzE~ItVzBlFlCnF`C~DdClDzE|FzTnWxCbD~ExEvDfDpBhB^`@vAlA|RrQnFjEtEbD|ClBvDzBvO|IlAz@dBdAjAj@`C|A`DhCz@|@t@l@n@x@dAbBbArBlBvExAzC`@p@fApCt@lCnAbDR\\HZxAvBl@p@p@h@tBfAn@f@^f@^z@Px@Dz@Cp@Mp@[p@_@`@i@Vi@Jo@AcCUeAB{@NkAd@{CtA}EbBeChAaBv@y@T}NfHkNhGqGdCwBn@_B\\}BZoCLaa@Nsc@L}BJcBR_Dh@}Bn@qChAs_@bQuKfEgXbKwBhAwA|@{GnE_X|P_[nSaC`BgCdBaJ`FiGfD_HlDmQpJ{DfB}Bp@uB^iBPsC?gCM_Dc@yFoA_H_BKFoCg@gJsBcB_@ODa@OQFgImBReBHA`H~Ap@NLFhBZVFpEdAdEhAfJfC`@FX?xC^xAVVVDFgAvAkBfAxAvCdA`Al@`AzCzGRl@?LtAtDP^j@xAPb@hArBl@tAfD`HhBrDdA~B\\z@`BhD~DzI|I|QF`@l@rAFVTp@~EjJlClF~ExKbAlBtD|HhH~NnDpGxCnFvAtCpCvFpG~OP\\tBpBxGhGwGhCyAx@oBtAORG\\C`C^pAN`@p@~@vAhB~CvDz@~@vA|ARXxDjE@@}GfKK\\CXDf@Pb@TT^VN@hF|CdAl@FLzElD`VlPrAfALRH|@@nNC`e@Cl@YhAe@~@ORIRaBvBc@|@k@dBUrAGrAENInEC|AANfBFVAb@BtF?nEGJD`Hk@bBUpGi@`]kDfFo@xBMp[I|J?tJErFAzK?~]G~Iw@l@Mbe@eEhCGtG@HGbLA`BGbGa@hFe@hBGpN@`AMv@W`As@vAiAt@[l@MdIe@|FYtEGhFIHCrGMx@FzAd@|ClA|@d@FF^?vDP",
+      "leg_minutes": [
+        73,
+        20
+      ],
+      "traffic_status": "heavy",
+      "traffic_delay_minutes": 5,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 13,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 13,
+          "endPolylinePointIndex": 16,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 16,
+          "endPolylinePointIndex": 304,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 304,
+          "endPolylinePointIndex": 306,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 306,
+          "endPolylinePointIndex": 345,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 345,
+          "endPolylinePointIndex": 347,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 347,
+          "endPolylinePointIndex": 364,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 364,
+          "endPolylinePointIndex": 367,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 367,
+          "endPolylinePointIndex": 449,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 20,
+      "estimated_arrival_time": "11:52",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 20-minute driving buffer plus planned breaks.",
+      "stop_count": 1,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 82% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 172,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJNwtmLHzkAGARUlSP8k_RpRI"
+      ],
+      "waypoint_note": "Route plotted through 1 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:29",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 89,
+        "title": "Asahi Beer Museum",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJNwtmLHzkAGARUlSP8k_RpRI",
+        "route_progress_km": 46.5,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "11:52",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 172,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJNwtmLHzkAGARUlSP8k_RpRI",
+        "name": "Asahi Beer Museum",
+        "category": "Museum",
+        "address": "1-45 Nishinoshōchō, Suita, Osaka 564-0071, Japan",
+        "rating": 4.6,
+        "review_count": 1215,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 11,
+        "enjoyment_score": 87,
+        "crowd_risk": "medium",
+        "open_now": true,
+        "reason": "4.6 rating, $ pricing, and an estimated 11-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=1343710205142062162&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.asahibeer.co.jp/brewery/suita/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 34.7624916,
+          "longitude": 135.5216196
+        },
+        "route_progress_km": 46.5,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 0,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 1,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 2,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 3,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 4,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 5,
+                "hour": 16,
+                "minute": 50
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 9,
+                "minute": 30
+              },
+              "close": {
+                "day": 6,
+                "hour": 16,
+                "minute": 50
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 9:30 AM – 4:50 PM",
+            "Tuesday: 9:30 AM – 4:50 PM",
+            "Wednesday: 9:30 AM – 4:50 PM",
+            "Thursday: 9:30 AM – 4:50 PM",
+            "Friday: 9:30 AM – 4:50 PM",
+            "Saturday: 9:30 AM – 4:50 PM",
+            "Sunday: 9:30 AM – 4:50 PM"
+          ],
+          "nextCloseTime": "2026-11-22T07:50:00Z"
+        },
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 3,
+      "estimated_total_sgd": 14.08,
+      "estimated_per_person_sgd": 4.69,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 11.2,
+          "detail": "64 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 2.88,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 3 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0.0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [
+        "Asahi Beer Museum"
+      ],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:18:26+00:00"
+  },
+  {
+    "id": "fallback-bangkok-hua-hin",
+    "author_name": "Sofia · Exchange student",
+    "title": "Bangkok to Hua Hin on a student budget",
+    "start": "Bangkok, Thailand",
+    "destination": "Hua Hin, Thailand",
+    "route_mode": "balanced",
+    "adventure_level": 61,
+    "budget_per_person": 88,
+    "travellers": 4,
+    "preferences": [
+      "local-gems"
+    ],
+    "route": {
+      "distance_km": 206,
+      "drive_minutes": 187,
+      "static_drive_minutes": 196,
+      "summary": "Bangkok, Thailand to Hua Hin, Thailand",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "}w}rA_gldRCPKTYPYF_@E[SM[AQYY]OgK{ASGbCaE`@c@z@q@|Aq@~BgAzC_Bl@m@RMGo@a@_AAA_@c@bBs@JPvCA~Cf@d@FdKfB?G^sLJmC@_A|AwFfAkEtByI^eBvCyLjAsEHGLUNER?BCnBPtC^jJv@pK`A|@LzGd@nGNbKD`BCNEBc@Cs@~AiF|AgF|AkEVu@v@qCt@eCp@_CXD`@l@jCdFvA`DNV`BzBd@d@tAx@nAd@RFv@HTT|D\\~FRpID~FAxDCnCAhIa@rEc@bEo@rLyBx@QrAa@pGmAdHwArBUvCUfDGp@AzAFxBLnCXjCf@lCj@zOlCnHt@fBHrDBfCGhBShBWjDu@hDgArCqAxAy@jBqAhC{BpDaErFyGhEyEx@mArA}ALGxBcCj@g@l@a@t@Yx@Qt@Af@BbARp@Xd@\\j@l@`@t@dAvBp@dAn@x@r@p@zB~ALVlLrI|@l@jCnBlKrHzDlCh[jUnBzAvCpBhDbC`ClB|HrFpB|AfGlEj@d@vAxAjAxAz@pAbAlBz@tBp@~Bj@vCTnBLdC@~AYxNUnHy@~]]fF]zCw@hFWpAcHzXuMbh@g@fBeArCg@fAa@n@kA~A_B~A_Ar@wBlAwAj@}GpB{@RqAf@a@Zm@bAQn@Kx@@dAr@dFx@~ETbAp@vDjAdIb@bCbB|H~ArFdAfCzAjD|CbGj@pAlO|Yt[tn@jKrSnD`HzCbGrCjFd@dAPTd@fAt_@nt@bAzBvFzKlBzDdDdGjDvFfGhJfJ~Mb_@tj@fJ|MdJ`NpJnNxKbPfEpF|BfCv@p@tExExCrC|A`Bvp@hp@hIfIx_@j_@hD|CtA|Av_@n_@xa@da@pAhApj@dj@rj@bj@~BxCbAlBbBzDrAtFZfDNxCHdCClJ{@dk@OhKYfJQbGItAIxHV~GL~ARxAv@vEbDdMbGnTjCnJxAlF|@jDp@`CnD~K`DzMfEnP`CfIpDhKZl@dAnCzKzWhCfGpCvFxR`e@xAbDlPba@tPx`@|Mx[nApC~BtF~AfEzDpIhBbDn@bA|BzCxCrDlHhItCfDtAxAlA`Bv@v@f@`@rX|ZjEvEhWlY~BzBjCzClOxPX\\pBtA~BpCnBpCtAlCl@xAbA`Dj@~BLj@FRZtBv@pJd@lIHzB`A|PVhFb@lG^nGrCOfHi@f@Al@Bd@Jz@`@rBdBfDvCtAfA^NPi@jFyIzA}BH_@GKeD_BsDmB_EqBeBgAiEoBEQ?S}@@MC_@G_DAMH}@tBOn@EZyEEX~DBbAIb@@\\PhCXlF~@`Qh@rH?n@PdD\\hC`@bC~@nEfExQ|BhJBXjRvx@bDbNnSh{@nQjv@vExRtPns@vCpMpBfIb@tBv@xCn@xCbD|MjF`TzAvGjEjQrDrOvEhS~AnH~BlLd@|C|I`c@pAnGf@hBfDvPtBxJr@~Dx@jD`EfStAvGxLzl@hB`Jb@fCrA`GnAhGt@~B`A`Cv@|An@`AjAxA~B`CjChB|BlAhBt@zCv@xS~EdE~@hZdHhLjCvj@tMnKfChBXzIrB`ElApLpC`ATnDjAfBt@bDfBtBxAxDbD|CjEr@z@p[ji@zBzDdCjE\\h@pA|BpBhDjBnDz`@`r@hBvC`Rv[|@bB|PzYhJ~OlD|FnCvDtCjFlAdChB~CnBpDvJvPzAtClLfVdDdHp@~@lJtRbCpFNf@pBtEfFlKjDvHjBpDlAnCpAhC`AvBtAfCdBnDtPd^vJpSp@nAvJ~SlEzIbAdBrAvB|AvB~BrC~BfCtCtCfDrD~JzJ~FlGrOrOpCxCpMxMnBzBbBvB|CtE~AfCbBxC`FbIlGdKpBdDtClEj@jAfDrFlHnLtA`CnE`HlB~Cn@rApBvCrBhCvMrMjGnGnAdAlBpBlCdClGlGdAlA|AzA~W`Xx@t@lN~NnCnCrAlBx@hAr@rA|@~Bl@rBh@dDVxDFtB?fLUn[KtGGdOD|BPbCHr@h@fD|@hDn@fBfAxBjAfBhB~BfBrCX\\~C~EjH|J|D|F|EvGbCzCbKfNdA~AlA`BnVb^lHbKpHjKzAtB~BjDtJdN`L|OpBlC|@tA~BbDvBhDbApBx@pB|@nCbAfEbApHxEnc@jAxLxB|RLdAlChWn@`GrAhKzAfNnAvMxAnLtIlh@nDxUf@jCd@vClDtSJdAvAzIlAxG~AbJd@bCz@|Fl@tD`CrP`AbG^hDTfCPhEFfFBdGVpXHnDBhL?fGJpRN~HFtA^vE`@fDtBxMr@|DlCzPdClONpAdAjHf@xEVdEVvJTxNdAra@`@`PVrHJ|GHXRtBPzCZ|KBfCp@fDCVOLiB^Q?WKGQJyEIeP?y@Dm@]gOEuB_@BMuCa@KSMGIGQASD]T[`@c@AkAUsJGuDq@kW@S@IRGnAEFBDXXjNh@tTc@?XxKVrHJ|GHXRtBPzCZ|KBfCRr@L\\Tb@ZZ^R|Bt@dIh@~Fh@`MxAtCVTJrEv@VL~ZhDvHv@lHr@nDPpJx@vDb@|Fj@vDf@jRrB~MtAzGv@hI`ArJ~@zVnCvEb@jDf@zu@vHjXlCbDZn^pDbI|@rE`@|Z~CbGf@nABtBCj@EvF}@lGkAvJeBnQaDrE{@|HuAzKsBdTwDrBa@tc@}HvCa@bAGz@AzABn@FvGx@vXjD`Ej@xHbAtEp@hCd@pDh@nAV~@Jj@BxAEtFe@~Fo@zFq@zLaAhBIpQsA|Hk@pCWjo@eEpGa@vU{A`EQ|Ig@jAEjDWtASbKwB`TiEzDaArAW^M|KyBbKwBnLeClIeBfB[xJ{B|Ce@bKyBrFeAfKwB|MwCpE{@tGaBnLgDjLuDbCs@tGwBlBo@b@IbQqFhP}ExDiAhMcEjBq@`Bu@fFyCzJmGz@i@dOqJbUsNhPeKbIaFtJkGp[wR|CqAv@UrA[dD_@hT_DhCg@fA]~CsAbAu@zDcDrKeKdBqBf@u@`@y@nJiXbBiF|HuTt@gBjAuBtCeElCeEh@kA\\_AVeAHw@b@{LDqBHwBHcAxBwLbNmt@|EyWbCgMxD}ShBsJt@cFFSZ}CLmBv@kGHiAHa@lDk\\ZqDZ{CdAoJz@aIl@sFNiAfAcKhAeJpBuSz@sI^mCJgAl@qC`@iAtAgC`@m@lAqAlA_A^_@j@_@nBcAlE_BbMqE|EaB`H_ClQwGb^_M|EaB~IeDpBo@bMmE`]wL|HkD~FeCpEsBxJmEjOyGdC}@rDu@`BSlAItBBlDVtIpApBVjEp@tEv@fAL|Cd@pCb@bAH`PbCnZrEzG|@rFl@|HrAhCl@lA^xB~@nGdD|@h@|ItEdBx@vGnDpObIzMjHpDtBrAn@bCpAZLj@^dFlCdF~B`CnApB|@lGbDdB`AhE~B`TvKbB`Ah@VtNnH`Ad@hMzG~OfIlKvF|KrF|ElCbL`G|@`@jDnB~iAzl@pDfBxd@`Vf^fRdClAlFpCjBz@tF~CbGvC~@j@nFrCbQxIjBz@p@T~Ab@pBTjCBhAEjHk@fOuArQuAZ?hHm@tHu@~TeBbIg@ZO`@KJ?NTBZEZm@BMAOrBCxA@tARhC?nCETrGfDrAl@DH@RMpACH^\\|BrCTp@Xf@~AhBDLxE|@z@Dj@ClAMjAQfAUPAxCYdEq@bH_AbNwBpEq@~CWzBQlBWv@QbIuAFNdAk@XWNUr@oBZe@h@]VINAzBJnAEhC]t@]j@O|AUl@OdF_BjDgCREX@jCt@Z_BCs@IgAFs@V_CBy@DMxDoGuK_Gw@m@EM@KBEb@BrBArFa@^@^HnIu@pFe@~D]pEYhBWtIq@d@A`@G`DWRCpAGdCUhIk@rKaA|J{@pa@iDdQmArOwAdKo@lC[~Fc@jMiAfIm@tFi@|McAl_@}CvVmB`c@oDtK{@fK{@lD]zCg@hBe@|Ai@rDgAhn@}SzR{GpH_ClOkFjHaCz\\aLxCgAxVoIxKuDvHcCnQgGtEcB|IsC~F{BtAa@~Am@rEoA~@_@fBi@fEuAhA_@|@_@dJ{CZMfBg@bEaB~E}AvDoAhCw@|By@~DqAzC_AhN_FbFyA`Aa@|MoEnCcAjF_BnW_JdBe@tMmEtG}BlJ_D`B{@z@i@`@_@n@s@V]bBsCV_@xAmCbCsDV[N]dPsW\\y@d@aBJ_ABwAKoFi@uVGiA[sNUqHQoKBcBPkBdAuJnBcSZwBXiAd@oAj@u@r@u@\\WjAo@z@Wf@IlAInB?dAHjQjCfNtBbEf@jC^rJvAtInAj[vE~BX`IjAtQbCrh@rHtEn@|g@lHxVjDfD`@`IlAlM`BlSzC~QbCbAJnB\\tYxDpEn@jIdA`U|CrKvA|F~@x{@hLlM|AtPzBpR~BzDd@hARzDj@pFd@tGJ|b@XtGHxC?n\\RvIJ~HBly@l@jGHhPDlULbEHpEBDHz\\@rFJdB?t@BtGB`ERnQN~IL`D?hKHfEC~HJxCFtDPdA?dNJ|A?`V`@hBBl@D~@NdAR|Ah@~F`Dh@\\fDnBrAz@z@^fAXfANdEPr@@`b@vA`OXdAAvBWz@S`WwHlCy@~A_@dCYh@ExJFtILrEHvBB`HJfB@xIX`E?|IHhEHnTZjDJxPZpB@`JNjBDfC@|ABdCB`EJbEF|JNlFFpP^zGHxCAdCWtG_AvIuA|GcArASf@KzIsAn_@}F~GgAjJwAlDo@lA_@|B_AbCeApNgGvPoHl@QbGm@`AI",
+      "leg_minutes": [
+        58,
+        39,
+        40,
+        49
+      ],
+      "traffic_status": "heavy",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 16,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 16,
+          "endPolylinePointIndex": 23,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 23,
+          "endPolylinePointIndex": 28,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 28,
+          "endPolylinePointIndex": 31,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 31,
+          "endPolylinePointIndex": 58,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 58,
+          "endPolylinePointIndex": 60,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 60,
+          "endPolylinePointIndex": 1268,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 37,
+      "estimated_arrival_time": "14:09",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 37-minute driving buffer plus planned breaks.",
+      "stop_count": 3,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 61% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 309,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJVw_nupLH4jARAyXXQkgh04E",
+        "ChIJNw1wNc_U_DARBivnwAkJUrE",
+        "ChIJ5Vyhowvh_DAR3TMiAxRB49U"
+      ],
+      "waypoint_note": "Route plotted through 3 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:09",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 69,
+        "title": "Wat Yai Chom Prasat",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJVw_nupLH4jARAyXXQkgh04E",
+        "route_progress_km": 47.4,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "11:41",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 161,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJNw1wNc_U_DARBivnwAkJUrE",
+        "route_progress_km": 99.6,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "12:44",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 224,
+        "title": "Coffee stop",
+        "kind": "coffee",
+        "duration_min": 25,
+        "place_id": "ChIJ5Vyhowvh_DAR3TMiAxRB49U",
+        "route_progress_km": 151.5,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "14:09",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 309,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJNw1wNc_U_DARBivnwAkJUrE",
+        "name": "PTT Station Rama II",
+        "category": "Gas Station",
+        "address": "111 Rama II Rd, Tambon Wang Manao, Amphoe Pak Tho, Chang Wat Ratchaburi 70140, Thailand",
+        "rating": 4.2,
+        "review_count": 2354,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 1,
+        "enjoyment_score": 90,
+        "crowd_risk": "medium",
+        "open_now": true,
+        "reason": "4.2 rating, $ pricing, and an estimated 1-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=12777285030299249414&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.pttstation.com/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 13.3415355,
+          "longitude": 99.8401676
+        },
+        "route_progress_km": 99.6,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      },
+      {
+        "id": "ChIJVw_nupLH4jARAyXXQkgh04E",
+        "name": "Wat Yai Chom Prasat",
+        "category": "Buddhist Temple",
+        "address": "G6RX+84W, Tha Chin, Mueang Samut Sakhon District, Samut Sakhon 74000, Thailand",
+        "rating": 4.5,
+        "review_count": 562,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 5,
+        "enjoyment_score": 84,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.5 rating, $ pricing, and an estimated 5-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=9354857445221410051&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.facebook.com/profile.php?id=100069047685561",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 13.540869299999999,
+          "longitude": 100.2478174
+        },
+        "route_progress_km": 47.4,
+        "opening_hours": {},
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      },
+      {
+        "id": "ChIJ5Vyhowvh_DAR3TMiAxRB49U",
+        "name": "หลงมา คาเฟ่เพชรบุรี By.Jnee",
+        "category": "Cafe",
+        "address": "1 1 ม.7 Tambon Tha Yang, Amphoe Tha Yang, Chang Wat Phetchaburi 76130, Thailand",
+        "rating": 4.7,
+        "review_count": 626,
+        "price_level": 2,
+        "price_label": "$$",
+        "detour_minutes": 7,
+        "enjoyment_score": 81,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.7 rating, $$ pricing, and an estimated 7-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=15412233903999693789&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.facebook.com/Jnee.CafePhetchaburi",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 12.9577268,
+          "longitude": 99.89330629999999
+        },
+        "route_progress_km": 151.5,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 19,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 19,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 9:00 AM – 7:00 PM",
+            "Tuesday: 9:00 AM – 7:00 PM",
+            "Wednesday: 9:00 AM – 7:00 PM",
+            "Thursday: 9:00 AM – 7:00 PM",
+            "Friday: 9:00 AM – 7:00 PM",
+            "Saturday: 9:00 AM – 7:00 PM",
+            "Sunday: 9:00 AM – 7:00 PM"
+          ],
+          "nextCloseTime": "2026-11-22T12:00:00Z"
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 22,
+        "cost_label": "~SGD 22/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 141.32,
+      "estimated_per_person_sgd": 35.33,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 36.05,
+          "detail": "206 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 9.27,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 96.0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:18:29+00:00"
+  },
+  {
+    "id": "fallback-cape-town-stellenbosch",
+    "author_name": "Liam · Exchange student",
+    "title": "Cape Town to Stellenbosch with mountain detours",
+    "start": "Cape Town, South Africa",
+    "destination": "Stellenbosch, South Africa",
+    "route_mode": "scenic",
+    "adventure_level": 88,
+    "budget_per_person": 210,
+    "travellers": 3,
+    "preferences": [
+      "adventurous",
+      "local-gems"
+    ],
+    "route": {
+      "distance_km": 57,
+      "drive_minutes": 47,
+      "static_drive_minutes": 52,
+      "summary": "Cape Town, South Africa to Stellenbosch, South Africa",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "~k`nEqgmoBQSbK{O^s@`@yApA}FvEyRj@mBCYNiANqGJs@Pe@T]j@e@j@Ol@AfBFv@Il@Sl@e@lEyEd@WnC_DV[zAmC`AyB^cAr@_Cl@aDb@{Dz@aOXqER}AVuAl@iCp@qBfAeCbDaGpF_IhA{Ar@wAb@kAXeAn@{C|@iDbByEn@{AnCkHn@sAl@w@t@k@POp@Y`A[jF_A|Ey@n@St@e@p@m@d@aAPm@JaAB}@k@mMRuEZgCd@sB^}@Xc@l@u@~@o@b@[nFwCl@Wz@O|ABvEL`BK|B]nASz@Bl@JzE~AzB`AdExAhLbGvBjA|@R`BHpFR|ALvCf@hB`@vA`@h@Vn@h@f@x@Xp@\\jBXrAPl@f@x@p@n@f@TjK`CjD|@|@Xp@^^VzA`BdCnEn@`A`AnAbHjInChD|BjD~BdEpEpHPj@`@n@@TKPI^H_@JQoCiEcIsMoAgBaAuAoEaFcCuC{B{CgBwCq@mAw@eAs@i@c@Ui@UwA]gB]wGeByCeA[UYYi@y@c@yAo@cD_@aAm@w@c@[w@[mBi@uEw@wAQuHUu@Kq@Sg@SiFuCwDmBYGgEeByJqDgAQ_@Cw@FcGr@iHQi@Fa@Hi@VGDGV?RFRLFL?`@QRSf@{@H[Jq@A}@_@qB_@aBq@kCMKyEcRu@eES}AQgCa@yLe@oNGw@S_HMoGMiEEaAO}G?y@FyARsAX_Ad@aAf@y@RU|AmArCuAZUtL_GhBgAdA}@bAsAfIaO~@oB\\eAVsALsABiACcBS}BcFi_@a@wDMoBOcEA_A?wDXgXp@qy@D{CFoA`@ub@RaDZaCd@_ClPms@dDgObAqDxBwJpAiFrEkTnDmQlGw[fGkYh@mCHy@dGwYbHu\\lAmEt@uBxAiDl@kAfB{CvBwCzCeDfK_JdHkGfSaQlHoGlPeN|AgAtBqBpD_DvB}BdB_CzDqG`BsCvDmG~GsKbB}C`@{@r@gBnA}DrIwZj^gnA|AoFpAwDxA_Fz@cDzDgNp@qBjA_FtTcv@`F{PbBqFx@qC~@{DnHsVvBmHb@iBxAyElHyWzAgFhE_MlL_\\dKkXxIoVxAyDrAyDtIsUfAaDjWyr@vGiRrAoDhBuF|CgKbG}SF[p@sBlE{OzAiF`D{KjAmD`H{UtCiJrFaSbJ}Zh\\cjAzAuF?OrC}LRaBHmBFeFOq@Y_@gFoB_IoDyEyBgE_CwBuA}AoAc@e@{@s@eDgD{DgFyEmHwFoIsMkSqJgOeGaJyAwBsKePeBcCuAaBkCgCsBeBy`@qYsm@sc@uF}DwDoCuCoB{DwC{QwMgCwAyCmA_WsI{LaFeTgJqFcCsBeAuDkCu@k@gCmCkB{Bah@go@eZo]mBoCgDwFsJkQ}AmDyAcEiLy_@k@mAk@_Aq@q@aAo@_@OcEcAgAUwAg@u@e@u@s@Ya@m@cAYw@i@iCiAwGe@yAs@uAsDwE}BeCiAiA{BoBuP}LcR_NYSi@Si@OaAI_A@m@Fc@HoCkPaJuj@{Fe^iFyZ_FmYg@aCwBkNoEyWaBmMM{ACaBF{BHkAb@wDBs@IaAOe@y@cB_JmOoAcByAqAqBoAgF{Ce@g@g@s@sAi@cB_A_@WoAg@[GuFa@yGy@g@MN_AHs@@{@CeABi@}@{Po@qI",
+      "leg_minutes": [
+        8,
+        39
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 443,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 20,
+      "estimated_arrival_time": "11:07",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 20-minute driving buffer plus planned breaks.",
+      "stop_count": 1,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 88% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 127,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJbaERfk5dzB0R5TM_LwwtRvI"
+      ],
+      "waypoint_note": "Route plotted through 1 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "09:11",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 11,
+        "title": "Newlands Forest",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJbaERfk5dzB0R5TM_LwwtRvI",
+        "route_progress_km": 5.2,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "11:07",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 127,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJbaERfk5dzB0R5TM_LwwtRvI",
+        "name": "Newlands Forest",
+        "category": "National Park",
+        "address": "Table Mountain National Park, Table Mountain (Nature Reserve), Cape Town, 0001, South Africa",
+        "rating": 4.8,
+        "review_count": 5113,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 13,
+        "enjoyment_score": 83,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.8 rating, $ pricing, and an estimated 13-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=17457690535903835109&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.sanparks.org/parks/table_mountain/about/contact.php",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -33.9712233,
+          "longitude": 18.4501663
+        },
+        "route_progress_km": 5.2,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 3,
+      "estimated_total_sgd": 12.53,
+      "estimated_per_person_sgd": 4.18,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 9.97,
+          "detail": "57 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 2.56,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 3 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0.0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [
+        "Newlands Forest",
+        "Litha Park"
+      ],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:18:32+00:00"
+  },
+  {
+    "id": "fallback-nairobi-naivasha",
+    "author_name": "Nia · Exchange student",
+    "title": "Nairobi to Naivasha for a wildlife weekend",
+    "start": "Nairobi, Kenya",
+    "destination": "Naivasha, Kenya",
+    "route_mode": "balanced",
+    "adventure_level": 84,
+    "budget_per_person": 190,
+    "travellers": 4,
+    "preferences": [
+      "adventurous",
+      "slow-mornings"
+    ],
+    "route": {
+      "distance_km": 91,
+      "drive_minutes": 109,
+      "static_drive_minutes": 119,
+      "summary": "Nairobi, Kenya to Naivasha, Kenya",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "jj{Fexv_FuN}]_@q@c@_@WCOKGQBUFQZOVAJDL\\@PEL`E`K~@~B|@zBxGnPj@pA`@z@B^NPBRGRQLUAMEm@XwFvBaDlA{Bx@eBt@sE`B_GbCKDCVKPSJY@WKa@JcM~EkFnBmCdAQNCPKRUHUASKk@N_Cx@_Dv@uC`@sGf@c@DkBXs@R{An@mC~Ae@`@s@PWJy@r@aBfBc@t@sAxCUn@u@lBw@zAk@x@aCnCcDvC_Ar@mAhAs@n@yD~CiBzAsC`C{CnC}GtF_@^}ClCU`@YZ}@To@La@Nk@`@k@b@mB~AeA|@mBxB_@l@[v@q@fCq@rDY~E[xHHnC?z@OnC}@tDs@hE_@hCELCB_@bDMnBKhCQlDYjHuArRe@xHU~CGXM~CA`CL|DBv@n@hHd@nEhAfJp@fGLR~B~R\\`Bv@bCTf@h@`A|CtEhArBv@|BZ`Bt@hHd@nE`@`FTxFHxBZzE\\dJPxOAdCI`CChFl@pf@ZfYDfKPzFEdFu@~Oa@~Fs@~Hg@zCWjAYfAqIlQk@dAaAbCuAtEm@pC]xBU|BQ|E?dBPdFb@|DRzAl@xCT~ARhBHzAArCUnCc@rEg@jEcEra@]~Bq@hDaCxJcBnGuQ|s@wArF_AbCy@~AwKbQ{Wfb@iBvCwBxCaAlAqE|DiSjPeB`AeChAaC~@{RlIoDjBe@\\]ZuBnCwDrFuFvI}@dAy@r@gDfBwEtA}Ar@{@f@s@n@s@|@u@rAwAxC_@l@_B`BcAx@uAx@eAb@mBXoE^iFR_G^}WvB}Ir@mCTkCZaAR{@ZyAp@mAdAyExF}AhBiAfAe@Zy@d@qAh@wf@fOyDlA}Cx@mOtEsBl@cF~AgAZk@Ba@H_JnCkDjAuFhCaB`AuA`AiC~AeAj@_CbBiAr@sAp@mInDgHtCgKtDiQxGeI`DoAh@iC|@oQ~GaCt@_AR}AX}Dd@aKv@{CZyCPeIr@kNlAqVzB_DZyOtAq@DkBTuLbAmIp@}Ef@cBJyMpA}Gl@qANwBLmATa]tCeK~@eRfBsEj@gHv@eGv@yCb@_BZuKzAkAR{ARyFjAy@DmLvBkCx@gFhAgH`BwDt@}Ez@kD^oDZqBFuBLoE@eKEqMOuGBaEJwG^_Fb@oAH{BZsEr@yA\\iDj@cDXkCJsD@oDMiBQsB]oCm@cL}CgB_@kC]kBKeEC_MLsDCkFYoHi@oCQwGImCD_CJuDZ_BRwEz@gEbA}LfDcF`BcEhAwAZk@OUYcA_B_@]_@Os@Mo@Fu@ZsAz@_@^KXB~BGf@Ul@MReC^qBL[FgBFaECaCKuC[i@IaBOwBY{CQwCGaFFsEZ{FNcAA_COiCa@eCi@cDcAcCy@qA_@sDs@wBY_CO{GYeJ}@eI}@yD[{EMuB?oA@_CJkFd@cBT{Ez@gATkF`ByBz@aDzAuB`AsFxBeAd@_Bf@cBh@cCl@qGvAcHpAG@_Fl@mKtAG@aJbBsDz@wDfAwCv@eEvA_HfCyFxBqCx@kDt@uAT}BLgA@cEO}AOcB[cBe@eHiCaA[eB_@kC_@w@GuEO{AO_AQu@QkDkAwFeCA?yBu@mAYiBYkL{@cGYkGc@oBUKC_Do@aD_AuLmE}@]iH{B{GeBgHyAmFaA}JuAwFi@gGa@qIYkCA_FJsF^uEd@kDd@yCj@uCl@qF~A}EjBkJfEwGrCeExAeGdBeEz@kC`@oDd@oGj@oENkBD{DKmCQoCYoCe@{Bi@oCw@yDwAaJaE_FqBuCaAyCw@eC_@gCYqCOkCAqBHmCXwATiAX{Bv@kCnAwBfA}@ZaB`@aC`@sALgHEyBB}AJ{AReB^}Ah@kBz@_CtA}BdBaCtBeFbFaEpDcChBiBlAcCrAgH`DiBj@eKzB{F|@sDp@cGjBiChAkAj@kKdIgHzE{CbBk@\\cEfBkHtCkGvB_EhAeDz@uDp@cBZyJnAmJv@sHz@eBViDn@sD|@_Cn@qCbAsCdAaAZwAl@cG~CeBfAeGhEwFzEqEfEkTdT}BnBeGrFkCvByDpDwGhFwHhGsBxA_Ax@aEtCyHnFsEtDgB|Ay@z@oBbCiAbB{@xAeAxBuArDg@bB}@zDiAjHm@xEq@fEo@fCgAbD}AdEsAbCsCfEo@x@yFtGaEnFsApBwDjGa@r@gDhHcAdCqAnDuAdE}AjFuAnGs@dEwB~Ny@zDw@dCoBrEq@pA{@tAuBlCyAbB}EzDaEnCgKrH_FtDyHpG{@z@uBhCkA~AmAzAg@h@aDdCu@b@oD|AmBn@aEbAuAV}BXgBPsCNyABaMMwDKyH?wAFcF`@oInAuC\\yCR}CFwA?_DO}AMmDc@uAYyC{@uFkBkCeAmTqH}DeAaDo@aDe@sEUmBAmBB}DVsBVaCb@}DdAwBt@oEhB{G|CsInEyI~EiDvBqEvCkO~K{GvFgEpDiDlC_HzEqBzAcDtB_EdCqHfEmK|F{F~CuDxB_EfCcDxBOJuGjEwK|HeJfHcGhFkHzF}@n@iExDeEjDuHvFuKzIeElDkA`A{AfAaCrBkDhCaDfCeBhA}F~CgB|@yAn@eGxBuAb@uN`EiHzBuBv@uEtBiB~@oC`B}CtByAfAkE~D{B`CcD~DqAhBsCvEgBrDaC~FcClHgA|DeAlEIf@}H`^}AnGyAjFmBhGqDzJiE~JoEbJqL~T{H`NqHzL{BpDgEtG}HfLkNvR{I~KyLbO}I~JaFlFcE|DoFzEkItG{FbE[ZiEpCkHdEoKpFsErBQl@ARRt@Bd@It@Wh@oC|CuGdHaMfN{BzB_HbG{FhF_LhJoEdE_KzJqDzDcH~GsBzBw@~Aa@|AOhAQjCWxNPx@|@rB^~@",
+      "leg_minutes": [
+        60,
+        50
+      ],
+      "traffic_status": "heavy",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 407,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 407,
+          "endPolylinePointIndex": 411,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 411,
+          "endPolylinePointIndex": 415,
+          "speed": "TRAFFIC_JAM"
+        },
+        {
+          "startPolylinePointIndex": 415,
+          "endPolylinePointIndex": 451,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 451,
+          "endPolylinePointIndex": 454,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 454,
+          "endPolylinePointIndex": 673,
+          "speed": "NORMAL"
+        },
+        {
+          "startPolylinePointIndex": 673,
+          "endPolylinePointIndex": 677,
+          "speed": "SLOW"
+        },
+        {
+          "startPolylinePointIndex": 677,
+          "endPolylinePointIndex": 772,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 22,
+      "estimated_arrival_time": "11:56",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 22-minute driving buffer plus planned breaks.",
+      "stop_count": 1,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 84% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 176,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJxWLMBfgrLxgR7JCSLNIT27Y"
+      ],
+      "waypoint_note": "Route plotted through 1 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:12",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 72,
+        "title": "Rukuma Viewpoint Escarpment Lari",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJxWLMBfgrLxgR7JCSLNIT27Y",
+        "route_progress_km": 47.8,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "11:56",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 176,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJxWLMBfgrLxgR7JCSLNIT27Y",
+        "name": "Rukuma Viewpoint Escarpment Lari",
+        "category": "Tourist Attraction",
+        "address": "Nakuru - Nairobi Rd, Kenya",
+        "rating": 4.2,
+        "review_count": 17,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 6,
+        "enjoyment_score": 69,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.2 rating, $ pricing, and an estimated 6-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=13176146928214380780&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -1.0131455999999999,
+          "longitude": 36.6248191
+        },
+        "route_progress_km": 47.8,
+        "opening_hours": {},
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 196.02,
+      "estimated_per_person_sgd": 49.01,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 15.93,
+          "detail": "91 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 4.09,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 176.0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:19:41+00:00"
+  },
+  {
+    "id": "fallback-melbourne-apollo-bay",
+    "author_name": "Grace · Exchange student",
+    "title": "The Great Ocean Road, one lookout at a time",
+    "start": "Melbourne, Australia",
+    "destination": "Apollo Bay, Australia",
+    "route_mode": "scenic",
+    "adventure_level": 91,
+    "budget_per_person": 230,
+    "travellers": 4,
+    "preferences": [
+      "adventurous",
+      "local-gems"
+    ],
+    "route": {
+      "distance_km": 206,
+      "drive_minutes": 170,
+      "static_drive_minutes": 170,
+      "summary": "Melbourne, Australia to Apollo Bay, Australia",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "hnxeFsaxsZ|By@tCnOXfAdA~Fp@`DLd@p@xDj@pCZdBtZyKt@Ut@MzCUrEY`AOhAa@~@g@bA}@fEaFxQ}Q|A_BXCXUV@LFoBlB{@r@G\\qAzBYx@Ip@?|@H|@v@bFLvAPvC@fGObDOdBwCrT}@lJgA|L_@|Cq@lEYrCa@zFgAnLU`EOnECxA@zFBV@|CGNj@jOl@jJb@pFxHjp@j@jDrArFbAvClAvCfCjF~N`^hA~CdA~Dh@vCb@~CVfDJrBDlCC|CMtDOvBa@lDa@~B}@rDeAdDcA`CkE~I}Rv`@kCpFyArDuAjEiAlEw@dEk@`Ea@nEW~EEjCAbEDbD^vLDxEIxES~Ea@hFgA~Mc@~Ha@dKQbJElKVvf@HzJX|RV~j@NdMp@hVhAla@PpNNrm@In\\H`DVnD\\vCn@nDx@~ChA|CrAvClArBvAnBtFpGzCbEdEjGrC|E|BtErB|EtGhQbc@rkA|S~k@pKpY|@jB^r@`B`C|BzBhBnA~Ax@`Bn@dBd@lsAfSlB^~@X`Bh@dDbB|@f@nA~@`CpCp@~@hBjDjA|Cn@xBd@|Bd@dDR`CvCfp@dAjVRvDR`GnAvYZtDp@xE`X~aBdUjvAnBfMhDvSr@vCr@tBz@pBnAxBrAlBbBhBdBtAlBjArB~@jBj@rB^~BRzBBxBKrBWvEw@hB_@jGy@hCKjADfCRhCh@jGhBdLpCxErAzCfAnBhA|AlAzA|AzApBrApBp\\vi@jQvYjA~Bt@rBx@xC~Nzm@pHh\\rDfOfB|Gfu@h~CbGvWrJv`@rUvaAzCdM|@tCp@hBnc@raA|dDxnHxNv[vBnExZpl@|O~[pKdU`T~g@vHfR~BzFxFjN`GnNtE`L~BpFzWno@|Ov_@lCbHpb@xkAhHjS|Lh\\`KnYjStj@rv@bwBvS|l@zQfg@rFzN`JhWfI|TnDdKjE|L~IhVjAfDhZ|y@tAxCbNjVvN`[jB`D`IxKhJvLnDzEbd@hl@zFzHpDvE|EvG`A|Ax@bBj@rAf@xAz@~C\\zAxB`LnCbQfFl]jAnJp@zFh@jGd@nH\\xIJlED`D@lKEvF_Bp_AcAto@BrDNjE\\dEh@zD\\lBr@xChArDvAbErA~CpAdCdBrCvBvCvA`BnBlBfBvA~AdAvCbBnClAzE~AnB`@`l@pJ|GtApHjBdKzCfFfBpIjDnMrFvC~AnCjB|CfC~CdDxBpCpCjE~BjDdCxCrCnChCnBxCjBbClAxChAzCx@tLhCpGdAlGp@fE\\xGVvGD|DEfGSrKo@rFI`DDzDPtEb@hkAjQpDv@pDlAtCjA~C`BjD|BzCfCnCnCdCxCtB|CpBnDjBzD`BfEjApDjAxEv@zDhExXl@vCz@vChA~ClAlCvAdCrBxCxBbCpBfBdCbBtBhA`C`AbD~@bDh@hCPnDFlGCdHOrGWnLs@zG[~HOfFFzFX`Gh@vEp@`GjAvEnAtXfIhE~@dDd@bDZlEPbD?`EMbDUjEm@dE_AbEoArEkBpCwA~AeAlDeCbDmCfDkDzBmCtCcE`MwSrDoFtD_FtDmEtD{DpEcExEyDfCkBxNuJtBgA|B{@zBm@|AYxBSrBGxBB~DZnCj@vBt@tB`AvBrApBbBdBfBxAlB`BnCvA|ChC~FfBdDjBrCvBhCnV|V`SvShPvPlFrFlBtBTF^\\vGvHf@p@l@`A~BjE\\Vb@DZGXY\\MX?XFd@^N^DZZn@ZZRJ`Bf@t@^`Ap@tJnIrHdHb@l@fOfMlBlAh@XzBb@fD\\daAhIfGCx@DtBZ\\AZIROTGRDVP~Al@hBb@xGlAPH~b@fFlJ`AbTjCcTkC{OcBq]eEU?eFi@_Eu@i@FMFMLc@~A[nCE`@CN}C`h@sF`~@GjBoGvcAoTrrDS|C?fANbBAb@KVu@v@CRBrBSrDmFj}@GTa@r@g@v@IL`ArA^r@z@tBBV`Nhd@jPli@T`AL|@l@xLj@`O~@|U|Ax\\ZxHLj@ZrAp@|DpCzNnG`\\XbBPhB@dAInB{Dxl@GpCDhBN|BXpAd@jBTn@~@nBx@jAdZx\\nGnHx@fA~@|ADRdEpIpSx`@rElInJlRnd@f|@bOvYvBrDfCzEpDzHbI~QJP~@zBr@`CVrBLxBCJ`BhmAJ~AJz@`@jBh@zAn@jAh@p@~@|@tGlFlDdChCrBv@v@`@d@b@r@\\r@h@|An@tC`TfjAbHp^d@lBN|@t@xA|EpHRRv@nAXXrCfEjDlFp@|@zNdT|@lBd@|AZfBDd@JbBP|Q^to@DjANhBTnAd@pAh@bAr@|@~@x@`Af@d@NfARjAFta@KbBHbBXhBd@fBt@~A`AdAz@rB~B`AxAt@zAl@zAf@dBVdAf@vC`Fd_@`@vDHjAHtCEfCMxBMtAq@rD[lAm@jBe@dAw@|AoAhB{@`AuAjA}BxA}Al@k@Pc@PgEx@}BZiJjB_AZuA|@_@`@kAnBQ^Sp@a@nBMxAAdBDbAb@|EvDn_@bIxx@n@xGN~BDrBEfCMdBc@vC_B|HuEpTe@lC_@dCK~ACnDFpCNtB`@vCpDvRnGj\\`DvMpC~KjAlDbAnBPl@N`AR|@PJLV@^IXCBBfAD`@Pt@|@rCR~@@JlDvN|G`YxBpIjPdq@~Yp_AtElOdCzHha@dqAzA~EbHpTxA~Erp@tuB`@vBPfAJzCDdCGza@GpSAnZCbDWplBErG?nTAvQ`@~qAFdODbCHbBTrApAzE`[hgAzMhd@hQ`n@z@~BxSlt@vIrZd@`B^z@yA|Cq@`DsLtr@mB~JuBlMeE|Tc@lBk@`DyCbOyDpOxDqOxCcOv@gExAsHbCqMtBmMlB_KxZdDzAA|@KlA_@~@a@bBsA~BeCt@q@bAq@t@[`AWh@Ex@LfBA~AZp@XnAt@tGtEtC|BhAn@fGhEtAt@nAb@t@b@tARzBDhGG|BUbCAzAL~A\\fA^j@VrAx@vAlAfAvAlApBd@lAx@xBxFbQf@jAd@bA~@rAxCpDrAjA~@fAd@b@lDpCPTdAf@|@h@bJdArb@hE|CNvKdAlZ~CLDx^zDnFRPORCTLFNnEbAj_@vDzDr@pMrAzJv@pzBdU~_BpPtxAvOnT~BpKhAxWtClc@tEpA?pD]bAAr@J`@T`@X^h@NZPn@Hj@BnAE`BkEtv@?XDRLN^NpUbC|Cb@v@V\\Tv@n@t@fA`@dA`@lBVbBR|@Vv@j@bA`B|BpBbCl@vALd@Fv@GtCKhB@d@B`@R~@HTh@l@p@f@r@NXA^KfB_AxAy@`@Gt@Hr@PNJf@x@t@lBVnAHxAAhAwBx_@U~EaB~V?tAF`ANz@^hA\\f@p@r@h@\\x@Th@H`A@fAKbG}@hFy@zAU`AEfGVxBBj@Hl@VfBnAjAz@XLv@Nl@Ch@I|CcAfBa@hCK~CAfAF`@JbAb@xJ~G~AtAjCbB~A|@bCrBzApBxAxAjAtA`@t@p@~A`@nA`AxEv@|Ah@f@~@h@fAr@lAp@~@z@v@x@z@VfAPZHb@Xl@r@tAtB`AjBx@lB\\j@VZbA|@h@Xh@PdAPpBTh@Lf@X\\VlArAdCvCpGdHlLbMdA|@xIbF`ExBn@PpBVzQbBdAF|JrArCZrJnAhEh@pAR|Db@nFr@rBHlEI`F@dABrAIfAYrCsA^KXAGw@pBu@fAWVOTQJQHUDYMgB}AiQQs@Ck@Go@@q@Lw@Nk@Zc@TI\\Cl@[b@c@VqAWpAg@d@i@Xm@HUVKRU~@In@?`@JfA?RPr@dBvRDx@G\\GPMR]Va@LcAXaBl@Fv@j@EdABnGp@nE\\dANt@Zl@b@lD~ChBvAdErD~AjArApA^n@b@|@Ph@ZpA|@vCLX`@`@x@p@v@b@jH`DtCxBhBzAdBdAxAn@~FlBhN|CfA\\h@Zp@j@|@tAh@n@p@p@`A^n@Ht@?hCe@|@AbBPlAXVHx@l@ZZnD`Fp@dAZj@Xr@hBjIZbA^f@RR|Bh@h@TRRZt@Tr@Fn@DpAHl@Vr@h@l@ZX^R`Ax@lBjCr@j@VJb@Fb@?PAXKXS\\i@|AqDV_@\\Wh@Of@Cl@Lj@\\XZ`DtEj@d@fBt@r@N`AIfLyA|Da@hAEdAB~AHrBb@lNxDd@Bn@Kh@WZc@rFyJ|HaOj@oATs@Hs@FsBJiAP_AjAoDf@_Aj@o@xM{JbBkAx@_@^Ed@ExCE|D@p@IfA]XMhAw@x@u@t@y@v@e@l@Sn@K~@B|@LdDv@dDdAd@XlAd@pAdA~Ap@r@NvBAx@ItDCxDSfD_A`Bc@v@OVCpB@f@En@Qr@g@pBoCdCwDn@o@ZOxASxAEl@Wd@_@Vc@d@{AxC_LrA}FRqANmCDeCK_AIYm@cAMe@A[FWPURIV@VHr@p@z@d@z@VfAx@JLNn@TrCLr@R\\VTXJf@?vDu@`DoAd@MXCf@@bALv@NfBp@~CdBn@T~@BdAKf@QnJaGlGqDd@u@XUbF_D|A_AfB}A~AgB|CyDdDqDPSv@k@`Bm@fFiAjAS~@Ej@?hDb@lA@`@C\\KvAm@dBaAjAcAh@q@~AwFr@aDVaB@oACkANkBK}BBw@Ji@`B{Ft@kBNQd@Of@Ad@PHTNdAV~BBr@RpAXdA^b@TJp@FvAm@l@c@vAq@rCaAPEVCd@D`DbAj@XPRVd@Xz@n@|CRd@z@lAbA`AX\\Xb@Rt@JjAD|@Jd@d@n@HF^DTCLEn@u@x@eAZ[PKVEn@HhCzAr@x@hBrCp@r@ZVZPXFV?ZGj@i@t@}APSVUTIh@ANBVN\\VdCpCfAhBpAnAl@|@TfAL~@Rj@TXVRj@XZVLRN`@HjA@dFHd@Ld@NZzAjAPTv@dCX^`@VTJb@Dn@AzEa@j@@~@LrA^hAj@l@j@V\\zB|EPh@v@pETn@T`@d@b@r@^tAd@fCbAlExAt@Zv@l@xAlAXJX@^Gz@a@x@K`@DTDjA^X@j@Sb@O^G^@pANf@CXKZUdBsB\\[XOZIpAIf@YX[t@yA`@]n@[r@o@V_@\\i@ZWjCiA|@F|A\\R@\\KfAa@f@C|FjA`AXzExB\\HXPl@JRAj@Qh@_@PS`BeEJQRi@hBoDx@eAXY`FcDXUz@cAj@qA\\gARiA~@yHDk@d@}C\\wCJ{ACeBU}Bq@}EEm@?OGiADkHJaAT_Ah@cA`@g@jB{AfDaF\\]`CqAh@c@TY\\k@h@s@RO|AUr@@d@RRZb@`AZTh@VTP^`@d@t@j@j@\\TXBpAB^PpBtA`@LrAJzD?~@LPJf@h@JPj@`BRRXNTArAs@zAcAVEf@NPN`@z@HZTbBX~@\\t@fAbAHLNl@Hl@DtAPl@j@fANf@Jj@Tp@NRv@b@fApA\\RX@ZEnCEdB?`@Dj@VpA`AX`@Tb@`@bAxBlClBpBRF^BXC\\SX[t@mAb@g@r@m@Za@lAwB\\[~DgBXSZe@Ji@R{@N]RQf@GJE|AQ^IR?XHn@f@LPv@nCjB`Ej@hATn@n@vBZh@xAhBhC~CHPn@vBb@r@`BlAj@v@T`@dAvCRXXNhA\\\\VzAhCRN`@?|@Cf@Gr@?`@FrAr@j@JjCF`@Fj@^vAfB^ZrBfAp@l@d@t@PR`C`Bf@h@jCtD^x@Dh@GzDHr@rApCf@pAZh@\\^`@JL?x@Oz@k@b@K\\B`AZf@TZDf@G\\Q^[hCyDh@m@pDkClE_DRUPWf@wAzAmFZo@\\[h@QTAb@BnBb@d@Wj@u@vAcCd@i@PKp@OzDUbDKr@GXI\\Sf@u@h@kBl@uApAgChAeBTQ~Ae@\\QnA{ATMXAZNNTFb@C\\ILi@J_AJ]NWVUH]d@Wx@QlA]|Ea@jCGXMTo@t@Qf@sApBWh@]Xw@\\IRCh@BXN`@d@Zd@^`@NfBPnAFtFbBbBXxBv@ZHt@At@ShAST?tBXj@@ZE`A_@h@Mh@At@Bp@Hp@?pCKl@@z@J`@Jp@`@d@f@^VjApA|A~@`@N^B`@GVQf@i@\\k@Pe@H_@B_AIs@Qg@}@mBGa@E_AFeBJkBLs@^sA?k@ASKc@MWWWKIe@I_CJo@IgAS]AcCJcCJWKMQGY?UJ_@JK\\IxA?TAr@Sb@UlA}@f@QrAMh@KpCeArBm@lCeAf@@n@Th@ZTTj@x@zAdD~AnCZj@^`Ab@nAVp@d@n@RRZPp@RtAPt@DlAAbAMz@S^Mn@a@VUh@UVhA^fAf@z@lFlGhAzAhBvCXp@Tz@TnB|@hJT`At@~Ax@xAd@h@nA~@T\\Lb@RpBf@rCl@fHRjBTnA`@pA|M~_@nBzFLl@XnBt@nLV`BnElQvB`Hb@lAxA|ChArBjFlItFbJlC|D~BtChBnB|MpMdCnBtThO`Al@`HhBjAV`Ep@jFrAlJpCrAFxAGzD?l@Ef@dH",
+      "leg_minutes": [
+        68,
+        39,
+        25,
+        39
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 1816,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 34,
+      "estimated_arrival_time": "14:04",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 34-minute driving buffer plus planned breaks.",
+      "stop_count": 3,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 91% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 304,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJf7ACMuRt1GoRz0_upDrBouk",
+        "ChIJ-12FQQB102oRYszmSObRocc",
+        "ChIJCQmDBsQU02oRfLd9tunnBIc"
+      ],
+      "waypoint_note": "Route plotted through 3 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:22",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 82,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJf7ACMuRt1GoRz0_upDrBouk",
+        "route_progress_km": 88.5,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "11:23",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 143,
+        "title": "Coffee stop",
+        "kind": "coffee",
+        "duration_min": 25,
+        "place_id": "ChIJ-12FQQB102oRYszmSObRocc",
+        "route_progress_km": 136.9,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "12:18",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 198,
+        "title": "West Barwon Reservoir",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJCQmDBsQU02oRfLd9tunnBIc",
+        "route_progress_km": 161.3,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "14:04",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 304,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJCQmDBsQU02oRfLd9tunnBIc",
+        "name": "West Barwon Reservoir",
+        "category": "Park",
+        "address": "FP9C+MF, Unnamed Road, Forrest VIC 3236, Australia",
+        "rating": 4.5,
+        "review_count": 80,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 9,
+        "enjoyment_score": 83,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.5 rating, $ pricing, and an estimated 9-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=9729156086002202492&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -38.5316517,
+          "longitude": 143.7209717
+        },
+        "route_progress_km": 161.3,
+        "opening_hours": {},
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      },
+      {
+        "id": "ChIJ-12FQQB102oRYszmSObRocc",
+        "name": "Birregurra Grocer",
+        "category": "Cafe",
+        "address": "43 Main St, Birregurra VIC 3242, Australia",
+        "rating": 4.5,
+        "review_count": 55,
+        "price_level": 2,
+        "price_label": "$$",
+        "detour_minutes": 12,
+        "enjoyment_score": 55,
+        "crowd_risk": "low",
+        "open_now": false,
+        "reason": "4.5 rating, $$ pricing, and an estimated 12-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=14385009471793843298&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -38.3372478,
+          "longitude": 143.7855909
+        },
+        "route_progress_km": 136.9,
+        "opening_hours": {
+          "openNow": false,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 15,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 15,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 15,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 15,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 15,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 9,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 15,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 9:00 AM – 3:00 PM",
+            "Tuesday: 9:00 AM – 3:00 PM",
+            "Wednesday: 9:00 AM – 3:00 PM",
+            "Thursday: 9:00 AM – 3:00 PM",
+            "Friday: 9:00 AM – 9:00 PM",
+            "Saturday: 9:00 AM – 3:00 PM",
+            "Sunday: 9:00 AM – 3:00 PM"
+          ],
+          "nextOpenTime": "2026-11-22T22:00:00Z"
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 22,
+        "cost_label": "~SGD 22/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJf7ACMuRt1GoRz0_upDrBouk",
+        "name": "Freshwater Creek General Store",
+        "category": "Gas Station",
+        "address": "670 Anglesea Rd, Freshwater Creek VIC 3217, Australia",
+        "rating": 4.3,
+        "review_count": 58,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 29,
+        "enjoyment_score": 63,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.3 rating, $ pricing, and an estimated 29-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=16835230814683680719&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -38.255888899999995,
+          "longitude": 144.2751248
+        },
+        "route_progress_km": 88.5,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 7,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 2,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 2,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 3,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 3,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 6,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 21,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 6,
+                "minute": 30
+              },
+              "close": {
+                "day": 6,
+                "hour": 21,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 6:00 AM – 9:00 PM",
+            "Tuesday: 6:00 AM – 9:00 PM",
+            "Wednesday: 6:00 AM – 9:00 PM",
+            "Thursday: 6:00 AM – 9:00 PM",
+            "Friday: 6:00 AM – 9:00 PM",
+            "Saturday: 6:30 AM – 9:00 PM",
+            "Sunday: 7:00 AM – 9:00 PM"
+          ],
+          "nextCloseTime": "2026-11-22T10:00:00Z"
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 45.32,
+      "estimated_per_person_sgd": 11.33,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 36.05,
+          "detail": "206 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 9.27,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0.0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [
+        "West Barwon Reservoir",
+        "Mount Moriac Recreation Reserve",
+        "Newling Reserve"
+      ],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:19:45+00:00"
+  },
+  {
+    "id": "fallback-auckland-rotorua",
+    "author_name": "Theo · Exchange student",
+    "title": "Auckland to Rotorua with geothermal stops",
+    "start": "Auckland, New Zealand",
+    "destination": "Rotorua, New Zealand",
+    "route_mode": "balanced",
+    "adventure_level": 76,
+    "budget_per_person": 175,
+    "travellers": 3,
+    "preferences": [
+      "local-gems",
+      "adventurous"
+    ],
+    "route": {
+      "distance_km": 240,
+      "drive_minutes": 177,
+      "static_drive_minutes": 184,
+      "summary": "Auckland, New Zealand to Rotorua, New Zealand",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "`m|_Feuti`@b@{BAOXaAjG{Hd@m@bE_DtG_Gx@m@l@Sf@M|@AJj@Rh@LNbEzCbEzCl@j@nEnDtAlA`AhA|@tAx@tAX`@l@h@f@VhATh@?hASx@a@T[hC_EXSp@mArAsAl@i@dBu@f@QhEeAhCmAdBuApA{A|@_B`D}E`FqGf@e@dEmEtCuDb@o@bB}Dl@gBnBqH~AmFdBuDdAmBhA{AtAsAxGoFrJqIbPkPvFyFzEcF~@gAfCsD~AiChEqIjD{IbEsL~@}B~@eBrE_HlQq\\xBsDrEkGpBeClB{AdC}ApKsEpSmIvBoAdAs@dCuBzA_BrAmB~@aBdAyB^eAtCeKtBqHt@qBx@aBrAuBzAeBzAqAxYaSxBmBxAcBfAcBbAuBp@kBl@wBt@wDjFg]nByLhA{HZ}A~@_DvRel@x@qBpAeCh@w@fBoBbA_AfBuA`CcAdQiFzA_@fn@mQTCdV}G|Bc@rMaBbG{@fD_@`B_@bCaAvRoIhOkGrYcMpMqFlLiFpAo@z@i@hBsAnAoAz@eA|BeDnIkLnK{Orb@{m@~B_DrBoBbAu@dB}@rAi@xEmAzV}FxCo@dH}Bb|@c^nAk@xEgBjCmAtKoExHyC~DqBrHeFtMkJpUkPh@c@hCcClBeCbAcB|OsYlAgBpAyAjAgAfAw@rAs@bS{I`EuBlVaNdAi@tCu@lAYfCKtVOzABpXIxSBbDCl@@vHCdEGxH@|@ItDMlCSlCaAdCkAtKiGnAq@fXaPjhAsp@zE}BzCkApDoAz[gJvK}CfZ{IXKvOmEnC_AtDyArBaAnBeAzCiBnEeDxBgB~LqJpDwCdIkGrBcB~NmL`IoGrEmD`BeAhFqCzCoAzDkAbDo@dC_@rGi@~XgB|De@xFaAzBS`OaAjBW~Bm@~KaCtEkA`GkB~By@xAm@hAk@hCgBfCaCzByCpA}BdA_CnDyIjBoD~B_DpBkB|BcBrCyAfY{MbHaD|c@uT~l@_[nOeI|KuFjCyAfl@qZnYkO~FiDtFiDfVsOrEkC|B_AzCgAzDw@vEk@pDI|B@tF\\hDl@dCn@fDlAnAj@tBhApI~EtBfAz@^fCz@`Dn@lI`AnCXxETxEB|EGvAI~DYxEs@nEw@rQgDnFqA~EkBzBqAfD_CjAcAlAkAhBuB|EoGrFyGrByA~@e@jAe@vA_@nIkA|Bm@j@Ut@_@jAw@z@q@r@u@xAkB`B}BtHcLj@s@dBgBx@o@jBmA`CeAnAc@xFiAxAc@dBs@n@a@jCsBzEyEnFcEpBeAjD{AxC}@nAYlBYjFi@fBa@p@Ux@]|AcAn@i@bAgA`B_C`AuAr@}@rHeIhA{Aj@{@jHwObBeDrC_FlEiH`CgErGmKlEgHjCqDjD{DnB_BvBoAfCgAbAY|@SzBWnDSvGS`BQnBc@`A[jB}@lAs@fB{AlBoBtBeCxCaDxDmDbCqB`D}BvBsAnC{AlDeBzEqBtL_EdB{@nA_ApAmAbAsAj@eAp@eBd@yAd@eCNyAf@}HVoBRcAj@mBj@yA^y@r@eAdAqAhB_BjBaArBq@bO{CnBg@dA_@zA}@x@k@v@u@lAwAbAyAtC_Gz@sAx@eAtAuA|AeAjB_AlBk@xB]tkAwN~IkAdCq@|@a@dAo@zAkAzDsDT[fLkKjEaEvA_BhCiDzGkJ~@kAjCqC~CkCtCkB`D_BvBy@hEmAfCc@fD]`ZiCpC[pEgAtCkApAs@zAaA`CkBbBeBlJyLzA_BvAkA|B_BlAm@jBq@~Ae@nAWzAS`DOjELbEf@|Ch@xHhAhCPlERxBDbBAlHQfFIhH@vVr@vER|C`@`Dt@nA`@`CdAvAx@~CrB`BnAfDzBtAp@dCx@bB^hARfKlAjBDvACrBKbCc@~Ac@xAk@n@]pDyBt\\i\\hBqBpAgBx@sAv@wAdA_Cf@qAb@wAl@wBzBmLp@cCh@}AbAgCv@_B~@aBfA}AtAcBbAiAzQaOd[wVpD{CxAeAdNoLpFoErOuLhA}@nBmAjAk@lAe@vCs@`@IfQgBbDc@pCu@|B_A~BuAvBcBjCkCh^a`@vA{AxCuClA}@~CaBfDeA|IcBnCm@dCu@~FaCjE}BvLqHzIaGjA}@vFyElH}G~BaCxFqG|SgXlEyFzBcCxBsBxBgBfD{BpDmBzAq@|B}@xJ{D|CaBhFeDrC{B~D}BtB}@x@[dEcArDi@xBOhBC~A@tF^f_@|E~BVhCJxAC`AEfEi@jA[fAa@`Bs@vBoApC_C\\_@lCmD~KeSdA{Bl@}Ah@iBl@eCd@{CXoCPsCFoCb@_JRaC`@qCz@kDv@}BxAqClAgBtB_CpBoB|CmClK_KtE}D|BuBlAaAfB_B~JuI~AiA`CsAvCkApA]dCg@vZ_EzOuBtFcA|vAi[dEy@jAQzAOfdAuGrIg@`HQ~EAhHFdBA|BKpFg@~Ce@zCq@fBe@hFaBpCw@xD_AhVkE|EeAvLyCnBc@~IwAnJ}@fE[pCi@pA[|Ao@|C}AxGaE~A}@hBy@``@_OnBo@lJmD|CyAjB{@lB_AvA{@tAgAzByBpB}BfAwAnBgD|AeDhA_DhAgEfA{Fd@uCt@eIf@cDd@kC|@aDfBcFrBeEdCoD|AwBpEyDlF}CrFwAhBa@vEs@bGi@tGw@nFs@bAGvC?zB@xANtBZvBPfKtCpG`BnSbG|AXlDZlBHvC?dCM~HkAhE}@bKeBdC_@bBOxGQpGNjFD|j@tApKZvBT`B\\~Ab@fC`AdAh@jCdBhFlEtAdAxAx@tAl@hBn@pCl@~AX|E@vCQfC_@hCw@hAc@rBcAlAw@~AkAbBcB`BwBtBgD`@}@dB{EzEwQr@wBxA}D`BmDxAoCdBsCfBgCzCoD~B{BfDuC~KaJbLmJpA}@zA_AbDeBvE}A`GkAdGo@bCMhBBzCR`MfB`JhBzJ`AjHVp\\m@tCBrGO|Ka@pRmAdWmAjCQtMg@x`@eBhCGbEAdJNzjAhCvO`@hOX~LExHSlIc@xHo@nPiBrR_CfKeAjJiAxCe@fCk@rA_@pDoA|@KjE_BhF}BhGmD`DwBzC}BjD{Cd^c\\`D_DzCiDxE_GzCkEtBeDdD}F~CkGzCcHdC{GzB_H`BaGpAqFtAwGfAoGfA_It@mFl@gDl@sCr@qCpAuEn@kBjCuGxA_DnCgFtFuHjAwA~H_IbBcBHYhDwEx@}Ar@iB^wAD_@A]IS?WHWROT@PLFNj@z@rBvBZPZ@RGRDLLt@N|Gf@hJj@xELhE@vHQ`G_@xFo@~Dm@|Cm@zEmAxC}@lDmAlEgB~CuAhB}@f@c@@WLQPGTF@@b@[hB_AtFuD~ByAhGuD`@YBUNSRGHBdAQhAe@`H_DzJwD^WBO?m@Ee@aAiG[oCyAsSOoAWsAi@uEScCI{BAuCDqBf@mILsE?oAGs@MS?YHOP}@JqAi@BG@@p@Mr@L}@Ag@RE\\?Da@^sQX}LZsD~CsYCc@@s@GUBUNMB?Jg@LYb@aEB_@Oe@UUCC}C_@o\\kEsQwBaBUcB]{Ai@iB_AsLaHqFeDaAu@i@i@cEkFqAwAaAq@aAc@gA]gMiC{Bq@aCaAuA{@oEeDUS}AiAeBcBcEiFw@nAsEnGa@x@K\\Er@@PL`@\\l@VPl@VTTJZDf@Cn@Qd@YZcBj@?lD?mDbBk@Z_@Na@Bo@Eg@K[UU{@a@UWQ]Mi@?k@BQLa@^u@rEoGv@oAbEhFdBbB|AhA`Av@bD`CtAz@bDpAxA`@fMhCnA`@x@^`Ap@pAvAbEjFh@h@`At@rQpKhCvAjBx@`@L|Bb@tGx@bQtBtXpDfCVz@@jBWr]yGbDo@NOJIHILFZB`Dm@jBi@rFqBbk@kTJM|@Yz@In@Bb@LN?j@SDGu@mKQgBcGo_@kEkYKw@MSSMSKIU@YS_Aq@wBO]W_@U@QKIU?YJURIbBLjAA|@QjLaElB{@`@CvRyJvFwDtG{EpD}DlAiAxJ_LlE}FtBaDtC_FhFaKvCuF~CoFrDsFjCmDfE}E`EaEjC_CbEaDjEyCtEoC~CaBjHaDbHwB~FyA`Ew@fJuAhGoAzGiBzEgBrCkAzDmBpDwBzEaD`E}C`GwFnCsCtBeCtI_LzAgBdKuM~BuCp@q@bCmBfAw@xBoA`Ae@`DkAdBc@hDe@zDUnAAlDPdBNrCj@dB`@hDrA~Az@fCfBlB`BlFfGjJfL`BbB~@x@nCbBxB~@xBn@zB^vBNjC@xBOnBY|A_@rBu@jAk@`C{AdB}AjAqAnAkBL[~EgIrBgDvf@et@nCqD~BiCvRuRbF_FnNwNjSiSnD}DbCaDbBaCnAmBjB{C`CkE~Vuh@|I}QlCkF|CmFp_@an@xBaD`DyD`BeBlHoGlF_Fh`@a`@zEeFrCkDp@cAfAsBrA_Dv@{B`ByG`@_C\\cCVoCVgDHwGGod@@of@P}uA@qDCgVGm~AE}^@_TV_Jb@mG|@}Hd@iDvAgHdBwG`B{E|@_CpA}CtBcEn@kAtBgDdCkDvn@{t@dCqChBmBhFcFpDcD|GsFhG}EzAyA`@_@`GeGbBgBpDmE~DoFvBeDnF_JrCoFt`@kx@~BuENMfVqf@bHkNbFuKh@_BZaBJgAFoANaGLoAV}An@qBtYss@dCqGd@{An@eChDsOPgAfFah@jDoSd@iCt@_Cl@kAT[a@y@Ss@AqA\\{Q@uBc@i[K}EQeAWu@mCgEm@s@e@g@u@c@kGkCc@]Y[]o@yB}FUu@MgAGwA@qANgApD}L~AgFR_ALaA@s@GaAOeAuAyFQcAIgAMyFIw@kIc`@QiAaBuOU{As@qCYiBI_B@oALuA^yCBkAEeAe@iGDg@Ho@Vo@d@m@lCuB\\g@Vo@LcALkBRu@\\gAJm@?yAEa@Ie@O_@{@cAWa@Qk@CU?wANsELoCTeA\\y@jN{Wb@kADWBaAKsAuAaMCw@x@}\\ZcINkCZgCj@eDR{ABo@Eq@Ik@Qu@[k@o@u@[m@Qy@Cw@@_@PoAx@eDDc@As@]qC@m@J{@pA{Dj@_Al@i@p@Yp@QfD_@`AUb@Wl@i@|AqBVa@Nm@H{@EgAGyAC}@H_ANu@l@mBRcANyANwCGeBEk@S}ACu@@g@TqAn@wCDq@FmGE_AKk@]o@eEgE]Ya@MiAW]QWU[m@sC{GQy@Am@Bo@XiCD{@Eo@k@qCEi@Bo@PgA^qAtA{FJeADgAJwAZyBRiAb@gAfHuNXw@R_AHmA`@wIR_EAcAKw@Qs@e@_Ag@w@}DgFm@w@i@a@]Ui@Kg@EqBEg@Gg@M_Ak@yEcFu@m@kKyGuAiAe@g@sMeOiB{B}@cAgBaBiM_Kc@e@aC_Ek@y@u@_AiCiC_@c@U_@Uw@_@cBOk@]s@c@i@{O}Ng@q@c@w@_@qAO}@a@uEUoAUk@MQi@e@_Ac@oCeA[Uc@a@q@}@]Wa@OyBc@g@WOMwAmB_@a@_CkBi@m@_@u@cAmE_@}@eA_BUe@Y{@_@eBUwAE}@FgBHmAPu@l@uAxBeEZ_@h@_@tBkAd@_@V[r@yAd@{ANiAB}A?g@KeAi@iCGw@?YFu@H_@Zu@T[^]xFuBl@_@r@{@vOyWvGsK|@}ADQTcFlAkZj@cONyALi@d@iAT]X]l@a@~@]jBOvDDt@At@Ij@MtDkA`AOhBExBHfDTjADpK[dAGb@IvDmAr@Qz@E|NAdBEp@MdAa@hCqAn@]b@]`@e@R]dK{U`Owa@h@}ApBeHxA{EnDyKf@aC\\}Dn@sJTiC^wEP}@Xw@Zo@t@}@^]hNwK\\]Xg@Z_AxAoGzD{Q~AkHf@{B^mApAoBxGmJd@kAxFiPvA}DxFgQf@uAfAmBtAoAb@[xAm@v@SzDMd@Gj@QvKcE^YTc@Je@VyCpFx@lKr@hZ|Ajf@lCfFZdJf@nHb@hDLhBEpAQn@QzFiBl@OrAKbAFz@Jz@TtBdAjAdA|BzBt@j@r@Zt@Rd@Hl@@xAKp@QnCuAzA_Ar@[vA_@|@K~EGhISfD?PE`BGT@HIt@_@d@wAn@kAbAgAJCd@g@l@bB?TGRUVK?[g@Zf@J?TWH]CUk@yAfDkDvDaEnAmBbCeE^i@p@s@jAq@f@c@Vi@Rs@HaAC}EBq@Hk@Ni@Ra@T]`@]jAk@nAc@`G_BdAc@d@_@l@s@T[j@yA?SRcAh@_Cd@uAHg@M_@?c@KgA?qB@}@h@}IJq@d@oIRcCZcCnAkGX_AjDuNRs@xLig@hCkK`Kw^|AeHbAsFdAiHl@qCh@_Bf@gAp@sAfEcGf@_ARs@Jk@JuADiCA{@UcDo@sHMcCB}@HcAlAkHtC}O`@}A`A_DbIqUp@yAd@y@~FmIfAkBZy@Vw@VgALiADw@@y@GoAG{@e@yBw@eBuD_GcAuAm@q@qAaA_Ai@iAa@_Ce@aA[y@]w@i@c@_@c@e@k@w@]w@Ws@k@wBy@cFc@mDK_E?aGIsBQ_Bg@_C[qAwH}Sa@_B[kBSkBsDsi@QkBW_AQMGU@YJUJGNs@BoE\\uFTaCz@wEp@kC`@sA`AmCxCyGx@eCZoAvAgIz@sE|AaGdDiKdCaIn@cC^cBhBqJ^cBd@cBd@aAfH_LrAiC`A}BfAsC`@uALu@NmBbAcPLiCZyPCuU@gUIuCc@gKOuBWeBcHyZgBoHSoAC{BB_ApA}M^aCh@}Cj@yFz@kL\\qC~BmOpE{ZVsAj@}A|IiSl@_B`BsGh@_CbAaGJsA?{ACaAa@mD?y@LcAj@aCFa@Di@@_BD}@PaAn@yBbAsBf@aBn@mCrAmDHe@XkBt@aDTw@dHeQtAyBX_@fDiD|A_Cl@eAf@kA`@yA\\yBNuAJyADcC?eCFiCJcAxBiM~BuLbBuHp@yBz@{BbDuH~DuIfBaExBaGlD_Kv@eBdA}AdAiApAaAbK_HfBuAtA}Aj@cAv@kBd@_BP_Ah@mD\\aBh@{AhAeCdCsEx@{BvAuEnByE~@iBpBiFbAwCn@wBf@gAhAsBvEaHv@_B\\_Ab@{BLcAJsAHkCDaCRyCJgAdCcNXcCR_CN{DDqMCgDG}A_@cHAoADw@JaA^yCZkBn@}EFcA@mBEaCUeJAiCD{CJwC^wFXwDn@qG`AyHPgCVoGDs@TiAb@{AhAwCVy@ZiBp@uOb@{Eh@uDPuADqAAeAGsAe@gEKcDm@sMo@_S?mAHcBLiAT_AhAaDhAoDXwAPmAJkALoDBqBG{E@gAFsAj@oEr@iFb@}Bl@cCvBwH^eBNiAFqABqBEkDM}ESeCsAuLIuAEuBAgNH_CLiAfC}L\\{Cb@}Fl@{GTmBxCeR^gBzAeFzBoGlAsDrCgJ~Lie@tKk]`A_Cv_@gu@fPk\\~AmEz@kBj@cAzGyJp@kAb@}@|CyI\\mAtA{Fh@yAlDsGfBmC~BwC`BsCpBkEvAiCbAyA|AwBpGmJlF_Jf@}@z@oB`@uAd@sBpCwOnCyMbEgNhCqI|B_Kl@yDd@{FTsHLwBNmAd@cCVaAx@_CtCoGr@wBZsATmANeALyAJcDQy]G}AEu@gAgKQ}CmAk\\aA}XIwF@{CHqDJeCPeCl@sFb@_DfAoF|BiI~@qCfCyHpIqVzAmEd@cB\\wARoAP_BLmBHwC@eAMcC[kDKu@i@eCyH_VeCwHy@oCw@_DOaAWsCKqAG}CHmDNiBZeCL{@j@_Cb@sA~@yBtUae@`AiBhAcBjB}BvCiCrB{AhPiLjD{BfGqEnAcApAsA~@gAdAaBjBiD~@cCt@aCZwAX{AXsBXgCPgDtAyi@l@{R|Cgn@Ho@Cc@IWIS@UJQRCf@_@lAu@jAk@ZIbWyMxI{ETIDGxIwE`@W`Bu@lPsIh@QrAYlACrVnATI~AMn@O|Ak@xGwC~BcAbLeFp`@cQrNmG~ZcN|DaBnGoCp@S`MkCrAUl@a@NKRBB@v@InGsArKyBjK_ClEw@hBe@pH_B|MqC|G{AxMqC",
+      "leg_minutes": [
+        77,
+        6,
+        52,
+        42
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 2157,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 35,
+      "estimated_arrival_time": "13:57",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 35-minute driving buffer plus planned breaks.",
+      "stop_count": 3,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 76% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 297,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJxepzkhMYbW0RFNcGpB3VrZg",
+        "ChIJrZjWFI0XbW0Rkza7MvENM10",
+        "ChIJhf3uAI1TbG0RuUwe8fNYNU4"
+      ],
+      "waypoint_note": "Route plotted through 3 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:32",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 92,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJxepzkhMYbW0RFNcGpB3VrZg",
+        "route_progress_km": 114.9,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "10:54",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 114,
+        "title": "Zealong Tea Estate - Tea Room",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJrZjWFI0XbW0Rkza7MvENM10",
+        "route_progress_km": 115.5,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "12:42",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 222,
+        "title": "Coffee stop",
+        "kind": "coffee",
+        "duration_min": 25,
+        "place_id": "ChIJhf3uAI1TbG0RuUwe8fNYNU4",
+        "route_progress_km": 174.0,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "13:57",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 297,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJhf3uAI1TbG0RuUwe8fNYNU4",
+        "name": "wildbean cafe",
+        "category": "Cafe",
+        "address": "58-70 Main Road, State Highway 1, Tīrau 3410, New Zealand",
+        "rating": 4.5,
+        "review_count": 42,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 11,
+        "enjoyment_score": 73,
+        "crowd_risk": "medium",
+        "open_now": true,
+        "reason": "4.5 rating, $ pricing, and an estimated 11-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=5635508313469635769&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.bp.com/en_nz/new-zealand/home.html",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -37.976552,
+          "longitude": 175.75514189999998
+        },
+        "route_progress_km": 174.0,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 12,
+        "cost_label": "~SGD 12/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJrZjWFI0XbW0Rkza7MvENM10",
+        "name": "Zealong Tea Estate - Tea Room",
+        "category": "Restaurant",
+        "address": "495 Gordonton Road, Gordonton, Hamilton 3281, New Zealand",
+        "rating": 4.6,
+        "review_count": 2060,
+        "price_level": 3,
+        "price_label": "$$$",
+        "detour_minutes": 8,
+        "enjoyment_score": 54,
+        "crowd_risk": "high",
+        "open_now": false,
+        "reason": "4.6 rating, $$$ pricing, and an estimated 8-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=6715726798928950931&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://zealong.com/tea-room-bookings/",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -37.7063023,
+          "longitude": 175.2940936
+        },
+        "route_progress_km": 115.5,
+        "opening_hours": {
+          "openNow": false,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 10,
+                "minute": 0
+              },
+              "close": {
+                "day": 0,
+                "hour": 17,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 1,
+                "hour": 10,
+                "minute": 0
+              },
+              "close": {
+                "day": 1,
+                "hour": 17,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 4,
+                "hour": 10,
+                "minute": 0
+              },
+              "close": {
+                "day": 4,
+                "hour": 17,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 5,
+                "hour": 10,
+                "minute": 0
+              },
+              "close": {
+                "day": 5,
+                "hour": 17,
+                "minute": 0
+              }
+            },
+            {
+              "open": {
+                "day": 6,
+                "hour": 10,
+                "minute": 0
+              },
+              "close": {
+                "day": 6,
+                "hour": 17,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: 10:00 AM – 5:00 PM",
+            "Tuesday: Closed",
+            "Wednesday: Closed",
+            "Thursday: 10:00 AM – 5:00 PM",
+            "Friday: 10:00 AM – 5:00 PM",
+            "Saturday: 10:00 AM – 5:00 PM",
+            "Sunday: 10:00 AM – 5:00 PM"
+          ],
+          "nextOpenTime": "2026-11-22T21:00:00Z"
+        },
+        "cost_type": "food",
+        "estimated_cost_sgd": 38,
+        "cost_label": "~SGD 38/person",
+        "cost_note": "Estimated from Google price level; check the menu before committing."
+      },
+      {
+        "id": "ChIJxepzkhMYbW0RFNcGpB3VrZg",
+        "name": "bp",
+        "category": "Gas Station",
+        "address": "36 Horsham Downs Road, Thomas Road, Rototuna North, Hamilton 3210, New Zealand",
+        "rating": 3.4,
+        "review_count": 201,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 6,
+        "enjoyment_score": 70,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "3.4 rating, $ pricing, and an estimated 6-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=11001683788018669332&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://map.bp.com/en-NZ/NZ/gas-station/hamilton/bp-connect-horsham-downs/0DK36",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -37.7302222,
+          "longitude": 175.2737314
+        },
+        "route_progress_km": 114.9,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 3,
+      "estimated_total_sgd": 118.8,
+      "estimated_per_person_sgd": 39.6,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 42.0,
+          "detail": "240 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 10.8,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 66.0,
+          "detail": "Google price-level estimate for 3 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:19:47+00:00"
+  },
+  {
+    "id": "fallback-buenos-aires-tigre",
+    "author_name": "Camila · Exchange student",
+    "title": "Buenos Aires to Tigre for a slow Sunday",
+    "start": "Buenos Aires, Argentina",
+    "destination": "Tigre, Argentina",
+    "route_mode": "scenic",
+    "adventure_level": 42,
+    "budget_per_person": 75,
+    "travellers": 2,
+    "preferences": [
+      "slow-mornings"
+    ],
+    "route": {
+      "distance_km": 32,
+      "drive_minutes": 51,
+      "static_drive_minutes": 60,
+      "summary": "Buenos Aires, Argentina to Tigre, Argentina",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "|oerEfwicJO_C?m@@WN[yQb@mGPk@AMCD~EHdCFbGh@n[d@rOT|JHzIDjLBvDCdCWfE_@dFUtDGRyFhNEh@@|CBNCZ?nDHxHClF@tD_@nOUvSG~P@t@GxHKrKCx@BTqB~GcCnHGZOVe@pAeBbDYn@oFfKqHrMoBfDa@j@wBvD_DhFqE`IyBjDu@`BwBtDiBtCoCxEyClF_HnL[d@oCfIcBpFkBvFuFqAIGw@|C_AzC}AzFiFnUcA~EsA|HOdAKhDMhGuGo@uN?UCsC`IQp@S\\SX_CbBgKpIiP~M}D~CuD~CmI~GeH~FqJ~Hk@j@iEfD}BrBYDOK_@jAyCrBkGjEmBnAgCfBaC|AmJzGwDjCa@}B]oAt@k@`N~[lAnCPPOn@Ar@N~K@rKuJlG}QfLwA|@IEcAXkANmA@oAOo@OGCqAAq@LmA\\a@Rg@`@]`@UjAMx@Wv@cAjBq@`Ae@d@g@b@EJGDQVsFpCgDrBW?gDlC{AxA}EdFgDpC{AfAgl@b^sw@bh@iEbDmBfB_NfNuH`IcA`AaAbAiDxD_G`IkK|NiBxC}DjHiE`KuK~Xw@jBkOna@wTrk@wB`G{Mt_@i@pAaBbD}HrMu@fAc@RiBhCcAhAsAlAo@d@sBjA}CvA_FjB{HnBkB`@uCt@oEz@mCT{IrCm@VwC|@o\\zKeGzBeMhFoVfLwDpBs@V}QjJi@Rk@ZaNtF{EdBkK`DwIxB}HvBmG|AwDfAaX~GqDfA{FnBmHtCmAh@sDfB_IhEqCdBaHvEaHnFsHzGoC`CcC`BgCvAaC~@sBt@SJKEeBZiC^mCR{E@uBEq@CiASQMMQQOUESHWJa@?u@Mg@OeAm@eB_@{JcB{Dy@i@?g@F_AAKSSMW?iAo@{E_CMYUKYBOLo@Vq@Tg@HcBDq@Gu@Wu@e@_@a@a@w@YcAIm@?a@D_@NSD]EYH[T?|@V`@Dj@Cj@O^WhAgAdAsAZo@",
+      "leg_minutes": [
+        30,
+        21
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 279,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 20,
+      "estimated_arrival_time": "11:11",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 20-minute driving buffer plus planned breaks.",
+      "stop_count": 1,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 42% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 131,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJ7bRcq5a2vJURtumgIFd0fIg"
+      ],
+      "waypoint_note": "Route plotted through 1 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "09:42",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 42,
+        "title": "Parque Saavedra",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJ7bRcq5a2vJURtumgIFd0fIg",
+        "route_progress_km": 16.1,
+        "opening_hours_verified": true
+      },
+      {
+        "time": "11:11",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 131,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJ7bRcq5a2vJURtumgIFd0fIg",
+        "name": "Parque Saavedra",
+        "category": "Park",
+        "address": "Vilela, C1430 Cdad. Autónoma de Buenos Aires, Argentina",
+        "rating": 4.6,
+        "review_count": 38521,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 4,
+        "enjoyment_score": 94,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "4.6 rating, $ pricing, and an estimated 4-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=9834863603828713910&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": "https://www.buenosaires.gob.ar/coronavirus/bienestar/turismo-en-barrios-hoy-saavedra",
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -34.550819,
+          "longitude": -58.479815599999995
+        },
+        "route_progress_km": 16.1,
+        "opening_hours": {
+          "openNow": true,
+          "periods": [
+            {
+              "open": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            }
+          ],
+          "weekdayDescriptions": [
+            "Monday: Open 24 hours",
+            "Tuesday: Open 24 hours",
+            "Wednesday: Open 24 hours",
+            "Thursday: Open 24 hours",
+            "Friday: Open 24 hours",
+            "Saturday: Open 24 hours",
+            "Sunday: Open 24 hours"
+          ]
+        },
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 2,
+      "estimated_total_sgd": 55.04,
+      "estimated_per_person_sgd": 27.52,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 5.6,
+          "detail": "32 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 1.44,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 48.0,
+          "detail": "Google price-level estimate for 2 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:20:59+00:00"
+  },
+  {
+    "id": "fallback-santiago-valparaiso",
+    "author_name": "Mateo · Exchange student",
+    "title": "Santiago to Valparaiso by the long way round",
+    "start": "Santiago, Chile",
+    "destination": "Valparaiso, Chile",
+    "route_mode": "scenic",
+    "adventure_level": 86,
+    "budget_per_person": 130,
+    "travellers": 4,
+    "preferences": [
+      "local-gems",
+      "adventurous"
+    ],
+    "route": {
+      "distance_km": 123,
+      "drive_minutes": 84,
+      "static_drive_minutes": 91,
+      "summary": "Santiago, Chile to Valparaiso, Chile",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "scenic",
+      "route_mode_label": "Scenic",
+      "route_mode_description": "Intermediate cities, viewpoints, and memorable detours.",
+      "polyline": "|bckEzsfnLlGnc@gBRiDTw@DIByFeA_Gu@qFkAuA@{M|@}CTOLUF_E`@QLCDwMbAeALkCn@kA`@qD|A_FdBu@`@wAfAy@bA_AdBg@rAoAzEAp@yA`H@nCkCjK_BxF_@nBo@|Eg@dCaCzIq@nBeEjJkA`DgGfU{@jCgAfCuCjGw@vB_@zAk@rCy@jD_A`DgAnC{@bBiCnEw@dAu@z@g@j@iCdC_Ax@_ChBg@d@gBrA{BvBiB`Cu@jAaF|J}H`MmAfBoCzEqCpFcEtH[r@i@xA[jA]jBIt@GxBAv@NvGLxIBzL?xBFjATlBTvAb@`B|@dCvAxCrAzCh@bBXpATvB`@vKP~B\\`Ch@tBbArCrCjHfCjGn@bB|@|CVzAPpBDjBAvBEdAUpBw@tF}@nFe@hEUfDK~DBzDh@~PL`J?jCIjOEdEEdIObRAlIFjDhA|RFnC@`DInDUpG?bDLlCZ~C`DhWRzC@vACbCWfJGtDFxBFz@\\rBPv@n@jBl@lA~@xAvDjFl@lA\\x@\\nARfAPfBFfC?hC`Anp@JzIHfBHn@f@lCv@dCj@rArGtLtArCh@n@f@jAl@nA|AbCdBzBtN`OzFpGrCdC`BhBhA`BbAnBd@fAlApDt@vC|@tCt@nCPz@rC~Ix@~Bh@lA|@tAx@fAxAnA`Ar@f@VjFpBhCz@dAb@tA|@zBlBvAdAxAh@n@JjCJrAp@~BbBhBjAlAbAx@bAp@fAf@nAV~@d@dDD~@ChCOjCObBe@~DHXeB|OoAvKOrB?n@EzA?~CF`BFt@f@|CxNzy@~EtY|AfJhBnJnRbhAdEtWt]~sBdA~FxFd]fEtVjAfGrCpQdClN`@hAxD|S|@hFb@jDdBtKn@|DVxBRdDBvA?bC_@tXcAxu@LfKJtIP|OCrCGpB[xDiC|QWpCOhBIrC?|Dh@hV~GrxAnDd|@D~CC~BM~BU~Bg@rCq@dC}@`CcApBwAzBeIjLoDhFaAlBo@pBqG`Ws@lBs@nAaApAsAnAqC|BoAvAgA~AyCzEs@x@c@`@o@d@}@f@mAj@}A\\uANwCBaC@cBHeBVqAb@}A`AeAz@mAvAu@lAy@jByNja@o@tBa@jBOlAI|AAnBJbCR`B~@zEjEhVX~BJrAF`C?tAQxDSpCuAjEqAxD]xAY|BIrAAj@NfDNbAb@tBtFvPxAnE`@zA^vC?`CM`DWfBe@fC{@~BaCpIcBzFqA|D_EtMaCdIiA~C}A~CiBvCwAlB_CvCiEpF_BxByObSsM~PaWh\\cDjEsIxKqDxE_BxBkC`D}IrL{BrCwYr_@qAlBw@pAeGjLoBdEgAtCe@|A_@|Aq@jDwBhMwGzb@eAdFmA~E_@zB_CbS{CpXQzAc@zCc@nEk@|E]xBgAdKcCtSq@lGcFpb@}@vHq@pEcAhHyB|NiA~HQbBI`DQxc@KfR@zDHlBRhCdAfGVhAd@pAtArCbBlCjAzA|EdEzI~GtHzFx@p@~@fAx@rAn@pAj@xA`@fBXxBFh@DdB@dAe@`QD~@q@h_@EtCBtCFfAXxBp@bDbAfEfA~D~DpPzAhHdA`FhGhZTfBLvBBlBAfAKpAq@xF]xDw@fGo@fGw@vG{@dIsAnLkEr_@gB|OwCpVe@hEgA|Ia@~D]dCg@`Es@vFs@xGm@lEcAnIyAfMo@|Fi@fEWpC]~Bg@lEk@hEOzAGjC?jANzJDvADpCRdJJzHFlCPtF?lDEfBE~@_@rDWtBQ|AUjBOzA]bBgAfIq@tEs@nGw@hGk@jD}AdMaAxE]nAoAnDk@fBcDrI{AxDmAvDeBpF}@hCmBfFmBhG{@zBMT}@xC_AxD]jBk@nEs@~Fg@fFq@|FEl@aBpOc@hDg@nEQtAo@rGsAtMUdCu@jFa@dBwA|EeCtJmAlFc@jAwAxFkB`HoB|HuAxGaD`NiJt]oLtd@g@jBe@lCuC|H[p@qApBcAxAgCnC}D~DgEtE{@jAyA~Bu@|AcC|GeUrp@_AfCcKpZoBvFwCtIy@dDsA`GsBfHmAbDw@~AmA`Bu@tBwA`Dq@pAo@zAsCzHe]nbA_a@tiAkiAxdDiHtS}Kn\\WbAwBpGsl@zcBmEnMiJ|WyAbDaA|AoAbBw@~@_Ax@kA~@}CbB{B|@uOxF_ExA{@^u@d@cCdBeAx@iBdBgCvCgDbEoFlG}GrIcLhNgLfNmGhGcQvOwC`Ca@LaA`@qBf@w@\\eAv@aAx@?ZLVrCGxBM|@DpDOhIYbAM`DGbOk@~Me@r@@RFdKdEk@vBj@wBeKeESGgA?_ZdAgDLiBBcALiIXqDN}@EyBLwDJa@Bu@hAs@xAiA|AO\\uf@tb@yRpP_LvJqCpBqCdBwAr@oB|@aKvDgG~B_M`EeNlD}DxAkAh@oExAsBj@gF~AmHrBwLzDcEnA}KrDmHfCeWfIsGlBwDrA_D`AaDjA_DzAyEnCwCnBuCvBiDzBqH`FuGzEuEfDmF~DmKlHcW|QaOlKaFtDkBpAaAt@mDfDgBzBqApBwB~DoCzEsE|HgBbDuBpDwAnCgDtFoA`BaBnBwDjD_ItGmE|CwVbRiCfBgAp@mAl@qc@|QkN`G_GlC}ExBmAn@yClBoGxE}BpByG~G{CrDqErE}JvKs@z@a@l@cUpWuAbByFfGcGbHkBpBuCdCoU`QqRzNoEnDs[nUob@l[uFfEeB~AcBrBmD`GeAxB_Uzi@oCpGsL~Y{U`l@mBxEuBlEeI|QcDbIsAzCgI~Sk@bBod@fhAyGhPgAlBy@jAaBpBoAjAuBxAkAr@qCjA}VvJ{Av@cFpB}DtAqRlHaBl@kBd@oCj@{BTmDNkBAmKg@mGYgGUuDWkBMmEOcG_@wGa@cDSu[gBoQ{@qW_BeXyAiAMwBi@cAe@gBqAq@o@_AqAg@aAm@}ASq@{J_g@i@aBi@wAa@w@c@s@cBiBmBqAaAa@{@Wy@Q{AMgFMmGAgCIiCOmCe@gEaAaCc@}AKyAAeAFoBXmDhAiAb@iBz@yAbAy@x@uG`JyFfIeBpCy@bBq@~AwBzD}@|Bu@dCw@tCi@bBi@vAk@dAi@x@qAtAa@Zu@d@uAn@eBb@uATwCXoEh@oCn@y@XaA`@mAr@{AdAiXnT}ArAoBlBuBdC{B|CoKfRkIfOqKnR{@lB[dAq@vCw@xE]xAi@dBKVg@x@cA`Ae@\\yDbBs@Xi@XYV_JjD_AV{@HiAA_BUeCe@sA[}@OgAAi@DeBf@s@f@m@p@yCzEk@t@o@l@k@Zi@PiALk@@c@EqFuAy@Iy@A}@J{@Zc@RYRe@d@a@l@eDtGe@dA_AzAeGxFaBvAw@dAWb@a@jAKf@O`C@|A`@lDVnAbAdElAdDVr@b@|@x@hCjB`KpApGRtALfBBrA?vDC~@Op@GJc@ZaEvAgBd@PdAQvA_@|Bm@zEsDxUcAdHgAlGqAjIeFWKIS@E@QA",
+      "leg_minutes": [
+        54,
+        29
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 910,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 20,
+      "estimated_arrival_time": "11:44",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 20-minute driving buffer plus planned breaks.",
+      "stop_count": 1,
+      "route_mode_summary": "Scenic places and intermediate-city detours are allowed to shape the day.",
+      "profile_influence_note": "Route shape: Scenic. Stop ranking: 86% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 164,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJwSgI_xFvYpYRqWjiZijsYxc"
+      ],
+      "waypoint_note": "Route plotted through 1 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "10:07",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 67,
+        "title": "Plazoleta Villa Magallanes",
+        "kind": "attraction",
+        "duration_min": 60,
+        "place_id": "ChIJwSgI_xFvYpYRqWjiZijsYxc",
+        "route_progress_km": 80.0,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "11:44",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 164,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJwSgI_xFvYpYRqWjiZijsYxc",
+        "name": "Plazoleta Villa Magallanes",
+        "category": "Historical Landmark",
+        "address": "Av. Punta Arenas 52, 2480061 Casablanca, Valparaíso, Chile",
+        "rating": 4.1,
+        "review_count": 88,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 2,
+        "enjoyment_score": 84,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.1 rating, $ pricing, and an estimated 2-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "scenic",
+        "google_maps_uri": "https://maps.google.com/?cid=1685450343835658409&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": -33.3191238,
+          "longitude": -71.4105742
+        },
+        "route_progress_km": 80.0,
+        "opening_hours": {},
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 4,
+      "estimated_total_sgd": 27.07,
+      "estimated_per_person_sgd": 6.77,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 21.53,
+          "detail": "123 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 5.54,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 0,
+          "detail": "Google price-level estimate for 4 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0.0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [
+        "Plazoleta Villa Magallanes",
+        "Solaz de Curacavi",
+        "Túnel Zapata"
+      ],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:21:03+00:00"
+  },
+  {
+    "id": "fallback-marrakech-essaouira",
+    "author_name": "Amal · Exchange student",
+    "title": "Marrakech to Essaouira for ocean air",
+    "start": "Marrakech, Morocco",
+    "destination": "Essaouira, Morocco",
+    "route_mode": "balanced",
+    "adventure_level": 73,
+    "budget_per_person": 110,
+    "travellers": 3,
+    "preferences": [
+      "local-gems"
+    ],
+    "route": {
+      "distance_km": 215,
+      "drive_minutes": 197,
+      "static_drive_minutes": 205,
+      "summary": "Marrakech, Morocco to Essaouira, Morocco",
+      "stops_needed": [
+        "fuel",
+        "bathroom",
+        "meal"
+      ],
+      "route_mode": "balanced",
+      "route_mode_label": "Balanced",
+      "route_mode_description": "A few worthwhile stops without losing the day.",
+      "polyline": "yg_`Ehowo@mFjD_@^cArAo@tAkAxDARaApCoAhCuChFwArCaAlCs@lCk@hCc@fDM~A_@bCYdAs@dBoD|Hy@p@QJKXBRS`Ao@xAcApBsJxSm@vAj@zCdBnInEjUhAlFVrAKRAVHPNJD?|@zEvAhHlA|FtBlKp@xDpBdK`C`MP~B@`DOvFWdEIdE@z@UjJCvBO`FQ`DQ~HSlUI`D?lE?zFWh^Orh@ItHALYRIVA^J\\TPBvFEzJE|BArJQxWGnBSLKV?\\JVLJBbC?fCMPAVHTBBCrRQfNC\\ARDL@^?pHFn@i@j_ABrGSn\\S|SBr@K`@GvCExQD|DBLEfDsAdgCGfFmBtiA{@hk@o@|\\CfCSfL]`YQzKShHCNQbGKz@IR@TJN@j@IzHBJa@l\\mCrbB}ChpBYtMA`D_@dTkCddBKpFKzGmAvv@[tRg@jZOrJJrBXrBd@fBZz@bAfBnH|K~@xA|@tBl@pCvA|Jt@lGpBhOd@lDThBdClPdDtVvCtSpKfw@tCzSdAjIlBzMdSryA|CpVr@~DvBzODt@bHnh@xYjwB|NtfA`N`cAlTd`BbKzv@`Th`BATl@jFBt@KT@XJRRFp@rERnALh@jF|`@vZd~BnCtS\\jBdDbWt@bGd@|DJlA?Z~@vJ`Dj[~@zJfAvKV`BzDba@`Dj[hF|h@l@pFdEvb@pEnd@jBnRxCzY`AdKlBhRv@~IThEJ`FLpMHvKBdD?xCBlFHxF@`EDtB@lCDpB@zEFpCHnMB|DTpXV`]DxA?rB\\fc@AnBe@fKoDpq@s@~MkBb^EdAw@zMa@fJg@dIMlDm@bKK|Ag@hKWvEw@|NIvBeApRcAzRK`FCjPG~KEjKGfLChHQd_@C`LG`KKhTSx^Oz^EdNJ~IF~OhB`fCDpCVrG\\|Ez@lIvD|\\pD`\\vAbM~Ijx@zGjm@rAhLrPrxAz@hHtClSnJxq@dD|Ul@fD|@nDvAxEdCbH|Mh]bKvW~GfQhJtUzZlv@lI~SfJnUvDnJn@bB`E~JHLxDlJTtAGR@TJRHDTb@FZr@vEbAtHdA|GxEn\\|AfLLz@LzACbASvAaCtKIh@GxADpAh@rDvAtHn@hCMTATHRNHD@x@nGbEpU^xCFpBCbCK~A_B`Sw@~HsB`XGlC@dB@z@JhBT|CzFtq@VxCJrC@rAAzCs@fQ}Brh@SnCe@~DqOjkA]vCMlB_B|]s@xMU`CsM`_AaHb`@}ApKkA~Jo@vG}@vLm@pKgJrdBaS`sDwBda@aBrZe@tGsY`fDe@rEwDnXc]zcCV@b@CpBLb@HrANpA^d@Z^HnB_@jAaBfA_BNPr@d@Pe@^?Kn@GLqA}@OQgA~AkA`BoB^_@Iq@a@eAYsAOaAOaBGUBva@ixCd@oDx@uIzXkaDXoD|b@gbIzBib@v@sK~@yJfA_Jv@yF~AmJ|EiXvAwJlKuu@T{C|Buf@RcEf@cEzOolA`@cERgDzBwh@h@mMDgDCyCUaEeE}f@{AiQMgDAmBBqANmCz@cLp@eIh@mF@]g@YYGO?iEmAApEz@AVw@BwBrBl@TZd@^cA`L_BzSGlC@dB@z@JhBT|CzFtq@VxCJrC@rAAzCs@fQ}Brh@SnCe@~DqOjkA]vCMlB_B|]s@xMU`CsM`_AaHb`@}ApKkA~Jo@vG}@vLm@pKgJrdBaS`sDwBda@aBrZe@tGsY`fDe@rEwDnXu`@`tCUlBe@nGwSfkDqAzWiGdtA[hGCx@?n@q@`NOzB[tIYvCa@fCiDnQi@~Cc@zGS`GY`Fw@bPWfIw@xO]tI[hGg@rKe@rLgAvUk@`MI`CoD`x@o@zNG\\QpDy@dNmA`Oc@fHaBd[KtAGdBe@lHi@tG{AzUg@rIgBxXo@~Kg@|Hw@`M?bAe@jHi@tKIj@uDxv@uB|c@mAlWa@zF[nFu@`Pq@bNInAYdHm@~MSbDu@pOWdGS|Ck@jMu@vNUfGOnBu@~P}@`Qw@nQU|EKnBOtCMvCUfCe@hCqAzFu@pCyAvGYhBUlCK~BA~CHjDL~Ar@~FhA~L|AnR~BtXtE|j@tCd]tCn\\bBhUj@lGnDtb@NjC^zMt@|`@f@zMJz@TtFXfFTvGHrFArAUfD{@hIqBlQiBrP[fCk@nFyAfMiBpPy@hHyCvXe@`E]jEIvCAzDJzET|Ct@jGj@|Cr@zCt@dC`AtC|CxJx@tB`C|EpAlBT\\Z^|@bB~BhFpElI`DdG`DzFdBlDhAvCnAbE\\vA`@lBhDrNjA|E`@rAlApC|ApC@PzF~J`AtBzBlGbPlf@~AbExX~j@hC`GnKhTjN`Y|L|VjK|SdBjDx@lBz@`Cl@xBj@nCZtBThCpKdcCVtK^|UF~BRxCb@nD^bCp@vCv@nCzBfGtGnPpLzZdHnQtAvCNR|Nn_@Jh@vB|Gl@dC`@zBZbCTpCJpDt@~p@RrKy@Gi@O]CsDPoCKuBC]E]K[M_@c@YK}B_@_@LOTG^AbEEv@BXHRLJPFZAt@KRBHFFNBd@CjB?lA?b@\\vCDPX\\TL\\ZJN@^?VIl@Wl@e@b@KXA^P`A`@xARzABz@DVLJhA^rB\\ZPLZd@xBHHt@JhAFjAd@xB\\fAd@v@Nb@jMBbCCpB[lGoC~`@GtCDdBLpBRvAXpA`@xAp@fBbAfB|@lAjGpHx@nAnA~BpDrJdC|GvAhFr@zCr@fEh@pE~BzYJhDAnE[nf@FbERvCd@pDhEdUf@nBb@pAr@xAx@rAr@~@lArAlHhHnA~A`AzAjAxBlIbQvAvDh@bB~@pDlNtn@hEvQNRlCrLbA~EfI~]hFzU@^X~AT|BN|CBfCIpDQtBMlAc@bCm@dCUr@]l@AVDJMnAiAzFsDfQoBhI_Vv_Au@nCqA~DuCtH_GpNiBxEsA~CyBdGe@dBmDlOaAbFiAjE[zA]pBe@zBSbCC~An@dTP~B\\vLDbFQrD]~Cs@~EQz@kLtz@MpAK|BQlJKrCSxCc@lD[jBoEzTq@tDUvBInBCjAKdOJhEVtC^~Bb@pBz@jC`AdCd@~@fBtChCdEzAnCf@fAf@zAdBrGP^tGzWhHpYjHpYf@`Cx@~Ch@fDt@fGNtBAhDMTAVLRLH`@zALXbAbGj@`E~Evb@f@bFJpANjDCt@ZlH@nBCbL@fBBtAFtAZ|C~BtTN|BBvBExCaBx\\SlDg@vE{C|SQxBEtCFbFCfBk@vHM~CMzEUpG]fEq@zEm@lEInAErChAbWAXMPAXHRLPFj@jApWLjBZhBX|@pK~V~D~It@nB\\l@`Oh]d@zARpAJnA|Bz_@PnA^xAl@tAtMdX^hARfAFr@?pBWfHGxF@dCPnBhKpz@xAvHxq@niDfNtq@vh@tbBdA|CbBzEBLBd@AVDPLLJBVR\\|@hFtQfAfCzCzGpBbEdHpOh@pB|F|WrIp_@TzAZ~GPvEA~Bs@hRQlBMp@m@jB_ErKu@|Aw@fA}LlPu@zA]`AUjAOlAE|@@hBRbBZvA\\`Af@bAbArAn`@bd@r@~@f@bA`@tAP`AJtA?pAItASnAy@vCk@~Ai@bA}@rAcC`CmA~@y@b@yAf@sDt@uA^eAb@yA`A[Z_@h@g@bAw@zBcFfRIb@KHg@LWNcA\\sEvAyp@|SkDhArAxCVf@TV}@hNwBU",
+      "leg_minutes": [
+        100,
+        58,
+        39
+      ],
+      "traffic_status": "light",
+      "traffic_delay_minutes": 0,
+      "traffic_intervals": [
+        {
+          "startPolylinePointIndex": 0,
+          "endPolylinePointIndex": 1022,
+          "speed": "NORMAL"
+        }
+      ],
+      "traffic_note": "Live traffic estimate from Google speed intervals.",
+      "construction_status": "not_available",
+      "buffer_minutes": 39,
+      "estimated_arrival_time": "13:56",
+      "estimated_arrival_date": "2026-11-28",
+      "estimated_trip_days": 1,
+      "timeline_note": "Includes a 39-minute driving buffer plus planned breaks.",
+      "stop_count": 2,
+      "route_mode_summary": "One worthwhile intermediate stop can break up the drive.",
+      "profile_influence_note": "Route shape: Balanced. Stop ranking: 73% adventurous.",
+      "warnings": [],
+      "arrival_offset_minutes": 296,
+      "schedule_warning": null,
+      "routed_waypoint_ids": [
+        "ChIJE3OHDwAXrg0Rw9NuI_mb9nQ",
+        "ChIJH5tpIADlrQ0RN2iiyQM5F9Q"
+      ],
+      "waypoint_note": "Route plotted through 2 planned stop(s)."
+    },
+    "itinerary": [
+      {
+        "time": "11:00",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 120,
+        "title": "Fuel + bathroom",
+        "kind": "fuel",
+        "duration_min": 15,
+        "place_id": "ChIJE3OHDwAXrg0Rw9NuI_mb9nQ",
+        "route_progress_km": 88.9,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "12:24",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 204,
+        "title": "Goat tree douar arguita",
+        "kind": "attraction",
+        "duration_min": 45,
+        "place_id": "ChIJH5tpIADlrQ0RN2iiyQM5F9Q",
+        "route_progress_km": 134.1,
+        "opening_hours_verified": false
+      },
+      {
+        "time": "13:56",
+        "date": "2026-11-28",
+        "day_number": 1,
+        "schedule_offset_minutes": 296,
+        "title": "Check-in",
+        "kind": "stay",
+        "duration_min": 0
+      }
+    ],
+    "is_public": true,
+    "is_completed": true,
+    "start_date": "2026-11-28",
+    "start_time": "09:00",
+    "end_date": "2026-11-28",
+    "candidate_places": [
+      {
+        "id": "ChIJE3OHDwAXrg0Rw9NuI_mb9nQ",
+        "name": "Alamia Oil Hdil",
+        "category": "Gas Station",
+        "address": "H36W+WW, El Hougate, Morocco",
+        "rating": 4.0,
+        "review_count": 1,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 3,
+        "enjoyment_score": 68,
+        "crowd_risk": "low",
+        "open_now": true,
+        "reason": "4.0 rating, $ pricing, and an estimated 3-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "practical",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=8428095247014089667&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 31.5623036,
+          "longitude": -8.9026537
+        },
+        "route_progress_km": 88.9,
+        "opening_hours": {},
+        "cost_type": "none",
+        "estimated_cost_sgd": 0,
+        "cost_label": "No entry cost expected",
+        "cost_note": "Fuel and tolls are estimated separately."
+      },
+      {
+        "id": "ChIJH5tpIADlrQ0RN2iiyQM5F9Q",
+        "name": "Goat tree douar arguita",
+        "category": "Tourist Attraction",
+        "address": "HJ3P+6WR, Mejji, Morocco",
+        "rating": 1.0,
+        "review_count": 1,
+        "price_level": 1,
+        "price_label": "$",
+        "detour_minutes": 6,
+        "enjoyment_score": 42,
+        "crowd_risk": "high",
+        "open_now": true,
+        "reason": "1.0 rating, $ pricing, and an estimated 6-minute detour.",
+        "recommendation_scope": "along_route",
+        "recommendation_kind": "scenic",
+        "route_mode": "balanced",
+        "google_maps_uri": "https://maps.google.com/?cid=15282746548935616567&g_mp=Cilnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaE5lYXJieRACGAQgAA",
+        "website_uri": null,
+        "review_quote": null,
+        "review_author": null,
+        "location": {
+          "latitude": 31.551909499999997,
+          "longitude": -9.3627434
+        },
+        "route_progress_km": 134.1,
+        "opening_hours": {},
+        "cost_type": "admission",
+        "estimated_cost_sgd": null,
+        "cost_label": "Ticket price to verify",
+        "cost_note": "Google Places does not provide admission pricing for this stop."
+      }
+    ],
+    "cost_breakdown": {
+      "currency": "SGD",
+      "travellers": 3,
+      "estimated_total_sgd": 119.3,
+      "estimated_per_person_sgd": 39.77,
+      "items": [
+        {
+          "key": "fuel",
+          "label": "Fuel",
+          "amount_sgd": 37.63,
+          "detail": "215 km at 12 km/L and SGD 2.10/L"
+        },
+        {
+          "key": "tolls",
+          "label": "Tolls",
+          "amount_sgd": 9.67,
+          "detail": "Route-distance estimate; verify local toll rates"
+        },
+        {
+          "key": "food",
+          "label": "Food",
+          "amount_sgd": 72.0,
+          "detail": "Google price-level estimate for 3 travellers"
+        },
+        {
+          "key": "tickets",
+          "label": "Known tickets",
+          "amount_sgd": 0,
+          "detail": "Only includes ticket prices available to the planner"
+        }
+      ],
+      "unknown_admissions": [],
+      "assumptions": [
+        "Fuel, tolls, and food are estimates in SGD.",
+        "Attraction admission prices must be verified from the venue or official website."
+      ]
+    },
+    "recommendation_source": "llm",
+    "seeded_at": "2026-11-22T06:22:13+00:00"
+  }
+]

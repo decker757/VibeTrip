@@ -243,7 +243,11 @@ FIRST_LEG_MIN_MINUTES = 60
 MIN_LEG_GAP_MINUTES = 25
 # Stops with a known position: even neighbouring places take a few minutes to leave and reach.
 SHORT_HOP_MINUTES = 5
-ATTRACTION_MIN_DRIVE = 180
+# A scenic stop is the point of Scenic, whatever the drive; Balanced only adds its
+# 45-minute stop once the drive is at least twice that long.
+ATTRACTION_MIN_DRIVE = {"balanced": 90, "scenic": 0}
+# Fuel + bathroom is a break, and a break is due every two hours; shorter drives need none.
+FUEL_MIN_DRIVE = 120
 MEAL_MIN_DRIVE = 210
 SECOND_FUEL_MIN_DRIVE = 360
 # Stop timing: choose fuel and lunch near where on the route they're needed.
@@ -481,7 +485,7 @@ def _build_planned_stops(options: StopOptions, meal: dict[str, Any] | None, fuel
     if route_mode != "fastest" and "coffee" not in skipped_kinds:
         add(options.coffee_stop, "coffee", COFFEE_MINUTES)
     add(fuel, "fuel", FUEL_MINUTES)
-    if route_mode in {"balanced", "scenic"} and drive_minutes >= ATTRACTION_MIN_DRIVE and "attraction" not in skipped_kinds:
+    if route_mode in ATTRACTION_MIN_DRIVE and drive_minutes >= ATTRACTION_MIN_DRIVE[route_mode] and "attraction" not in skipped_kinds:
         add(options.scenic_stop, "attraction", ATTRACTION_MINUTES[route_mode])
     locked_fuel_count = sum(1 for stop in locked if stop.get("kind") == "fuel")
     if drive_minutes >= SECOND_FUEL_MIN_DRIVE and "extra_fuel" not in skipped_kinds and locked_fuel_count < 2:
@@ -562,10 +566,10 @@ def schedule_given_stops(route: dict[str, Any], stops: list[dict[str, Any]], sta
     }
 
 
-def _schedule_warnings(state: PlannerState, start: datetime, arrival_offset: int, fuel_scheduled: bool) -> list[dict[str, str]]:
+def _schedule_warnings(state: PlannerState, start: datetime, arrival_offset: int, fuel_scheduled: bool, fuel_needed: bool) -> list[dict[str, str]]:
     warnings: list[dict[str, str]] = []
-    if state.get("route_mode", "balanced") == "fastest" and not fuel_scheduled:
-        warnings.append({"code": "fastest_no_fuel", "message": "Fastest routes require at least one fuel station, but no usable fuel stop could be scheduled. Try generating again or choose Balanced."})
+    if state.get("route_mode", "balanced") == "fastest" and fuel_needed and not fuel_scheduled:
+        warnings.append({"code": "fastest_no_fuel", "message": "Drives of two hours or more need a fuel stop, but no usable fuel stop could be scheduled. Try generating again or choose Balanced."})
     arrival = start + timedelta(minutes=arrival_offset)
     end_time = state.get("end_time")
     if end_time:
@@ -607,8 +611,11 @@ def day_builder(state: PlannerState) -> PlannerState:
     itinerary: list[dict[str, Any]] = []
     arrival_offset = clock.with_buffer(drive_minutes)
     scheduled_fuel_stop = None
+    fuel_needed = drive_minutes >= FUEL_MIN_DRIVE
     if locked_fuel:
         fuel_options = [locked_fuel]
+    elif not fuel_needed:
+        fuel_options = [None]
     elif route_mode == "fastest":
         fuel_options = [*options.fuel_stops, None]
     else:
@@ -622,7 +629,7 @@ def day_builder(state: PlannerState) -> PlannerState:
             first_fuel_kept = fuel_option is None or is_last_fuel_option or any(
                 item.get("place_id") == fuel_option.get("id") for item in result.itinerary
             )
-            fuel_requirement_met = first_fuel_kept and (route_mode != "fastest" or result.fuel_was_scheduled)
+            fuel_requirement_met = first_fuel_kept and (route_mode != "fastest" or not fuel_needed or result.fuel_was_scheduled)
             if fuel_requirement_met and (meal_option is None or result.meal_was_open):
                 itinerary = result.itinerary
                 arrival_offset = result.arrival_offset
@@ -631,7 +638,7 @@ def day_builder(state: PlannerState) -> PlannerState:
         if itinerary:
             break
 
-    warnings = _schedule_warnings(state, start, arrival_offset, scheduled_fuel_stop is not None)
+    warnings = _schedule_warnings(state, start, arrival_offset, scheduled_fuel_stop is not None, fuel_needed)
     arrival_metadata = _schedule_metadata(start, arrival_offset)
     route.update({
         "buffer_minutes": buffer_minutes,
@@ -642,7 +649,7 @@ def day_builder(state: PlannerState) -> PlannerState:
         "stop_count": len(itinerary),
         "route_mode": route_mode,
         "route_mode_summary": {
-            "fastest": "Essential breaks only, including at least one fuel stop; optional coffee and scenic detours are excluded.",
+            "fastest": "Essential breaks only, including a fuel stop on drives of two hours or more; optional coffee and scenic detours are excluded.",
             "balanced": "One worthwhile intermediate stop can break up the drive.",
             "scenic": "Scenic places and intermediate-city detours are allowed to shape the day.",
         }.get(route_mode, "Balanced route recommendations."),
