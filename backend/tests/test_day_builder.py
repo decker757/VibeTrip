@@ -134,3 +134,71 @@ def test_closed_first_fuel_falls_back_to_next_station_and_respaces_second(mode):
     state = {**_timing_state([closed, _cand("f210", 210, detour=3), _cand("f420", 420), _cand("r300", 300, "Restaurant")]), "route_mode": mode}
     fuel_ids = [item["place_id"] for item in day_builder(state)["itinerary"] if item["kind"] == "fuel"]
     assert fuel_ids == ["f210", "f420"]
+
+
+# --- Leg timing: each drive between stops reflects that stretch of road ---
+from backend.graph import day_builder as _day_builder
+
+
+def _phoenix_to_la(route_extra=None):
+    """Phoenix -> LA (600 km, 360 min from 09:30): Quartzsite, Coachella, two stops in Indio, then Redlands."""
+    places = [
+        _cand("quartzsite", 205), _cand("coachella", 390),
+        {**_cand("casino", 395, "Tourist attraction"), "recommendation_kind": "scenic", "recommendation_scope": "along_route"},
+        _cand("indio-lunch", 398, "Restaurant"), _cand("redlands-cafe", 495, "Cafe"),
+    ]
+    state = _timing_state(places, start_time="09:30", distance_km=600, drive_minutes=360)
+    state["route"].update(route_extra or {})
+    return _day_builder(state)
+
+
+def _drive_gaps(itinerary):
+    """Minutes between leaving each item and reaching the next, as the timeline shows them."""
+    return [nxt["schedule_offset_minutes"] - cur["schedule_offset_minutes"] - cur["duration_min"] for cur, nxt in zip(itinerary, itinerary[1:])]
+
+
+def test_short_hops_do_not_borrow_time_from_the_next_long_leg():
+    itinerary = _phoenix_to_la()["itinerary"]
+    assert [item["place_id"] for item in itinerary[:-1]] == ["quartzsite", "coachella", "casino", "indio-lunch", "redlands-cafe"]
+    # Indio -> Redlands is 97 km: 58 min of driving plus its 20% buffer share, not the old 25 min floor.
+    assert 65 <= _drive_gaps(itinerary)[3] <= 75
+
+
+def test_buffer_is_spread_across_legs_not_added_to_the_last():
+    itinerary = _phoenix_to_la()["itinerary"]
+    # Redlands -> LA is 105 km: about 63 min plus its buffer share, not 51 min plus the whole 72 min buffer.
+    assert 70 <= _drive_gaps(itinerary)[-1] <= 82
+
+
+ROUTED_IDS = ["quartzsite", "coachella", "casino", "indio-lunch", "redlands-cafe"]
+REAL_LEGS = [120, 110, 10, 5, 70, 80]  # Google per-leg minutes; sums to 395
+
+
+def test_real_leg_times_are_used_when_route_was_plotted_through_the_stops():
+    result = _phoenix_to_la({"routed_waypoint_ids": ROUTED_IDS, "leg_minutes": REAL_LEGS, "drive_minutes": 395})
+    gaps = _drive_gaps(result["itinerary"])
+    first_leg = result["itinerary"][0]["schedule_offset_minutes"]
+    # Each leg carries the same 20% buffer share (79 of 395 min).
+    assert [first_leg, *gaps] == [round(sum(REAL_LEGS[: i + 1]) * 1.2) - round(sum(REAL_LEGS[:i]) * 1.2) for i in range(len(REAL_LEGS))]
+
+
+def test_real_leg_times_ignored_when_stops_differ_from_routed_waypoints():
+    result = _phoenix_to_la({"routed_waypoint_ids": ["somewhere-else"], "leg_minutes": [1, 1, 1, 1, 1, 390], "drive_minutes": 395})
+    # Falls back to the distance estimate: Quartzsite is 205 of 600 km.
+    assert result["itinerary"][0]["schedule_offset_minutes"] > 100
+
+
+def test_stop_after_a_closed_one_keeps_its_real_arrival_time():
+    closed_casino = {"periods": [{"open": {"day": 5, "hour": 6, "minute": 0}, "close": {"day": 5, "hour": 7, "minute": 0}}]}
+    places = [
+        _cand("quartzsite", 205), _cand("coachella", 390),
+        {**_cand("casino", 395, "Tourist attraction"), "recommendation_kind": "scenic", "recommendation_scope": "along_route", "opening_hours": closed_casino},
+        _cand("indio-lunch", 398, "Restaurant"), _cand("redlands-cafe", 495, "Cafe"),
+    ]
+    state = _timing_state(places, start_time="09:30", distance_km=600, drive_minutes=395)
+    state["route"].update({"routed_waypoint_ids": ROUTED_IDS, "leg_minutes": REAL_LEGS})
+    itinerary = _day_builder(state)["itinerary"]
+    lunch = next(item for item in itinerary if item["place_id"] == "indio-lunch")
+    assert "casino" not in [item.get("place_id") for item in itinerary]
+    # Real drive to lunch is 245 min (+20% buffer), plus the two 15-min fuel stops.
+    assert lunch["schedule_offset_minutes"] == round(245 * 1.2) + 30

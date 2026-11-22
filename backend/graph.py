@@ -7,6 +7,7 @@ changing the API contract or the frontend's state model.
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
+from itertools import accumulate
 from typing import Any, TypedDict
 
 from langchain_core.runnables import RunnableConfig
@@ -236,8 +237,11 @@ COFFEE_MINUTES = 25
 FUEL_MINUTES = 15
 ATTRACTION_MINUTES = {"balanced": 45, "scenic": 60}
 MEAL_MINUTES = 55
+# Floors for stops with no route position, where the drive to them is only a guess.
 FIRST_LEG_MIN_MINUTES = 60
 MIN_LEG_GAP_MINUTES = 25
+# Stops with a known position: even neighbouring places take a few minutes to leave and reach.
+SHORT_HOP_MINUTES = 5
 ATTRACTION_MIN_DRIVE = 180
 MEAL_MIN_DRIVE = 210
 SECOND_FUEL_MIN_DRIVE = 360
@@ -280,6 +284,43 @@ class ScheduleResult:
     itinerary: list[dict[str, Any]]
     meal_was_open: bool
     fuel_was_scheduled: bool
+    arrival_offset: int
+
+
+@dataclass
+class DriveClock:
+    """Driving minutes from departure to any stop, with the buffer spread over every leg.
+
+    Uses Google's per-leg times for stops the route was plotted through, otherwise the
+    stop's share of the route distance.
+    """
+
+    drive_minutes: int
+    distance_km: float
+    buffer_minutes: int
+    real_offsets: dict[str, int]
+
+    def position(self, place: dict[str, Any], index: int, stop_count: int) -> tuple[float, bool]:
+        """(driving minutes from departure, whether that position is known rather than guessed)."""
+        real = self.real_offsets.get(str(place.get("id")))
+        if real is not None:
+            return float(real), True
+        progress = place.get("route_progress_km")
+        if isinstance(progress, (int, float)):
+            return self.drive_minutes * max(0.0, min(float(progress), self.distance_km)) / self.distance_km, True
+        return self.drive_minutes * (index + 1) / (stop_count + 1), False
+
+    def with_buffer(self, driving: float) -> int:
+        return round(driving * (1 + self.buffer_minutes / self.drive_minutes)) if self.drive_minutes else round(driving)
+
+
+def _real_drive_offsets(route: dict[str, Any]) -> dict[str, int]:
+    """Driving minutes to each routed waypoint, when Google returned one leg per waypoint plus the last."""
+    waypoint_ids = route.get("routed_waypoint_ids") or []
+    leg_minutes = route.get("leg_minutes") or []
+    if not waypoint_ids or len(leg_minutes) != len(waypoint_ids) + 1:
+        return {}
+    return {str(place_id): offset for place_id, offset in zip(waypoint_ids, accumulate(leg_minutes))}
 
 
 def _is_restaurant(place: dict[str, Any]) -> bool:
@@ -409,44 +450,40 @@ def _schedule_metadata(start: datetime, minutes: int) -> dict[str, Any]:
     }
 
 
-def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, drive_minutes: int, distance_km: float) -> ScheduleResult:
-    """Place stops on the timeline, dropping any that would arrive while closed."""
+def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: DriveClock) -> ScheduleResult:
+    """Place stops on the timeline, dropping any that would arrive while closed.
+
+    Each leg is that stretch of road's own driving time. A floor that lengthens a short
+    leg adds time to the day; it is never taken back from a later leg.
+    """
     itinerary: list[dict[str, Any]] = []
-    elapsed = 0
-    previous_drive_offset = 0
+    driving = 0.0  # driving minutes to the last kept stop, floors included
+    last_position = 0.0  # where that stop sits on the route, in driving minutes
     planned_stop_minutes = 0
     meal_was_open = True
     fuel_was_scheduled = False
     for index, (place, kind, duration) in enumerate(planned_stops):
-        progress = place.get("route_progress_km")
-        if isinstance(progress, (int, float)):
-            driving_offset = round(drive_minutes * max(0, min(float(progress), distance_km)) / distance_km)
-        else:
-            driving_offset = round(drive_minutes * (index + 1) / (len(planned_stops) + 1))
-        # A physical stop cannot happen at departure. Keep a minimum first
-        # leg, then preserve geographic order for every later waypoint.
-        driving_offset = max(FIRST_LEG_MIN_MINUTES if index == 0 else previous_drive_offset + MIN_LEG_GAP_MINUTES, driving_offset)
-        stop_offset = max(elapsed, driving_offset + planned_stop_minutes)
+        position, known = clock.position(place, index, len(planned_stops))
+        floor = SHORT_HOP_MINUTES if known else MIN_LEG_GAP_MINUTES if itinerary else FIRST_LEG_MIN_MINUTES
+        arrival_driving = driving + max(floor, position - last_position)
+        stop_offset = clock.with_buffer(arrival_driving) + planned_stop_minutes
         opening_status = opening_status_at(place, start + timedelta(minutes=stop_offset))
         if opening_status is False:
             if kind == "meal":
                 meal_was_open = False
             continue
         title = "Coffee stop" if kind == "coffee" else _practical_stop_title(place) if kind == "fuel" else place.get("name", "Lunch with a view") if kind == "meal" else place.get("name", "Scenic stop")
-        itinerary.append({**_schedule_metadata(start, stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": progress, "opening_hours_verified": opening_status is not None})
-        elapsed = stop_offset + duration
-        previous_drive_offset = driving_offset
+        itinerary.append({**_schedule_metadata(start, stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": place.get("route_progress_km"), "opening_hours_verified": opening_status is not None})
+        driving = arrival_driving
+        last_position = max(last_position, position)
         planned_stop_minutes += duration
         if kind == "fuel":
             fuel_was_scheduled = True
-    return ScheduleResult(itinerary, meal_was_open, fuel_was_scheduled)
+    arrival_driving = driving + max(0.0, clock.drive_minutes - last_position)
+    return ScheduleResult(itinerary, meal_was_open, fuel_was_scheduled, clock.with_buffer(arrival_driving) + planned_stop_minutes)
 
 
-def _arrival_and_warnings(state: PlannerState, start: datetime, drive_minutes: int, itinerary: list[dict[str, Any]], fuel_scheduled: bool) -> tuple[int, int, list[dict[str, str]]]:
-    """Return (arrival offset, buffer minutes, structured warnings)."""
-    buffer_minutes = max(MIN_BUFFER_MINUTES, round(drive_minutes * BUFFER_RATIO))
-    planned_stop_minutes = sum(int(item.get("duration_min") or 0) for item in itinerary)
-    arrival_offset = drive_minutes + planned_stop_minutes + buffer_minutes
+def _schedule_warnings(state: PlannerState, start: datetime, arrival_offset: int, fuel_scheduled: bool) -> list[dict[str, str]]:
     warnings: list[dict[str, str]] = []
     if state.get("route_mode", "balanced") == "fastest" and not fuel_scheduled:
         warnings.append({"code": "fastest_no_fuel", "message": "Fastest routes require at least one fuel station, but no usable fuel stop could be scheduled. Try generating again or choose Balanced."})
@@ -459,7 +496,7 @@ def _arrival_and_warnings(state: PlannerState, start: datetime, drive_minutes: i
                 warnings.append({"code": "late_arrival", "message": f"Arrival estimate {arrival.strftime('%H:%M')} is later than your target end time of {end_time}."})
         except ValueError:
             pass
-    return arrival_offset, buffer_minutes, warnings
+    return warnings
 
 
 def _parse_start(state: PlannerState) -> datetime:
@@ -483,8 +520,11 @@ def day_builder(state: PlannerState) -> PlannerState:
     distance_km = max(1.0, float(route.get("distance_km") or 348))
     start = _parse_start(state)
     skipped_kinds = frozenset(state.get("skipped_stop_kinds", []))
+    buffer_minutes = max(MIN_BUFFER_MINUTES, round(drive_minutes * BUFFER_RATIO))
+    clock = DriveClock(drive_minutes, distance_km, buffer_minutes, _real_drive_offsets(route))
 
     itinerary: list[dict[str, Any]] = []
+    arrival_offset = clock.with_buffer(drive_minutes)
     scheduled_fuel_stop = None
     if route_mode == "fastest":
         fuel_options = [*options.fuel_stops, None]
@@ -493,7 +533,7 @@ def day_builder(state: PlannerState) -> PlannerState:
     for index, fuel_option in enumerate(fuel_options):
         is_last_fuel_option = index == len(fuel_options) - 1
         for meal_option in [*options.meal_options, None]:
-            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds), start, drive_minutes, distance_km)
+            result = _schedule_stops(_build_planned_stops(options, meal_option, fuel_option, route_mode, drive_minutes, skipped_kinds), start, clock)
             # If this first fuel stop was dropped (closed on arrival), try the next station rather than
             # accepting a day whose only fuel is the far second stop.
             first_fuel_kept = fuel_option is None or is_last_fuel_option or any(
@@ -502,12 +542,13 @@ def day_builder(state: PlannerState) -> PlannerState:
             fuel_requirement_met = first_fuel_kept and (route_mode != "fastest" or result.fuel_was_scheduled)
             if fuel_requirement_met and (meal_option is None or result.meal_was_open):
                 itinerary = result.itinerary
+                arrival_offset = result.arrival_offset
                 scheduled_fuel_stop = fuel_option if result.fuel_was_scheduled else None
                 break
         if itinerary:
             break
 
-    arrival_offset, buffer_minutes, warnings = _arrival_and_warnings(state, start, drive_minutes, itinerary, scheduled_fuel_stop is not None)
+    warnings = _schedule_warnings(state, start, arrival_offset, scheduled_fuel_stop is not None)
     arrival_metadata = _schedule_metadata(start, arrival_offset)
     route.update({
         "buffer_minutes": buffer_minutes,

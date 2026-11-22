@@ -100,7 +100,7 @@ MAX_CORRIDOR_SAMPLES = 8
 # Wider single-type search used when the corridor search found no fuel or no restaurant.
 BACKFILL_RADIUS_M = 15000
 
-GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals"
+GOOGLE_ROUTE_FIELD_MASK = "routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.speedReadingIntervals,routes.legs.duration"
 # Keep broad route searches to the fields needed for ranking and scheduling.
 # Review text is intentionally fetched only by a future on-demand details view.
 GOOGLE_PLACE_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.googleMapsUri,places.websiteUri,places.primaryType,places.types"
@@ -603,6 +603,8 @@ class GoogleMapsProvider:
             "route_mode_label": mode_config["label"],
             "route_mode_description": mode_config["description"],
             "polyline": route.get("polyline", {}).get("encodedPolyline"),
+            # One leg per waypoint plus the last; the day builder uses them as real drive times between stops.
+            "leg_minutes": [round(_duration_seconds(leg.get("duration")) / 60) for leg in route.get("legs") or []],
         }
         traffic_intervals = (route.get("travelAdvisory") or {}).get("speedReadingIntervals") or []
         traffic_speeds = {interval.get("speed") for interval in traffic_intervals}

@@ -207,3 +207,15 @@ async def test_short_routes_keep_the_mode_sample_count(monkeypatch):
 
 async def test_corridor_points_are_capped(monkeypatch):
     assert await _corridor_search_count(monkeypatch, 3_000_000) == providers.MAX_CORRIDOR_SAMPLES - 2
+
+
+def test_routes_request_asks_for_per_leg_durations():
+    from backend.providers import GOOGLE_ROUTE_FIELD_MASK
+    assert "routes.legs.duration" in GOOGLE_ROUTE_FIELD_MASK.split(",")
+
+
+def test_parse_route_keeps_per_leg_minutes():
+    from backend.providers import GoogleMapsProvider
+    routed = {"duration": "23700s", "staticDuration": "23000s", "distanceMeters": 600000, "legs": [{"duration": "7200s"}, {"duration": "6630s"}, {"duration": "9870s"}]}
+    route = GoogleMapsProvider._parse_route(routed, "Phoenix", "Los Angeles", "balanced")
+    assert route["leg_minutes"] == [120, 110, 164]
