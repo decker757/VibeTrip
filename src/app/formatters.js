@@ -84,7 +84,7 @@ export function itineraryToStops(itinerary, detours, destination) {
           : item.kind === 'attraction'
             ? { place: associatedPlace?.name || item.title, detail: associatedPlace?.address || 'Scenic stop along the route', type: 'attraction' }
             : details[item.kind] || details.coffee;
-    return { time: item.time, date: item.date, day_number: item.day_number, schedule_offset_minutes: item.schedule_offset_minutes, title: item.title, place_id: item.place_id, location: associatedPlace?.location, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
+    return { time: item.time, date: item.date, day_number: item.day_number, schedule_offset_minutes: item.schedule_offset_minutes, title: item.title, place_id: item.place_id, location: associatedPlace?.location, opening_hours: associatedPlace?.opening_hours, route_progress_km: associatedPlace?.route_progress_km ?? item.route_progress_km, duration_minutes: item.duration_min || 0, duration: item.duration_min ? `${item.duration_min} min` : 'overnight', ...itemDetails };
   });
 }
 
@@ -93,8 +93,18 @@ export function candidateToStop(candidate, time = '12:30', schedule = {}) {
   return {
     time, date: schedule.date, day_number: schedule.day_number, schedule_offset_minutes: schedule.schedule_offset_minutes, title: candidate.name, place: candidate.name, detail: candidate.address || 'Along the route',
     type: category.includes('cafe') || category.includes('coffee') ? 'coffee' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : category.includes('attraction') ? 'attraction' : 'lunch',
-    duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location, route_progress_km: candidate.route_progress_km,
+    duration_minutes: 45, duration: '45 min', place_id: candidate.id, location: candidate.location, opening_hours: candidate.opening_hours, route_progress_km: candidate.route_progress_km,
   };
+}
+
+// The backend re-times the traveller's stops after an edit; check-in takes the new arrival.
+export function applySchedule(stops, schedule) {
+  const timesById = new Map(schedule.stops.map((item) => [item.id, item]));
+  return stops.map((stop) => {
+    const timing = stop.type === 'stay' ? schedule.arrival : timesById.get(stop.place_id);
+    if (!timing) return stop;
+    return { ...stop, time: timing.time, date: timing.date, day_number: timing.day_number, schedule_offset_minutes: timing.schedule_offset_minutes, closed_on_arrival: Boolean(timing.closed_on_arrival) };
+  });
 }
 
 export function timeToMinutes(value = '') {

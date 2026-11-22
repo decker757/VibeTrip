@@ -314,6 +314,12 @@ class DriveClock:
         return round(driving * (1 + self.buffer_minutes / self.drive_minutes)) if self.drive_minutes else round(driving)
 
 
+def _drive_clock(route: dict[str, Any]) -> DriveClock:
+    drive_minutes = max(0, int(route.get("drive_minutes") or 229))
+    buffer_minutes = max(MIN_BUFFER_MINUTES, round(drive_minutes * BUFFER_RATIO))
+    return DriveClock(drive_minutes, max(1.0, float(route.get("distance_km") or 348)), buffer_minutes, _real_drive_offsets(route))
+
+
 def _real_drive_offsets(route: dict[str, Any]) -> dict[str, int]:
     """Driving minutes to each routed waypoint, when Google returned one leg per waypoint plus the last."""
     waypoint_ids = route.get("routed_waypoint_ids") or []
@@ -450,9 +456,10 @@ def _schedule_metadata(start: datetime, minutes: int) -> dict[str, Any]:
     }
 
 
-def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: DriveClock) -> ScheduleResult:
+def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: DriveClock, keep_closed: bool = False) -> ScheduleResult:
     """Place stops on the timeline, dropping any that would arrive while closed.
 
+    With ``keep_closed`` (the traveller's own stops) a closed stop stays and is flagged instead.
     Each leg is that stretch of road's own driving time. A floor that lengthens a short
     leg adds time to the day; it is never taken back from a later leg.
     """
@@ -468,12 +475,14 @@ def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: Dr
         arrival_driving = driving + max(floor, position - last_position)
         stop_offset = clock.with_buffer(arrival_driving) + planned_stop_minutes
         opening_status = opening_status_at(place, start + timedelta(minutes=stop_offset))
-        if opening_status is False:
+        if opening_status is False and not keep_closed:
             if kind == "meal":
                 meal_was_open = False
             continue
         title = "Coffee stop" if kind == "coffee" else _practical_stop_title(place) if kind == "fuel" else place.get("name", "Lunch with a view") if kind == "meal" else place.get("name", "Scenic stop")
         itinerary.append({**_schedule_metadata(start, stop_offset), "title": title, "kind": kind, "duration_min": duration, "place_id": place.get("id"), "route_progress_km": place.get("route_progress_km"), "opening_hours_verified": opening_status is not None})
+        if opening_status is False:
+            itinerary[-1]["closed_on_arrival"] = True
         driving = arrival_driving
         last_position = max(last_position, position)
         planned_stop_minutes += duration
@@ -481,6 +490,20 @@ def _schedule_stops(planned_stops: list[PlannedStop], start: datetime, clock: Dr
             fuel_was_scheduled = True
     arrival_driving = driving + max(0.0, clock.drive_minutes - last_position)
     return ScheduleResult(itinerary, meal_was_open, fuel_was_scheduled, clock.with_buffer(arrival_driving) + planned_stop_minutes)
+
+
+def schedule_given_stops(route: dict[str, Any], stops: list[dict[str, Any]], start_date: str, start_time: str) -> dict[str, Any]:
+    """Re-time the traveller's stops in their own order after a manual edit, with check-in after the last."""
+    start = _parse_start({"start_date": start_date, "start_time": start_time})
+    planned = [(stop, "stop", int(stop.get("duration_min") or 0)) for stop in stops]
+    result = _schedule_stops(planned, start, _drive_clock(route), keep_closed=True)
+    return {
+        "stops": [
+            {"id": item["place_id"], **{key: item[key] for key in ("time", "date", "day_number", "schedule_offset_minutes")}, "closed_on_arrival": item.get("closed_on_arrival", False)}
+            for item in result.itinerary
+        ],
+        "arrival": _schedule_metadata(start, result.arrival_offset),
+    }
 
 
 def _schedule_warnings(state: PlannerState, start: datetime, arrival_offset: int, fuel_scheduled: bool) -> list[dict[str, str]]:
@@ -516,12 +539,10 @@ def day_builder(state: PlannerState) -> PlannerState:
     route_mode = state.get("route_mode", "balanced")
     options = _pick_stop_options(state)
     route = dict(state.get("route") or {})
-    drive_minutes = max(0, int(route.get("drive_minutes") or 229))
-    distance_km = max(1.0, float(route.get("distance_km") or 348))
+    clock = _drive_clock(route)
+    drive_minutes, buffer_minutes = clock.drive_minutes, clock.buffer_minutes
     start = _parse_start(state)
     skipped_kinds = frozenset(state.get("skipped_stop_kinds", []))
-    buffer_minutes = max(MIN_BUFFER_MINUTES, round(drive_minutes * BUFFER_RATIO))
-    clock = DriveClock(drive_minutes, distance_km, buffer_minutes, _real_drive_offsets(route))
 
     itinerary: list[dict[str, Any]] = []
     arrival_offset = clock.with_buffer(drive_minutes)

@@ -79,6 +79,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
 .timeline-item.editing { background: #fffaf0; border: 1px solid #d9c68d; box-shadow: inset 3px 0 0 #b28b2d; }
 .timeline-item.editing .timeline-change { color: #705a1f; font-weight: 600; }
 .timeline-focus-state { display: inline-flex; width: fit-content; margin-top: -1px; padding: 2px 5px; border-radius: 3px; background: #deeedc; color: #326c3d !important; font-size: 8px !important; font-weight: 700; line-height: 1.1; }
+.timeline-focus-state.closed-state { background: #f6e1dc; color: #9a3f2f !important; }
 .route-waypoint-note { display: block; margin-top: 5px; color: #4f7f58; font-size: 9px; }
 .route-meta { flex-wrap: wrap; row-gap: 8px; justify-content: flex-end; }.route-export-link { min-height: 36px; }
 .money-input { display: flex !important; align-items: center; gap: 5px; }
@@ -213,6 +214,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(30,123,255,.
 .map-destination-panel .candidate-copy .review-preview { display: none; }
 .map-destination-panel .candidate-score { display: none; }
 .map-destination-panel .candidate-use { min-width: 94px; min-height: 40px; align-self: center; padding: 0 10px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+.candidate-actions { display: grid; gap: 4px; align-self: center; justify-items: center; }
+.candidate-map-link { padding: 4px 2px; border: 0; background: transparent; color: #5c7f61; font-size: 10px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.candidate-map-link:hover { color: #2f6a3a; }
 
 /* Readable itinerary type: the route is useful only when the stop details can be scanned at a glance. */
 .timeline-time { font-size: 12px; padding-top: 9px; }

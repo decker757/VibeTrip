@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .graph import day_builder, planner_graph
+from .graph import day_builder, planner_graph, schedule_given_stops
 from .make_room import build_make_room, destination_deadline, parse_day_time
 from .repair import repair_until_settled
 from .auth import SESSION_COOKIE, auth_repository, get_current_user, issue_session, public_user
@@ -85,6 +85,7 @@ class RoutePlaceSearchRequest(BaseModel):
 class RerouteRequest(BaseModel):
     start: str = Field(min_length=2)
     destination: str = Field(min_length=2)
+    start_date: str = ""
     start_time: str = "08:10"
     budget_per_person: int = Field(default=400, ge=0)
     crowd_tolerance: Literal["low", "medium", "high"] = "medium"
@@ -505,7 +506,7 @@ async def reroute_trip(request: RerouteRequest) -> dict:
                 request.route_mode,
             )
             route = provider_result.route
-        return {"route": route, "provider": provider.__class__.__name__.replace("MapsProvider", "").lower() or "demo", "warning": None}
+        return {"route": route, "schedule": schedule_given_stops(route, request.stops, request.start_date, request.start_time), "provider": provider.__class__.__name__.replace("MapsProvider", "").lower() or "demo", "warning": None}
     except Exception as error:
         fallback = DemoMapsProvider()
         if request.stops:
@@ -514,6 +515,7 @@ async def reroute_trip(request: RerouteRequest) -> dict:
             route = (await fallback.plan_trip(request.start, request.destination, request.budget_per_person, request.crowd_tolerance, request.start_time, request.route_mode)).route
         return {
             "route": route,
+            "schedule": schedule_given_stops(route, request.stops, request.start_date, request.start_time),
             "provider": "demo",
             "warning": f"Live route recalculation unavailable ({type(error).__name__}); showing the draft route geometry.",
         }

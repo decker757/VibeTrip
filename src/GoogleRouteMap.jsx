@@ -48,6 +48,17 @@ const GoogleRouteMap = forwardRef(function GoogleRouteMap({ route, candidates, f
       }
       return true;
     },
+    // A suggestion that isn't a stop: a popup at its location, without adding a pin to the route.
+    showPlace(place) {
+      if (!mapRef.current || !infoWindowRef.current || !place?.location) return false;
+      const position = { lat: place.location.latitude, lng: place.location.longitude };
+      mapRef.current.panTo(position);
+      mapRef.current.setZoom(14);
+      infoWindowRef.current.setContent(infoContent(place));
+      infoWindowRef.current.setPosition(position);
+      infoWindowRef.current.open({ map: mapRef.current });
+      return true;
+    },
   }), [candidates]);
 
   useEffect(() => {

@@ -9,7 +9,7 @@ export function TimelineRow({ stop, index, isLast, isFocused, isEditing, isManag
     <div className={`timeline-item ${isManaging ? 'managing' : ''} ${isFocused ? 'focused' : ''} ${isEditing ? 'editing' : ''}`} data-stop-index={index} role="button" tabIndex="0" aria-label={`Focus ${stop.title} on the map`} onClick={() => onFocus(stop, index)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onFocus(stop, index); } }}>
       <div className="timeline-time">{stop.time}</div>
       <div className="timeline-rail"><StopIcon type={stop.type} />{!isLast && <span className="rail-line" />}</div>
-      <div className="timeline-copy"><strong>{stop.title}</strong>{isFocused && <span className="timeline-focus-state" aria-live="polite">On map</span>}<span className="timeline-place">{stop.place}</span><span className="timeline-address">{stop.detail}</span></div>
+      <div className="timeline-copy"><strong>{stop.title}</strong>{stop.closed_on_arrival && <span className="timeline-focus-state closed-state">Closed on arrival</span>}{isFocused && <span className="timeline-focus-state" aria-live="polite">On map</span>}<span className="timeline-place">{stop.place}</span><span className="timeline-address">{stop.detail}</span></div>
       <span className="stop-duration">{stop.duration === 'overnight' ? 'overnight' : `${stop.duration} stop`}</span>
       <div className="timeline-actions">
         {isManaging && stop.type !== 'stay' && <button className="timeline-remove" title={`Remove ${stop.title}`} onClick={(event) => { event.stopPropagation(); onRemove(index); }}><Icon name="close" size={12} />Remove</button>}
@@ -20,7 +20,7 @@ export function TimelineRow({ stop, index, isLast, isFocused, isEditing, isManag
   );
 }
 
-export function CandidateRow({ candidate, selected, actionLabel, actionTitle, onSelect }) {
+export function CandidateRow({ candidate, selected, actionLabel, actionTitle, onSelect, onShowOnMap }) {
   const category = candidate.category?.toLowerCase() || '';
   const icon = category.includes('restaurant') ? 'sun' : category.includes('gas') || category.includes('fuel') || category.includes('convenience') || category.includes('store') ? 'fuel' : 'sparkles';
   const isReplacementAction = actionLabel === 'Use' || actionLabel === 'Use here' || actionLabel === 'Replace';
@@ -37,7 +37,12 @@ export function CandidateRow({ candidate, selected, actionLabel, actionTitle, on
         {candidate.review_quote && <small className="review-preview">“{candidate.review_quote}”</small>}
       </div>
       <div className="candidate-score"><strong>{candidate.enjoyment_score}</strong><small>enjoyment</small></div>
-      <button className="candidate-use" type="button" title={resolvedActionTitle} aria-label={resolvedActionTitle} onClick={() => onSelect(candidate)}>{selected ? 'Added' : resolvedActionLabel}</button>
+      {onShowOnMap ? (
+        <div className="candidate-actions">
+          <button className="candidate-use" type="button" title={resolvedActionTitle} aria-label={resolvedActionTitle} onClick={() => onSelect(candidate)}>{selected ? 'Added' : resolvedActionLabel}</button>
+          <button className="candidate-map-link" type="button" aria-label={`Show ${candidate.name} on the map`} onClick={() => onShowOnMap(candidate)}>Show on map</button>
+        </div>
+      ) : <button className="candidate-use" type="button" title={resolvedActionTitle} aria-label={resolvedActionTitle} onClick={() => onSelect(candidate)}>{selected ? 'Added' : resolvedActionLabel}</button>}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import AuthView from './components/AuthView';
 import ProfileOnboarding from './components/ProfileOnboarding';
 import { ExploreView, SavedTripsView } from './components/TripCollections';
 import ProfileView from './components/ProfileView';
-import { addMinutesToSchedule, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, insertStopByProgress, itineraryToStops } from './app/formatters';
+import { addMinutesToSchedule, applySchedule, buildClientCostBreakdown, buildGoogleMapsUrl, candidateToStop, getInitials, insertStopByProgress, itineraryToStops } from './app/formatters';
 import { estimateTripEndDate, getLocalTimeISO, getLocalTodayISO } from './app/dateUtils';
 import { MAX_TRIP_MEDIA } from './app/media';
 import { defaultCostBreakdown, exploreFallbackTrips, initialCandidates, initialStops, navItems, PLANNER_API_URL, profileOptions, routeModeOptions, tripProfileOptions } from './app/plannerData';
@@ -218,16 +218,12 @@ function App() {
   const routeTitle = useMemo(() => `${from.split(',')[0]} → ${to.split(',')[0]}`, [from, to]);
   const defaultReplacementIndex = Math.max(0, stops.findIndex((stop) => stop.type === 'lunch'));
   const replacementStopIndex = editingStopIndex ?? focusedStopIndex ?? defaultReplacementIndex;
-  const displayedCandidates = useMemo(() => candidatePlaces.slice(0, routeMode === 'fastest' ? 4 : 6), [candidatePlaces, routeMode]);
   const destinationCandidates = useMemo(() => candidatePlaces.filter((candidate) => candidate.recommendation_scope === 'destination').slice(0, 4), [candidatePlaces]);
+  // Pins mark only the planned stops, so the map reads as the actual route.
   const mapCandidates = useMemo(() => {
-    const visibleIds = new Set(displayedCandidates.map((candidate) => candidate.id));
-    const waypointIds = new Set([
-      ...stops.map((stop) => stop.place_id).filter(Boolean),
-      ...(route.routed_waypoint_ids || []),
-    ]);
-    return candidatePlaces.filter((candidate) => visibleIds.has(candidate.id) || waypointIds.has(candidate.id));
-  }, [candidatePlaces, displayedCandidates, route.routed_waypoint_ids, stops]);
+    const plannedIds = new Set(stops.map((stop) => stop.place_id).filter(Boolean));
+    return candidatePlaces.filter((candidate) => plannedIds.has(candidate.id));
+  }, [candidatePlaces, stops]);
   const googleMapsUrl = useMemo(() => buildGoogleMapsUrl(from, to, stops), [from, to, stops]);
   const profileSummary = profileAdventureLevel >= 70 ? 'Curious, not rushed.' : profileAdventureLevel <= 35 ? 'Easygoing, well paced.' : 'Balanced, open to detours.';
   const profileBalance = profileAdventureLevel >= 70 ? 'More adventurous' : profileAdventureLevel <= 35 ? 'More laid back' : 'Balanced pace';
@@ -353,8 +349,13 @@ function App() {
     generateTrip();
   }, [activeNav]);
 
-  async function rerouteDraft(nextStops, successMessage, baseRoute = route) {
-    if (isRerouting) return;
+  // Recalculate the route and re-time every stop. With `refuse`, nothing changes when that
+  // place would be closed on arrival; returns whether the edit was applied.
+  async function rerouteDraft(nextStops, successMessage, baseRoute = route, { refuse } = {}) {
+    if (isRerouting) {
+      if (refuse) setMessage(`Still recalculating the route; try adding ${refuse.name} again in a moment.`);
+      return !refuse;
+    }
     setIsRerouting(true);
     try {
       const response = await apiFetch(`${PLANNER_API_URL}/trips/reroute`, {
@@ -363,26 +364,43 @@ function App() {
         body: JSON.stringify({
           start: from,
           destination: to,
+          start_date: startDate,
           start_time: startTime,
           budget_per_person: budgetPerPerson,
           route_mode: routeMode,
           route: baseRoute,
-          stops: nextStops.filter((stop) => stop.type !== 'stay' && stop.place_id).map((stop) => ({ id: stop.place_id, location: stop.location })),
+          stops: nextStops.filter((stop) => stop.type !== 'stay' && stop.place_id).map((stop) => ({
+            id: stop.place_id, location: stop.location, duration_min: stop.duration_minutes, opening_hours: stop.opening_hours, route_progress_km: stop.route_progress_km,
+          })),
         }),
       });
       if (!response.ok) throw new Error(`Reroute returned ${response.status}`);
       const result = await response.json();
+      const schedule = result.schedule;
+      const refused = refuse && schedule?.stops.find((item) => item.id === refuse.id && item.closed_on_arrival);
+      if (refused) {
+        setMessage(`You'd reach ${refuse.name} around ${refused.time}, when it's closed, so it wasn't added. Remove another stop or start earlier.`);
+        return false;
+      }
       const nextRoute = result.route || {};
-      setRoute(nextRoute);
+      setRoute(schedule ? { ...nextRoute, estimated_arrival_time: schedule.arrival.time, estimated_arrival_date: schedule.arrival.date } : nextRoute);
       setRouteStats((current) => ({
         driveMinutes: nextRoute.drive_minutes || current.driveMinutes,
         distanceKm: nextRoute.distance_km || current.distanceKm,
         confidence: current.confidence,
       }));
       setPlannerSource(result.provider === 'google' ? 'api' : 'demo');
-      setMessage(result.warning || successMessage);
+      const timedStops = schedule ? applySchedule(nextStops, schedule) : nextStops;
+      setStops(timedStops);
+      const closedTitles = timedStops.filter((stop) => stop.closed_on_arrival).map((stop) => stop.title);
+      const closedWarning = closedTitles.length ? ` ${closedTitles.join(', ')} would be closed when you arrive.` : '';
+      setMessage(`${result.warning || successMessage}${closedWarning}`);
+      return true;
     } catch {
-      setMessage(`${successMessage} The map could not recalculate right now; try again when the route service is available.`);
+      setMessage(refuse
+        ? `Couldn't check whether ${refuse.name} is open when you'd arrive, so it wasn't added. Try again in a moment.`
+        : `${successMessage} The map could not recalculate right now; try again when the route service is available.`);
+      return !refuse;
     } finally {
       setIsRerouting(false);
     }
@@ -439,7 +457,7 @@ function App() {
     setMessage(focused ? `${candidate.name} focused on the map. Choose “Use here” to add it to the selected stop.` : `${candidate.name} selected. Choose “Use here” to add it to the selected stop.`);
   }
 
-  function addDestinationCandidate(candidate, { baseStops = stops, baseRoute = route, successMessage } = {}) {
+  async function addDestinationCandidate(candidate, { baseStops = stops, baseRoute = route, successMessage } = {}) {
     const existingIndex = baseStops.findIndex((stop) => stop.place_id === candidate.id);
     if (existingIndex >= 0) {
       setFocusedStopIndex(existingIndex);
@@ -448,13 +466,15 @@ function App() {
     }
     const destinationIndex = baseStops.findIndex((stop) => stop.type === 'stay');
     const insertionIndex = destinationIndex >= 0 ? destinationIndex : baseStops.length;
-    const previousStop = baseStops[insertionIndex - 1] || baseStops[baseStops.length - 1];
-    const schedule = previousStop?.time ? addMinutesToSchedule(previousStop, (previousStop.duration_minutes || 45) + 30, startDate) : { time: startTime, date: startDate, day_number: 1 };
-    const nextStop = candidateToStop(candidate, schedule.time, schedule);
-    const nextStops = [...baseStops.slice(0, insertionIndex), nextStop, ...baseStops.slice(insertionIndex)];
+    // The backend re-times every stop, including check-in; nothing is shown until it confirms the place is open.
+    const nextStops = [...baseStops.slice(0, insertionIndex), candidateToStop(candidate), ...baseStops.slice(insertionIndex)];
+    setIsMakingRoom(true);
+    setMessage(`Checking whether ${candidate.name} is open when you'd arrive…`);
+    const added = await rerouteDraft(nextStops, successMessage || `${candidate.name} added before check-in and the route was recalculated through it.`, baseRoute, { refuse: { id: candidate.id, name: candidate.name } });
+    setIsMakingRoom(false);
+    if (!added) return;
     setCandidatePlaces((current) => current.map((item) => item.id === candidate.id ? { ...item, recommendation_scope: 'along_route' } : item));
     setSelectedPlaceId(candidate.id);
-    setStops(nextStops);
     setFocusedStopIndex(insertionIndex);
     setCostBreakdown(buildClientCostBreakdown(baseRoute, candidate, travellers));
     void recordAgentEvent('destination_added', {
@@ -462,7 +482,6 @@ function App() {
       reason: 'user added an optional destination suggestion',
       route_progress_km: candidate.route_progress_km,
     });
-    void rerouteDraft(nextStops, successMessage || `${candidate.name} added before check-in and the route was recalculated through it.`, baseRoute);
   }
 
   // Make room for the destination: replan around the place's opening hours. The trip only
@@ -470,17 +489,17 @@ function App() {
   async function makeRoomForDestination(candidate) {
     if (isMakingRoom || isGenerating) return;
     if (stops.some((stop) => stop.place_id === candidate.id)) {
-      addDestinationCandidate(candidate);
+      await addDestinationCandidate(candidate);
       return;
     }
     if ((route.estimated_trip_days || 1) > 1) {
-      addDestinationCandidate(candidate, { successMessage: `Deadlines apply to same-day arrivals only, so ${candidate.name} was added without one.` });
+      await addDestinationCandidate(candidate, { successMessage: `Deadlines apply to same-day arrivals only, so ${candidate.name} was added without one.` });
       return;
     }
     // One activity sets the deadline. A replan would drop the first one, so later picks are simply added after it.
     const deadlinePlace = makeRoom?.place;
     if (deadlinePlace && stops.some((stop) => stop.place_id === deadlinePlace.id)) {
-      addDestinationCandidate(candidate, { successMessage: `${candidate.name} added after ${deadlinePlace.name}; the drive is still planned around ${deadlinePlace.name}'s hours.` });
+      await addDestinationCandidate(candidate, { successMessage: `${candidate.name} added after ${deadlinePlace.name}; the drive is still planned around ${deadlinePlace.name}'s hours.` });
       return;
     }
     if (stopsEditedRef.current && !window.confirm(`Adding ${candidate.name} replans the trip around its opening hours and resets your stop edits. Continue?`)) return;
@@ -502,7 +521,7 @@ function App() {
       const plannedStops = applyPlanResult(result, plan);
       stopsEditedRef.current = false;
       setMakeRoom({ place: candidate, ...room });
-      addDestinationCandidate(candidate, {
+      await addDestinationCandidate(candidate, {
         baseStops: plannedStops,
         baseRoute: result.route || {},
         successMessage: room.status === 'fits'
@@ -510,7 +529,7 @@ function App() {
           : `${candidate.name} added — no opening hours on record, so there's no deadline.`,
       });
     } catch {
-      addDestinationCandidate(candidate, { successMessage: `Couldn't check opening hours, so ${candidate.name} was added without a deadline.` });
+      await addDestinationCandidate(candidate, { successMessage: `Couldn't check opening hours, so ${candidate.name} was added without a deadline.` });
     } finally {
       setIsMakingRoom(false);
     }
@@ -761,13 +780,24 @@ function App() {
     setToLocation(location);
   }
 
-  function focusTimelineStop(stop, index) {
-    setFocusedStopIndex(index);
-    const focused = mapControllerRef.current?.focusStop(stop);
-    const mapCard = document.querySelector('.map-card');
+  function scrollMapIntoView() {
+    // The map card also holds the destination suggestions, so aim for the map itself.
+    const mapCard = document.querySelector('.map-card .dynamic-map') || document.querySelector('.map-card');
     if (mapCard && (mapCard.getBoundingClientRect().top < 0 || mapCard.getBoundingClientRect().bottom > window.innerHeight)) {
       mapCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+  }
+
+  function showSuggestionOnMap(candidate) {
+    const shown = mapControllerRef.current?.showPlace(candidate);
+    scrollMapIntoView();
+    setMessage(shown ? `${candidate.name} shown on the map. It isn't part of your route until you add it.` : `${candidate.name} can be shown once the live map has loaded.`);
+  }
+
+  function focusTimelineStop(stop, index) {
+    setFocusedStopIndex(index);
+    const focused = mapControllerRef.current?.focusStop(stop);
+    scrollMapIntoView();
     const timelineItem = document.querySelector(`.timeline-item[data-stop-index="${index}"]`);
     if (timelineItem && (timelineItem.getBoundingClientRect().top < 0 || timelineItem.getBoundingClientRect().bottom > window.innerHeight)) {
       timelineItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1221,7 +1251,7 @@ function App() {
       route: {
       from, to, routeTitle, routeModeOptions, routeMode, isGenerating, plannerSource, recommendationSource, routeStats, currentRoute: route,
       googleMapsUrl, isRerouting, mapControllerRef, mapCandidates, onSelectCandidate: selectCandidate, onFocusCandidate: focusCandidate,
-      destinationCandidates, onAddDestinationCandidate: makeRoomForDestination, makeRoom, isMakingRoom, onAddSuggestedStop: addSuggestedStop, onSaveTrip: saveCurrentTrip, isSavingTrip,
+      destinationCandidates, onAddDestinationCandidate: makeRoomForDestination, onShowDestinationOnMap: showSuggestionOnMap, makeRoom, isMakingRoom, onAddSuggestedStop: addSuggestedStop, onSaveTrip: saveCurrentTrip, isSavingTrip,
       onRouteMode: (nextMode) => { setRouteMode(nextMode); setMessage(`${routeModeOptions.find((option) => option.id === nextMode)?.label} route selected. Generate the route to update recommendations.`); },
     },
     itinerary: { stops, focusedStopIndex, editingStopIndex, isManagingStops, onToggleManager: toggleStopManager, onFocusStop: focusTimelineStop, onBeginChange: beginStopChange, onRemove: removeStop, onAddStop: addStop },
